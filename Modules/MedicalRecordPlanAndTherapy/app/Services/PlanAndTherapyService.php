@@ -5,6 +5,7 @@ namespace Modules\MedicalRecordPlanAndTherapy\Services;
 use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Modules\GeneralEmployee\Models\Employee;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordPlanAndTherapy\Models\PlanAndTherapy;
 
@@ -30,6 +31,16 @@ class PlanAndTherapyService
     /** @param array<string, mixed> $data */
     public function create(array $data, User $user): PlanAndTherapy
     {
+        // `ordered_by` menunjuk employees, BUKAN users: dokter yang menulis
+        // order adalah yang sedang login, tapi id pegawainya tidak diketahui
+        // petugas dari layar mana pun (lihat App\Http\Concerns\ResolvesActingEmployee).
+        $data['ordered_by'] ??= Employee::query()->where('user_id', $user->id)->value('id');
+        abort_if(
+            $data['ordered_by'] === null,
+            422,
+            'Akun Anda belum tertaut ke data pegawai, sehingga pemesan order tidak dapat ditetapkan. Hubungi admin untuk menautkannya.',
+        );
+
         $this->medicalRecordGate->assertWritable((int) $data['visit_id'], $user);
 
         return DB::transaction(fn () => PlanAndTherapy::create([

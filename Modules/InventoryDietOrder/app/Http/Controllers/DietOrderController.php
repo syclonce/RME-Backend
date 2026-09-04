@@ -2,6 +2,8 @@
 
 namespace Modules\InventoryDietOrder\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\InventoryDietOrder\Http\Requests\StoreDietOrderRequest;
@@ -13,6 +15,8 @@ use Modules\InventoryDietOrder\Services\DietOrderService;
 
 class DietOrderController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function __construct(protected DietOrderService $dietOrderService)
     {
     }
@@ -49,7 +53,7 @@ class DietOrderController extends Controller
 
     public function store(StoreDietOrderRequest $request)
     {
-        $dietOrder = $this->dietOrderService->create($request->validated());
+        $dietOrder = $this->dietOrderService->create($this->fillActingEmployee($request, $request->validated(), 'ordered_by'));
 
         return (new DietOrderResource($dietOrder))->response()->setStatusCode(201);
     }

@@ -21,7 +21,7 @@ class StoreLabAnalyzerOrderRequest extends FormRequest
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'vendor_id' => ['nullable', 'integer', 'exists:lab_analyzer_vendors,id'],
             'test_code' => ['required', 'string', 'max:255'],
-            'ordered_by' => ['required', 'integer', 'exists:employees,id'],
+            'ordered_by' => ['nullable', 'integer', 'exists:employees,id'],
             'ordered_at' => ['nullable', 'date'],
         ];
     }

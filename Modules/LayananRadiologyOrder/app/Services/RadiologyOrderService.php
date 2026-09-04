@@ -5,6 +5,7 @@ namespace Modules\LayananRadiologyOrder\Services;
 use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Modules\GeneralEmployee\Models\Employee;
 use Modules\Auth\Models\User;
 use Modules\LayananRadiologyOrder\Models\RadiologyOrder;
 use Modules\PendaftaranVisit\Support\DerivedVisitFactory;
@@ -52,6 +53,12 @@ class RadiologyOrderService
     public function create(array $data, User $user): RadiologyOrder
     {
         $this->medicalRecordGate->assertWritable((int) $data['visit_id'], $user);
+
+        // Dokter pemesan diisi dari profil pegawai user login. Kolomnya
+        // nullable, jadi tanpa ini order tersimpan TANPA pemesan sama sekali --
+        // dan radiolog tidak punya siapa pun untuk dihubungi saat hasilnya
+        // perlu dikonfirmasi.
+        $data['ordering_doctor_id'] ??= Employee::query()->where('user_id', $user->id)->value('id');
 
         return DB::transaction(fn () => RadiologyOrder::create([
             ...Arr::except($data, 'status'),

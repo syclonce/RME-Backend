@@ -2,6 +2,8 @@
 
 namespace Modules\LayananLabAnalyzerOrder\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,8 @@ use Modules\LayananLabAnalyzerOrder\Services\LabAnalyzerOrderService;
 
 class LabAnalyzerOrderController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function __construct(protected LabAnalyzerOrderService $service) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -39,7 +43,7 @@ class LabAnalyzerOrderController extends Controller
     public function store(StoreLabAnalyzerOrderRequest $request): JsonResponse
     {
         // Semua tulisan order lewat service: status 'ordered' tidak bisa disuntik klien.
-        $order = $this->service->create($request->validated())->load('vendor');
+        $order = $this->service->create($this->fillActingEmployee($request, $request->validated(), 'ordered_by'))->load('vendor');
 
         return (new LabAnalyzerOrderResource($order))->response()->setStatusCode(201);
     }

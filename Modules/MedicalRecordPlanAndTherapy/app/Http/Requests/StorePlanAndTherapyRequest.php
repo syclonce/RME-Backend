@@ -15,7 +15,7 @@ class StorePlanAndTherapyRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'ordered_by' => ['required', 'integer', 'exists:doctors,id'],
+            'ordered_by' => ['nullable', 'integer', 'exists:doctors,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'assessment_summary' => ['nullable','string'],
             'plan_description' => ['required','string'],
