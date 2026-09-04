@@ -11,6 +11,13 @@ class StoreFluidFinalBalanceRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class StoreFluidFinalBalanceRequest extends FormRequest
             'total_output_ml' => ['required', 'numeric'],
             'balance_ml' => ['nullable', 'numeric'],
             'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
         ];
     }
 }

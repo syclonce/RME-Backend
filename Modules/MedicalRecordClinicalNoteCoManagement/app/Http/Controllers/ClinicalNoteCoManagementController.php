@@ -25,6 +25,7 @@ class ClinicalNoteCoManagementController extends Controller
     public function store(StoreClinicalNoteCoManagementRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
         $data = $this->fillActingEmployee($request, $data, 'author_id');
 
         $record = ClinicalNoteCoManagement::create($data);

@@ -11,6 +11,13 @@ class StoreNursingCarePlanRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class StoreNursingCarePlanRequest extends FormRequest
             'intervention_plan' => ['nullable', 'string'],
             'target_date' => ['nullable', 'date'],
             'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];
     }

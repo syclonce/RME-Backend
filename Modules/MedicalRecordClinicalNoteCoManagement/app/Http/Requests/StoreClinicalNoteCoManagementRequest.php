@@ -11,6 +11,13 @@ class StoreClinicalNoteCoManagementRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -18,7 +25,7 @@ class StoreClinicalNoteCoManagementRequest extends FormRequest
             'medical_department_id' => ['required', 'integer', 'exists:medical_departments,id'],
             'notes' => ['nullable', 'string'],
             'author_id' => ['nullable', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
         ];
     }
 }

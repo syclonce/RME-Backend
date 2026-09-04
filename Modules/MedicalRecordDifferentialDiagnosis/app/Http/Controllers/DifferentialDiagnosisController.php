@@ -28,6 +28,7 @@ class DifferentialDiagnosisController extends Controller
     public function store(StoreDifferentialDiagnosisRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
         $data = $this->fillActingEmployee($request, $data, 'recorded_by');
         // Cegah penulisan ke rekam medis yang sudah difinalkan.
         $this->guardMedicalRecord($request, $data);

@@ -11,6 +11,13 @@ class StoreImplementationNoteRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -18,7 +25,7 @@ class StoreImplementationNoteRequest extends FormRequest
             'note_type' => ['nullable', 'string', 'max:100'],
             'content' => ['nullable', 'string'],
             'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
         ];
     }
 }
