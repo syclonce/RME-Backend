@@ -11,19 +11,36 @@ class StoreVitalSignRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'systolic.between' => 'Tekanan sistolik di luar rentang wajar (0-300 mmHg). Periksa kembali angkanya.',
+            'diastolic.between' => 'Tekanan diastolik di luar rentang wajar (0-200 mmHg). Periksa kembali angkanya.',
+            'pulse.between' => 'Nadi di luar rentang wajar (0-300 kali/menit). Periksa kembali angkanya.',
+            'respiratory_rate.between' => 'Laju napas di luar rentang wajar (0-120 kali/menit). Periksa kembali angkanya.',
+            'temperature.between' => 'Suhu di luar rentang wajar (30-45 °C). Periksa kembali angkanya.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'recorded_at' => ['nullable', 'date'],
             'temperature' => ['nullable', 'numeric', 'between:30,45'],
-            'pulse' => ['nullable', 'integer', 'min:0'],
-            'respiratory_rate' => ['nullable', 'integer', 'min:0'],
-            'systolic' => ['nullable', 'integer', 'min:0'],
-            'diastolic' => ['nullable', 'integer', 'min:0'],
+            // Batas atas fisiologis, bukan sekadar min:0. Nadi 9000 atau
+            // sistolik 30000 adalah salah ketik yang, sekali tersimpan di
+            // rekam medis append-only, tidak dapat dihapus -- hanya dapat
+            // dibantah oleh pencatatan berikutnya.
+            'pulse' => ['nullable', 'integer', 'between:0,300'],
+            'respiratory_rate' => ['nullable', 'integer', 'between:0,120'],
+            'systolic' => ['nullable', 'integer', 'between:0,300'],
+            'diastolic' => ['nullable', 'integer', 'between:0,200'],
             'oxygen_saturation' => ['nullable', 'integer', 'between:0,100'],
             'pain_scale' => ['nullable', 'integer', 'between:0,10'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            // Boleh kosong: diisi server dari profil pegawai user login.
+            // Petugas tidak menghafal id pegawainya sendiri.
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
         ];
     }
 }
