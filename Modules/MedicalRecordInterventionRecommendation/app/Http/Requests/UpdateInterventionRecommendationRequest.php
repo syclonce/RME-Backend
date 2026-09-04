@@ -11,6 +11,13 @@ class UpdateInterventionRecommendationRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: open, accepted, declined.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class UpdateInterventionRecommendationRequest extends FormRequest
             'priority' => ['nullable', 'string', 'max:20'],
             'recommended_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'recommended_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:open,accepted,declined'],
         ];
     }
 }

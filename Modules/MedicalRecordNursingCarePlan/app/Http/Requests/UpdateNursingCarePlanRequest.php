@@ -11,6 +11,13 @@ class UpdateNursingCarePlanRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +28,7 @@ class UpdateNursingCarePlanRequest extends FormRequest
             'target_date' => ['nullable', 'date'],
             'recorded_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'recorded_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,completed,cancelled'],
         ];
     }
 }

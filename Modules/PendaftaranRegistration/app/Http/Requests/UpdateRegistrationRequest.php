@@ -12,6 +12,13 @@ class UpdateRegistrationRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         $id = $this->route('registration')?->id;
@@ -29,7 +36,7 @@ class UpdateRegistrationRequest extends FormRequest
             'found_location' => ['nullable', 'string', 'max:255'],
             'found_at' => ['nullable', 'date'],
             'satu_sehat_consent' => ['sometimes', 'boolean'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,cancelled'],
         ];
     }
 }

@@ -25,7 +25,11 @@ class UpdateVisitRequest extends FormRequest
             'is_deposit' => ['sometimes', 'boolean'],
             'deposit_class_id' => ['nullable', 'integer'],
             'final_outcome' => ['nullable', 'string', 'max:255'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            // 'status' SENGAJA tidak ada di sini. VisitController::update()
+            // menolak setiap payload yang memuatnya, karena tiap perpindahan
+            // status kunjungan punya gerbangnya sendiri (bed dibebaskan,
+            // tagihan diperiksa). Mencantumkannya di sini hanya membuat
+            // pembaca mengira status dapat diubah lewat edit biasa.
         ];
     }
 }

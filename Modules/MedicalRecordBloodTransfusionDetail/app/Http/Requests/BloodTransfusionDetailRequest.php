@@ -11,6 +11,16 @@ class BloodTransfusionDetailRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            // Nilai berkapital mengikuti yang sudah dipakai factory dan data
+            // modul ini — bukan diseragamkan diam-diam ke huruf kecil, karena
+            // itu akan membuat baris lama tidak lolos validasinya sendiri.
+            'status.in' => 'Status harus salah satu dari: Pending, Completed, Stopped, Discarded.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +31,7 @@ class BloodTransfusionDetailRequest extends FormRequest
             'start_time' => ['nullable', 'date'],
             'end_time' => ['nullable', 'date'],
             'reaction_observed' => ['nullable', 'string'],
-            'status' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:Pending,Completed,Stopped,Discarded'],
         ];
     }
 }

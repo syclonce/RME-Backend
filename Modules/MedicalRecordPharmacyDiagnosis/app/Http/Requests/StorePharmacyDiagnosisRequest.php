@@ -11,6 +11,13 @@ class StorePharmacyDiagnosisRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, resolved.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +28,7 @@ class StorePharmacyDiagnosisRequest extends FormRequest
             'recommendation' => ['nullable', 'string'],
             'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'assessed_at' => ['required', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,resolved'],
         ];
     }
 }

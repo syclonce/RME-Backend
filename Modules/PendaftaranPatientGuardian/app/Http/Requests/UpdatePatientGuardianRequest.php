@@ -13,6 +13,13 @@ class UpdatePatientGuardianRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, inactive.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -22,7 +29,7 @@ class UpdatePatientGuardianRequest extends FormRequest
             'phone_number' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'occupation' => ['nullable', 'string', 'max:255'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
 }

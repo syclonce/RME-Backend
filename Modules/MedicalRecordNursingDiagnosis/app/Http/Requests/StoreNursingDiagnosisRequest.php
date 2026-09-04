@@ -14,6 +14,7 @@ class StoreNursingDiagnosisRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'status.in' => 'Status harus salah satu dari: active, resolved.',
             'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
         ];
     }
@@ -28,7 +29,7 @@ class StoreNursingDiagnosisRequest extends FormRequest
             'priority' => ['nullable', 'string', 'max:20'],
             'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,resolved'],
         ];
     }
 }

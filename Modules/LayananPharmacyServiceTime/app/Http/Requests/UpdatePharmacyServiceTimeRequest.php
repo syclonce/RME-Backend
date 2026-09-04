@@ -11,6 +11,13 @@ class UpdatePharmacyServiceTimeRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: pending, completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -18,7 +25,7 @@ class UpdatePharmacyServiceTimeRequest extends FormRequest
             'received_at' => ['nullable', 'date'],
             'prepared_at' => ['nullable', 'date'],
             'dispensed_at' => ['nullable', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:pending,completed,cancelled'],
         ];
     }
 }

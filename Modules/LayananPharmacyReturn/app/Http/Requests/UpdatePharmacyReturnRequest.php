@@ -11,6 +11,13 @@ class UpdatePharmacyReturnRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: pending, approved, rejected.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,7 +26,7 @@ class UpdatePharmacyReturnRequest extends FormRequest
             'reason' => ['sometimes', 'string', 'max:255'],
             'returned_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'returned_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:pending,approved,rejected'],
         ];
     }
 }

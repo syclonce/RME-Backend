@@ -11,6 +11,13 @@ class StoreImplementationRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,7 +26,7 @@ class StoreImplementationRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'performed_at' => ['required', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:completed,cancelled'],
         ];
     }
 }

@@ -11,6 +11,13 @@ class UpdateDifferentialDiagnosisRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: considered, confirmed, excluded.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class UpdateDifferentialDiagnosisRequest extends FormRequest
             'rank' => ['nullable', 'integer'],
             'recorded_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'recorded_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:considered,confirmed,excluded'],
         ];
     }
 }

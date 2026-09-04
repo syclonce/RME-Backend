@@ -11,6 +11,13 @@ class StoreMedicalProcedureRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [

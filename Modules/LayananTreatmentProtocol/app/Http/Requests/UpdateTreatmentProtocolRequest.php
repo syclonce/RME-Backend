@@ -11,6 +11,13 @@ class UpdateTreatmentProtocolRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,7 +26,7 @@ class UpdateTreatmentProtocolRequest extends FormRequest
             'prescribed_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'started_at' => ['sometimes', 'date'],
             'ended_at' => ['nullable', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,completed,cancelled'],
             'notes' => ['nullable', 'string'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
         ];
