@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordTranscranialDopplerExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordTranscranialDopplerExamination\Http\Requests\StoreTranscranialDopplerExaminationRequest;
 use Modules\MedicalRecordTranscranialDopplerExamination\Http\Requests\UpdateTranscranialDopplerExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordTranscranialDopplerExamination\Models\TranscranialDoppl
 
 class TranscranialDopplerExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TranscranialDopplerExamination::query();
@@ -28,6 +31,8 @@ class TranscranialDopplerExaminationController extends Controller
     public function store(StoreTranscranialDopplerExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

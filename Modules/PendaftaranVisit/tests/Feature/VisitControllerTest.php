@@ -10,6 +10,8 @@ use Modules\GeneralEmployee\Models\Employee;
 use Modules\GeneralStaffMember\Models\StaffMember;
 use Modules\GeneralStaffWardAssignment\Models\StaffWardAssignment;
 use Modules\GeneralWard\Models\Ward;
+use Modules\MedicalRecordClinicalNote\Models\ClinicalNote;
+use Modules\MedicalRecordDiagnosis\Models\Diagnosis;
 use Modules\PembayaranInvoice\Services\InvoiceService;
 use Modules\PendaftaranRegistration\Models\Registration;
 use Modules\PendaftaranVisit\Models\Visit;
@@ -71,6 +73,42 @@ class VisitControllerTest extends TestCase
             'registration_id' => $registration->id,
             'ward_id' => $ownWard->id,
         ])->assertCreated();
+    }
+
+    /**
+     * ward_id null = kunjungan rawat jalan (tidak menempati bed) — dipakai
+     * VisitController::index() sebagai penanda agar petugas ward tetap bisa
+     * melihatnya. Test ini mengunci kontrak tersebut supaya tidak tak sengaja
+     * diubah menjadi wajib.
+     */
+    public function test_outpatient_visit_can_be_created_without_ward(): void
+    {
+        $this->actingUser();
+        $registration = Registration::factory()->create();
+
+        $this->postJson('/api/v1/visits', [
+            'registration_id' => $registration->id,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('visits', [
+            'registration_id' => $registration->id,
+            'ward_id' => null,
+        ]);
+    }
+
+    /** DPJP opsional — di IGD kerap baru ditentukan setelah triase. */
+    public function test_visit_can_be_created_without_attending_physician(): void
+    {
+        $ward = Ward::factory()->create();
+        $this->actingWardStaff($ward->id);
+        $registration = Registration::factory()->create();
+
+        $this->postJson('/api/v1/visits', [
+            'registration_id' => $registration->id,
+            'ward_id' => $ward->id,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.attending_physician_id', null);
     }
 
     public function test_ward_staff_cannot_cancel_visit_in_another_ward(): void
@@ -139,6 +177,12 @@ class VisitControllerTest extends TestCase
     {
         $this->actingUser();
         $visit = Visit::factory()->create();
+        ClinicalNote::factory()->create(['visit_id' => $visit->id]);
+        Diagnosis::factory()->primary()->create(['visit_id' => $visit->id]);
+        $this->postJson("/api/v1/visits/{$visit->id}/medical-record/start")->assertCreated();
+        $this->postJson("/api/v1/visits/{$visit->id}/medical-record/finalize")->assertOk();
+        $this->postJson("/api/v1/visits/{$visit->id}/finalize-service")->assertOk();
+
         $invoice = app(InvoiceService::class)->ensureForVisit($visit->id);
         app(InvoiceService::class)->lock($invoice->id);
 
@@ -180,6 +224,44 @@ class VisitControllerTest extends TestCase
         $visit = Visit::factory()->create(['ward_id' => $ownWard->id]);
 
         $this->getJson("/api/v1/visits/{$visit->id}")->assertOk();
+    }
+
+    public function test_it_lists_visits_filtered_by_status(): void
+    {
+        $this->actingUser();
+        Visit::factory()->create(['status' => 'active']);
+        $cancelled = Visit::factory()->create(['status' => 'cancelled']);
+
+        $response = $this->getJson('/api/v1/visits?status=cancelled');
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+        $this->assertSame($cancelled->id, $response->json('data.0.id'));
+    }
+
+    public function test_it_lists_visits_filtered_by_is_emergency(): void
+    {
+        $this->actingUser();
+        // is_emergency ada di registrations, bukan visits, jadi filter harus
+        // ikut relasi registration() (whereHas), bukan kolom langsung.
+        $emergencyRegistration = Registration::factory()->emergency()->create();
+        $emergencyVisit = Visit::factory()->create(['registration_id' => $emergencyRegistration->id]);
+        $nonEmergencyRegistration = Registration::factory()->create();
+        Visit::factory()->create(['registration_id' => $nonEmergencyRegistration->id]);
+
+        $response = $this->getJson('/api/v1/visits?is_emergency=1');
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+        $this->assertSame($emergencyVisit->id, $response->json('data.0.id'));
+    }
+
+    public function test_it_lists_all_visits_when_no_filter_given(): void
+    {
+        $this->actingUser();
+        Visit::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/v1/visits');
+
+        $response->assertOk()->assertJsonCount(3, 'data');
     }
 
     public function test_ward_staff_list_excludes_visits_from_other_wards(): void

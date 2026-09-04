@@ -2,6 +2,8 @@
 
 namespace Modules\InventoryGoodsReceiptCancellation\Models;
 
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,17 +39,9 @@ class GoodsReceiptCancellation extends Model
     {
         return $this->belongsTo(User::class, 'cancelled_by');
     }
-
-    /**
-     * Format: GRC-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
-     */
     public static function generateCancellationNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('cancellation_number', 'like', "GRC-{$year}-%")->count();
-
-        return sprintf('GRC-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('GRC', 'goods_receipt_cancellation', now()->format('Y'));
     }
 
     protected static function newFactory(): GoodsReceiptCancellationFactory

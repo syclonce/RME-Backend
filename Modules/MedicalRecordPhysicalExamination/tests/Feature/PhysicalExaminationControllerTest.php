@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordPhysicalExamination\Models\PhysicalExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class PhysicalExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class PhysicalExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 20,
+            'visit_id' => $visit->id,
             'general_condition' => 'Good',
             'consciousness_gcs' => 'E4V5M6',
             'head_to_toe_notes' => 'No abnormalities noted',
@@ -42,10 +45,10 @@ class PhysicalExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/physical-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 20)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.general_condition', 'Good');
 
-        $this->assertDatabaseHas('physical_examinations', ['visit_id' => 20, 'general_condition' => 'Good']);
+        $this->assertDatabaseHas('physical_examinations', ['visit_id' => $visit->id, 'general_condition' => 'Good']);
     }
 
     public function test_it_lists_physical_examinations(): void

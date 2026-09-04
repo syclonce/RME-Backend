@@ -2,19 +2,25 @@
 
 namespace Modules\PendaftaranRegistration\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Auth\Models\User;
 use Modules\GeneralDiagnosisCode\Models\DiagnosisCode;
 use Modules\GeneralPackage\Models\Package;
 use Modules\GeneralPatient\Models\Patient;
 use Modules\PendaftaranReferral\Models\Referral;
 use Modules\PendaftaranRegistration\Database\Factories\RegistrationFactory;
+use Modules\PendaftaranVisit\Models\Visit;
 
 class Registration extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'registration_number',
@@ -72,15 +78,23 @@ class Registration extends Model
     }
 
     /**
-     * Format: REG-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Bacaan saja — kepemilikan kunjungan tetap di Modules\PendaftaranVisit
+     * (lihat docs-sim/KONTRAK-LINTAS-DOMAIN.md). Dipakai untuk mencegah
+     * destroy() pendaftaran yang sudah punya kunjungan (cascade delete).
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
+    /**
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateRegistrationNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('registration_number', 'like', "REG-{$year}-%")->count();
-
-        return sprintf('REG-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('REG', 'registration', now()->format('Y'));
     }
 
     protected static function newFactory(): RegistrationFactory

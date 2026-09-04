@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordDischargeMedicationReconciliation\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\MedicalRecordDischargeMedicationReconciliation\Database\Factories\Di
 
 class DischargeMedicationReconciliation extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'discharge_medication_reconciliations';
 

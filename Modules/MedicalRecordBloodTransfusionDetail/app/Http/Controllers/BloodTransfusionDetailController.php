@@ -2,14 +2,18 @@
 
 namespace Modules\MedicalRecordBloodTransfusionDetail\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\MedicalRecordBloodTransfusion\Models\BloodTransfusion;
 use Modules\MedicalRecordBloodTransfusionDetail\Http\Requests\BloodTransfusionDetailRequest;
 use Modules\MedicalRecordBloodTransfusionDetail\Http\Resources\BloodTransfusionDetailResource;
 use Modules\MedicalRecordBloodTransfusionDetail\Models\BloodTransfusionDetail;
 
 class BloodTransfusionDetailController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BloodTransfusionDetail::query();
@@ -27,6 +31,11 @@ class BloodTransfusionDetailController extends Controller
     {
         $data = $request->validated();
         $data['created_by'] = $request->user()?->id;
+
+        // Detail menempel ke transfusi, bukan langsung ke kunjungan — resolve
+        // visit_id dari transfusi induk supaya gerbang RME tetap berlaku.
+        $visitId = BloodTransfusion::query()->whereKey($data['transfusion_id'])->value('visit_id');
+        $this->guardMedicalRecord($request, ['visit_id' => $visitId]);
 
         $detail = BloodTransfusionDetail::create($data);
 

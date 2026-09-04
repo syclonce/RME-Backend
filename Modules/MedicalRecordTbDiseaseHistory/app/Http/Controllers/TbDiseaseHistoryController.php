@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordTbDiseaseHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordTbDiseaseHistory\Http\Requests\StoreTbDiseaseHistoryRequest;
 use Modules\MedicalRecordTbDiseaseHistory\Http\Resources\TbDiseaseHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordTbDiseaseHistory\Models\TbDiseaseHistory;
 
 class TbDiseaseHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TbDiseaseHistory::query();
@@ -24,6 +27,8 @@ class TbDiseaseHistoryController extends Controller
     public function store(StoreTbDiseaseHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['previous_tb_treatment'] ??= false;
         $data['created_by'] = $request->user()->id;
 

@@ -24,7 +24,30 @@ class PracticeLicenseController extends Controller
 
     public function store(StorePracticeLicenseRequest $request)
     {
-        $license = PracticeLicense::create($request->validated());
+        $data = $request->validated();
+
+        // SIP yang sudah lewat masa berlakunya tidak boleh dicatat sebagai izin
+        // baru — dokter dengan SIP kedaluwarsa praktik tanpa dasar hukum, dan
+        // sistem tidak boleh ikut menyatakan sebaliknya.
+        abort_if(
+            ! empty($data['expires_at']) && $data['expires_at'] < now()->toDateString(),
+            422,
+            'Masa berlaku izin sudah lewat; tidak dapat dicatat sebagai izin baru.',
+        );
+
+        // Satu jenis izin yang masih berlaku per pegawai. Nomor SIP ganda membuat
+        // verifikasi ke konsil kesehatan menemukan dua jawaban berbeda.
+        abort_if(
+            PracticeLicense::query()
+                ->where('employee_id', $data['employee_id'])
+                ->where('license_type', $data['license_type'])
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()->toDateString()))
+                ->exists(),
+            422,
+            'Pegawai ini sudah memiliki izin jenis tersebut yang masih berlaku.',
+        );
+
+        $license = PracticeLicense::create($data);
 
         return (new PracticeLicenseResource($license))->response()->setStatusCode(201);
     }

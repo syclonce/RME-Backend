@@ -2,6 +2,8 @@
 
 namespace Modules\LayananPharmacyReturn\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\LayananPharmacyReturn\Database\Factories\PharmacyReturnFactory;
 
 class PharmacyReturn extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'prescription_item_id',

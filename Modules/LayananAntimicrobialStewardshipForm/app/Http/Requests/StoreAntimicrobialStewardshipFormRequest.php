@@ -3,7 +3,6 @@
 namespace Modules\LayananAntimicrobialStewardshipForm\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreAntimicrobialStewardshipFormRequest extends FormRequest
 {
@@ -20,8 +19,6 @@ class StoreAntimicrobialStewardshipFormRequest extends FormRequest
             'requesting_doctor_id' => ['nullable', 'integer', 'exists:employees,id'],
             'antibiotic_restriction_id' => ['nullable', 'integer', 'exists:antibiotic_restrictions,id'],
             'indication' => ['required', 'string'],
-            'status' => ['required', Rule::in(['draft', 'submitted', 'approved', 'rejected'])],
-            'submitted_at' => ['nullable', 'date'],
         ];
     }
 }

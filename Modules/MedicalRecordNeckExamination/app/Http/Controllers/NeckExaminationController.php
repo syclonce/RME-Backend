@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordNeckExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNeckExamination\Http\Requests\StoreNeckExaminationRequest;
 use Modules\MedicalRecordNeckExamination\Http\Requests\UpdateNeckExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordNeckExamination\Models\NeckExamination;
 
 class NeckExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = NeckExamination::query();
@@ -28,6 +31,8 @@ class NeckExaminationController extends Controller
     public function store(StoreNeckExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordTransferMedicationReconciliation\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +15,7 @@ use Modules\MedicalRecordTransferMedicationReconciliation\Database\Factories\Tra
 
 class TransferMedicationReconciliation extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'transfer_medication_reconciliations';
 

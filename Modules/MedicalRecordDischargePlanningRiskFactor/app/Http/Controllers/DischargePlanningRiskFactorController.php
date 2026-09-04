@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDischargePlanningRiskFactor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDischargePlanningRiskFactor\Http\Requests\StoreDischargePlanningRiskFactorRequest;
 use Modules\MedicalRecordDischargePlanningRiskFactor\Http\Requests\UpdateDischargePlanningRiskFactorRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordDischargePlanningRiskFactor\Models\DischargePlanningRis
 
 class DischargePlanningRiskFactorController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DischargePlanningRiskFactor::query();
@@ -21,6 +24,8 @@ class DischargePlanningRiskFactorController extends Controller
     public function store(StoreDischargePlanningRiskFactorRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = DischargePlanningRiskFactor::create($data);
 

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFunctionalAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFunctionalAssessment\Http\Requests\StoreFunctionalAssessmentRequest;
 use Modules\MedicalRecordFunctionalAssessment\Http\Requests\UpdateFunctionalAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFunctionalAssessment\Models\FunctionalAssessment;
 
 class FunctionalAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FunctionalAssessment::query();
@@ -21,6 +24,8 @@ class FunctionalAssessmentController extends Controller
     public function store(StoreFunctionalAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = FunctionalAssessment::create($data);
 

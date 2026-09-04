@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordCaseManagerAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordCaseManagerAssessment\Http\Requests\StoreCaseManagerAssessmentRequest;
 use Modules\MedicalRecordCaseManagerAssessment\Http\Requests\UpdateCaseManagerAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordCaseManagerAssessment\Models\CaseManagerAssessment;
 
 class CaseManagerAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = CaseManagerAssessment::query();
@@ -28,6 +31,8 @@ class CaseManagerAssessmentController extends Controller
     public function store(StoreCaseManagerAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
 

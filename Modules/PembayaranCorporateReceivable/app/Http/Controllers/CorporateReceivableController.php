@@ -5,12 +5,15 @@ namespace Modules\PembayaranCorporateReceivable\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PembayaranCorporateReceivable\Http\Requests\StoreCorporateReceivableRequest;
-use Modules\PembayaranCorporateReceivable\Http\Requests\UpdateCorporateReceivableRequest;
+use Modules\PembayaranCorporateReceivable\Http\Requests\TransitionCorporateReceivableRequest;
 use Modules\PembayaranCorporateReceivable\Http\Resources\CorporateReceivableResource;
 use Modules\PembayaranCorporateReceivable\Models\CorporateReceivable;
+use Modules\PembayaranCorporateReceivable\Services\CorporateReceivableService;
 
 class CorporateReceivableController extends Controller
 {
+    public function __construct(protected CorporateReceivableService $service) {}
+
     public function index(Request $request)
     {
         $query = CorporateReceivable::query();
@@ -24,10 +27,7 @@ class CorporateReceivableController extends Controller
 
     public function store(StoreCorporateReceivableRequest $request)
     {
-        $data = $request->validated();
-        $data['status'] = 'outstanding';
-
-        $receivable = CorporateReceivable::create($data);
+        $receivable = $this->service->create($request->validated());
 
         return (new CorporateReceivableResource($receivable))->response()->setStatusCode(201);
     }
@@ -37,13 +37,10 @@ class CorporateReceivableController extends Controller
         return new CorporateReceivableResource($corporate_receivable);
     }
 
-    /**
-     * Update is restricted to status transitions - amount/due_date are fixed at creation.
-     */
-    public function update(UpdateCorporateReceivableRequest $request, CorporateReceivable $corporate_receivable): CorporateReceivableResource
+    public function transition(TransitionCorporateReceivableRequest $request, CorporateReceivable $corporate_receivable): CorporateReceivableResource
     {
-        $corporate_receivable->update($request->validated());
+        $receivable = $this->service->transition($corporate_receivable, $request->validated('status'));
 
-        return new CorporateReceivableResource($corporate_receivable->fresh());
+        return new CorporateReceivableResource($receivable);
     }
 }

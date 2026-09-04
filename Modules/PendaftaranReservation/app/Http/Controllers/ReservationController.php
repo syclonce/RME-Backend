@@ -8,6 +8,7 @@ use Modules\PendaftaranReservation\Http\Requests\StoreReservationRequest;
 use Modules\PendaftaranReservation\Http\Requests\UpdateReservationRequest;
 use Modules\PendaftaranReservation\Http\Resources\ReservationResource;
 use Modules\PendaftaranReservation\Models\Reservation;
+use Modules\PendaftaranReservation\Services\ReservationService;
 
 class ReservationController extends Controller
 {
@@ -26,12 +27,9 @@ class ReservationController extends Controller
         return ReservationResource::collection($query->latest('reserved_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreReservationRequest $request)
+    public function store(StoreReservationRequest $request, ReservationService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'pending';
-
-        $reservation = Reservation::create($data);
+        $reservation = $service->create($request->validated());
 
         return (new ReservationResource($reservation))->response()->setStatusCode(201);
     }
@@ -41,10 +39,8 @@ class ReservationController extends Controller
         return new ReservationResource($reservation);
     }
 
-    public function update(UpdateReservationRequest $request, Reservation $reservation): ReservationResource
+    public function update(UpdateReservationRequest $request, Reservation $reservation, ReservationService $service): ReservationResource
     {
-        $reservation->update($request->validated());
-
-        return new ReservationResource($reservation);
+        return new ReservationResource($service->transition($reservation, $request->validated('status')));
     }
 }

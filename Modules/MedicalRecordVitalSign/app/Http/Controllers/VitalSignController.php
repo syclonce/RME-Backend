@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordVitalSign\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordVitalSign\Http\Requests\StoreVitalSignRequest;
 use Modules\MedicalRecordVitalSign\Http\Resources\VitalSignResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordVitalSign\Models\VitalSign;
 
 class VitalSignController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = VitalSign::query();
@@ -28,6 +31,8 @@ class VitalSignController extends Controller
     public function store(StoreVitalSignRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['recorded_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

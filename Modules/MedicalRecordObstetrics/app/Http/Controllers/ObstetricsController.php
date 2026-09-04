@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordObstetrics\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordObstetrics\Http\Requests\StoreObstetricsRequest;
 use Modules\MedicalRecordObstetrics\Http\Requests\UpdateObstetricsRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordObstetrics\Models\Obstetrics;
 
 class ObstetricsController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = Obstetrics::query();
@@ -31,6 +34,8 @@ class ObstetricsController extends Controller
     public function store(StoreObstetricsRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['gravida'] ??= 0;
         $data['para'] ??= 0;
         $data['abortus'] ??= 0;

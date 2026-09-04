@@ -23,6 +23,22 @@ class BerkasKlaimClaimCompletenessController extends Controller
             'checked_at' => ['nullable', 'date'],
         ]);
 
+        // Satu butir checklist satu kali per berkas klaim. Baris kembar membuat
+        // kelengkapan terhitung ganda — berkas tampak lengkap padahal ada butir
+        // lain yang belum diperiksa.
+        abort_if(
+            ClaimCompleteness::query()
+                ->where('claim_file_id', $data['claim_file_id'])
+                ->where('checklist_item', $data['checklist_item'])
+                ->exists(),
+            422,
+            'Butir kelengkapan ini sudah tercatat untuk berkas klaim tersebut.',
+        );
+
+        if (($data['is_complete'] ?? false) && empty($data['checked_at'])) {
+            $data['checked_at'] = now();
+        }
+
         return response()->json(ClaimCompleteness::create($data)->refresh(), 201);
     }
 

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordFamilyPlanningObstetrics\Models\FamilyPlanningObstetrics;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class FamilyPlanningObstetricsControllerTest extends TestCase
@@ -32,8 +33,10 @@ class FamilyPlanningObstetricsControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 7,
+            'visit_id' => $visit->id,
             'patient_id' => 14,
             'contraceptive_method' => 'IUD',
             'installation_date' => '2026-08-01',
@@ -45,7 +48,7 @@ class FamilyPlanningObstetricsControllerTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.contraceptive_method', 'IUD');
 
-        $this->assertDatabaseHas('family_planning_obstetrics', ['visit_id' => 7, 'contraceptive_method' => 'IUD']);
+        $this->assertDatabaseHas('family_planning_obstetrics', ['visit_id' => $visit->id, 'contraceptive_method' => 'IUD']);
     }
 
     public function test_it_lists_family_planning_obstetrics_records(): void

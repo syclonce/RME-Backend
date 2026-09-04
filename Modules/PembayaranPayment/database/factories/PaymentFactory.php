@@ -5,6 +5,7 @@ namespace Modules\PembayaranPayment\Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\PembayaranInvoice\Models\Invoice;
 use Modules\PembayaranPayment\Models\Payment;
+use Modules\PembayaranCashierShift\Models\CashierShift;
 
 class PaymentFactory extends Factory
 {
@@ -15,6 +16,7 @@ class PaymentFactory extends Factory
         return [
             'payment_number' => fake()->unique()->numerify('PAY-##########'),
             'invoice_id' => Invoice::factory(),
+            'cashier_shift_id' => CashierShift::factory(),
             'payment_method' => fake()->randomElement(['cash', 'debit', 'credit', 'transfer']),
             'amount' => fake()->randomFloat(2, 10000, 1000000),
             'admin_fee' => 0,

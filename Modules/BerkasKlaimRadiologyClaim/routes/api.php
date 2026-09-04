@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\BerkasKlaimRadiologyClaim\Http\Controllers\RadiologyClaimController;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('radiology-claims', RadiologyClaimController::class)->only(['index', 'show']);
+    Route::apiResource('radiology-claims', RadiologyClaimController::class)->only(['index', 'show', 'store']);
 
-    Route::apiResource('radiology-claims', RadiologyClaimController::class)->only(['store', 'update']);
+    Route::patch('radiology-claims/{radiology_claim}/transition', [RadiologyClaimController::class, 'transition']);
 });

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordCatClamsExamination\Models\CatClamsExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class CatClamsExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class CatClamsExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 14,
+            'visit_id' => $visit->id,
             'patient_id' => 28,
             'cat_score' => 90.0,
             'clams_score' => 95.0,
@@ -47,7 +50,7 @@ class CatClamsExaminationControllerTest extends TestCase
             ->assertJsonPath('data.cat_score', 90)
             ->assertJsonPath('data.clams_score', 95);
 
-        $this->assertDatabaseHas('cat_clams_examinations', ['visit_id' => 14, 'patient_id' => 28]);
+        $this->assertDatabaseHas('cat_clams_examinations', ['visit_id' => $visit->id, 'patient_id' => 28]);
     }
 
     public function test_it_lists_cat_clams_examinations(): void

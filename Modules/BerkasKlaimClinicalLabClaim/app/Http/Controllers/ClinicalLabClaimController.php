@@ -5,12 +5,15 @@ namespace Modules\BerkasKlaimClinicalLabClaim\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\BerkasKlaimClinicalLabClaim\Http\Requests\StoreClinicalLabClaimRequest;
-use Modules\BerkasKlaimClinicalLabClaim\Http\Requests\UpdateClinicalLabClaimRequest;
+use Modules\BerkasKlaimClinicalLabClaim\Http\Requests\TransitionClinicalLabClaimRequest;
 use Modules\BerkasKlaimClinicalLabClaim\Http\Resources\ClinicalLabClaimResource;
 use Modules\BerkasKlaimClinicalLabClaim\Models\ClinicalLabClaim;
+use Modules\BerkasKlaimClinicalLabClaim\Services\ClinicalLabClaimService;
 
 class ClinicalLabClaimController extends Controller
 {
+    public function __construct(protected ClinicalLabClaimService $service) {}
+
     public function index(Request $request)
     {
         $query = ClinicalLabClaim::query();
@@ -24,10 +27,7 @@ class ClinicalLabClaimController extends Controller
 
     public function store(StoreClinicalLabClaimRequest $request)
     {
-        $data = $request->validated();
-        $data['status'] = 'draft';
-
-        $claim = ClinicalLabClaim::create($data);
+        $claim = $this->service->create($request->validated());
 
         return (new ClinicalLabClaimResource($claim))->response()->setStatusCode(201);
     }
@@ -37,14 +37,10 @@ class ClinicalLabClaimController extends Controller
         return new ClinicalLabClaimResource($clinical_lab_claim);
     }
 
-    public function update(UpdateClinicalLabClaimRequest $request, ClinicalLabClaim $clinical_lab_claim): ClinicalLabClaimResource
+    public function transition(TransitionClinicalLabClaimRequest $request, ClinicalLabClaim $clinical_lab_claim): ClinicalLabClaimResource
     {
-        if ($clinical_lab_claim->status !== 'draft' && $clinical_lab_claim->status !== 'submitted') {
-            abort(422, 'Klaim sudah final.');
-        }
+        $claim = $this->service->transition($clinical_lab_claim, $request->validated('status'));
 
-        $clinical_lab_claim->update($request->validated());
-
-        return new ClinicalLabClaimResource($clinical_lab_claim->fresh());
+        return new ClinicalLabClaimResource($claim);
     }
 }

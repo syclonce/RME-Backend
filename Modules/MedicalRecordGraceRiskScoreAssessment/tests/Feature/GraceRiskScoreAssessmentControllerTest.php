@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordGraceRiskScoreAssessment\Models\GraceRiskScoreAssessment;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class GraceRiskScoreAssessmentControllerTest extends TestCase
@@ -32,8 +33,10 @@ class GraceRiskScoreAssessmentControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'age' => 65,
             'heart_rate' => 88,
             'systolic_bp' => 130,

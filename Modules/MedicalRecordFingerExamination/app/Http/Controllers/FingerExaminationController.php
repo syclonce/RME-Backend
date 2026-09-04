@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFingerExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFingerExamination\Http\Requests\StoreFingerExaminationRequest;
 use Modules\MedicalRecordFingerExamination\Http\Requests\UpdateFingerExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFingerExamination\Models\FingerExamination;
 
 class FingerExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FingerExamination::query();
@@ -27,6 +30,8 @@ class FingerExaminationController extends Controller
     public function store(StoreFingerExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['hand_side'] ??= 'both';
         $data['clubbing'] ??= false;
         $data['cyanosis'] ??= false;

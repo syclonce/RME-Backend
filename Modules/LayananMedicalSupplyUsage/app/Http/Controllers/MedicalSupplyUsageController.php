@@ -8,6 +8,7 @@ use Modules\LayananMedicalSupplyUsage\Http\Requests\StoreMedicalSupplyUsageReque
 use Modules\LayananMedicalSupplyUsage\Http\Requests\UpdateMedicalSupplyUsageRequest;
 use Modules\LayananMedicalSupplyUsage\Http\Resources\MedicalSupplyUsageResource;
 use Modules\LayananMedicalSupplyUsage\Models\MedicalSupplyUsage;
+use Modules\LayananMedicalSupplyUsage\Services\MedicalSupplyUsageService;
 
 class MedicalSupplyUsageController extends Controller
 {
@@ -18,11 +19,9 @@ class MedicalSupplyUsageController extends Controller
         return MedicalSupplyUsageResource::collection($query->orderBy('id', 'desc')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreMedicalSupplyUsageRequest $request)
+    public function store(StoreMedicalSupplyUsageRequest $request, MedicalSupplyUsageService $service)
     {
-        $data = $request->validated();
-        $data['status'] = $data['status'] ?? 'draft';
-        $supply_usage = MedicalSupplyUsage::create($data);
+        $supply_usage = $service->create($request->validated(), $request->user());
 
         return (new MedicalSupplyUsageResource($supply_usage))->response()->setStatusCode(201);
     }
@@ -32,10 +31,16 @@ class MedicalSupplyUsageController extends Controller
         return new MedicalSupplyUsageResource($supply_usage);
     }
 
-    public function update(UpdateMedicalSupplyUsageRequest $request, MedicalSupplyUsage $supply_usage): MedicalSupplyUsageResource
+    /**
+     * Hanya status yang bisa diubah lewat endpoint ini (transisi workflow) -
+     * sama seperti LabOrder.
+     */
+    public function update(UpdateMedicalSupplyUsageRequest $request, MedicalSupplyUsage $supply_usage, MedicalSupplyUsageService $service): MedicalSupplyUsageResource
     {
-        $supply_usage->update($request->validated());
-
-        return new MedicalSupplyUsageResource($supply_usage);
+        return new MedicalSupplyUsageResource($service->transition(
+            $supply_usage,
+            $request->validated('status'),
+            $request->user(),
+        ));
     }
 }

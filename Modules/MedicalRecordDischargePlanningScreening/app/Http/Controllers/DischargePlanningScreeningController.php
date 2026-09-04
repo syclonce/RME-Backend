@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDischargePlanningScreening\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDischargePlanningScreening\Http\Requests\StoreDischargePlanningScreeningRequest;
 use Modules\MedicalRecordDischargePlanningScreening\Http\Requests\UpdateDischargePlanningScreeningRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordDischargePlanningScreening\Models\DischargePlanningScre
 
 class DischargePlanningScreeningController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DischargePlanningScreening::query();
@@ -21,6 +24,8 @@ class DischargePlanningScreeningController extends Controller
     public function store(StoreDischargePlanningScreeningRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['requires_planning'] ??= false;
 
         $record = DischargePlanningScreening::create($data);

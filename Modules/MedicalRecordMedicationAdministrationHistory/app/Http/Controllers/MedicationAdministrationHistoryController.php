@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordMedicationAdministrationHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMedicationAdministrationHistory\Http\Requests\StoreMedicationAdministrationHistoryRequest;
 use Modules\MedicalRecordMedicationAdministrationHistory\Http\Resources\MedicationAdministrationHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordMedicationAdministrationHistory\Models\MedicationAdmini
 
 class MedicationAdministrationHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MedicationAdministrationHistory::query();
@@ -24,6 +27,8 @@ class MedicationAdministrationHistoryController extends Controller
     public function store(StoreMedicationAdministrationHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['administered_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

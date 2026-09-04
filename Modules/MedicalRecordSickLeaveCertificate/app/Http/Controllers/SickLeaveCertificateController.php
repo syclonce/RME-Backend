@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordSickLeaveCertificate\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordSickLeaveCertificate\Http\Requests\SickLeaveCertificateRequest;
 use Modules\MedicalRecordSickLeaveCertificate\Http\Resources\SickLeaveCertificateResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordSickLeaveCertificate\Models\SickLeaveCertificate;
 
 class SickLeaveCertificateController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = SickLeaveCertificate::query();
@@ -34,6 +37,8 @@ class SickLeaveCertificateController extends Controller
     public function store(SickLeaveCertificateRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $certificate = SickLeaveCertificate::create($data);

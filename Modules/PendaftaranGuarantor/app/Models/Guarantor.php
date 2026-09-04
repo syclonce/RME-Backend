@@ -2,6 +2,8 @@
 
 namespace Modules\PendaftaranGuarantor\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,9 +14,18 @@ use Modules\PendaftaranRegistration\Models\Registration;
 
 class Guarantor extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
-    public const PAYER_TYPES = ['self_pay', 'bpjs', 'insurance', 'corporate'];
+    /**
+     * Pasien membayar sendiri — tidak menghasilkan klaim ke penjamin mana pun.
+     *
+     * Dinamai eksplisit karena dipakai sebagai gerbang uang (listener pembuat
+     * klaim). Merujuknya lewat PAYER_TYPES[0] rapuh: menyisipkan nilai baru di
+     * awal array akan diam-diam mengubah pasien mana yang diklaimkan.
+     */
+    public const PAYER_SELF_PAY = 'self_pay';
+
+    public const PAYER_TYPES = [self::PAYER_SELF_PAY, 'bpjs', 'insurance', 'corporate'];
 
     protected $fillable = [
         'registration_id',

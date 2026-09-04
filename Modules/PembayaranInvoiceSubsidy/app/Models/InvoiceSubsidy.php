@@ -2,6 +2,8 @@
 
 namespace Modules\PembayaranInvoiceSubsidy\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\PembayaranInvoiceSubsidy\Database\Factories\InvoiceSubsidyFactory;
 
 class InvoiceSubsidy extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const SUBSIDY_SOURCES = ['pemerintah_daerah', 'yayasan', 'csr_perusahaan', 'bantuan_sosial'];
 

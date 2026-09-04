@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFingernailExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFingernailExamination\Http\Requests\StoreFingernailExaminationRequest;
 use Modules\MedicalRecordFingernailExamination\Http\Requests\UpdateFingernailExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFingernailExamination\Models\FingernailExamination;
 
 class FingernailExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FingernailExamination::query();
@@ -28,6 +31,8 @@ class FingernailExaminationController extends Controller
     public function store(StoreFingernailExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

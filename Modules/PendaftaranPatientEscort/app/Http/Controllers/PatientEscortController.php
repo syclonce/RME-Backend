@@ -3,11 +3,13 @@
 namespace Modules\PendaftaranPatientEscort\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\PendaftaranPatientEscort\Http\Requests\StorePatientEscortRequest;
 use Modules\PendaftaranPatientEscort\Http\Requests\UpdatePatientEscortRequest;
 use Modules\PendaftaranPatientEscort\Http\Resources\PatientEscortResource;
 use Modules\PendaftaranPatientEscort\Models\PatientEscort;
+use Modules\PendaftaranVisit\Models\Visit;
 
 class PatientEscortController extends Controller
 {
@@ -25,6 +27,15 @@ class PatientEscortController extends Controller
     public function store(StorePatientEscortRequest $request)
     {
         $data = $request->validated();
+        // Data pendukung pendaftaran ikut tunduk pada gerbang RME: bila episode
+        // kunjungannya sudah final, penambahan penjamin/pengantar/penanggung jawab
+        // mengubah berkas yang sudah ditutup.
+        $visitId = Visit::query()->where('registration_id', $data['registration_id'])->value('id');
+
+        if ($visitId !== null) {
+            app(MedicalRecordGate::class)->assertWritable((int) $visitId, $request->user());
+        }
+
         $data['created_by'] = $request->user()->id;
 
         $escort = PatientEscort::create($data);

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordImageMarker\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImageMarker\Http\Requests\StoreImageMarkerRequest;
 use Modules\MedicalRecordImageMarker\Http\Requests\UpdateImageMarkerRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordImageMarker\Models\ImageMarker;
 
 class ImageMarkerController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ImageMarker::query();
@@ -28,6 +31,8 @@ class ImageMarkerController extends Controller
     public function store(StoreImageMarkerRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['marked_at'] ??= now();
 

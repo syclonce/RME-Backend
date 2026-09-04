@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFoodAllergenExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFoodAllergenExamination\Http\Requests\StoreFoodAllergenExaminationRequest;
 use Modules\MedicalRecordFoodAllergenExamination\Http\Requests\UpdateFoodAllergenExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFoodAllergenExamination\Models\FoodAllergenExamination;
 
 class FoodAllergenExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FoodAllergenExamination::query();
@@ -31,6 +34,8 @@ class FoodAllergenExaminationController extends Controller
     public function store(StoreFoodAllergenExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = FoodAllergenExamination::create($data);

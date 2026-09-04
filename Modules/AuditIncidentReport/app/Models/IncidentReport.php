@@ -2,6 +2,8 @@
 
 namespace Modules\AuditIncidentReport\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class IncidentReport extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     /** Kategori insiden keselamatan pasien (IKP). */
     public const CATEGORY_KPC = 'KPC';

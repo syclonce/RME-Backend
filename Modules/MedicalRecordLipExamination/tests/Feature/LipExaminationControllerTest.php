@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordLipExamination\Models\LipExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class LipExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class LipExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 13,
+            'visit_id' => $visit->id,
             'color' => 'Pink',
             'symmetry' => 'Symmetrical',
             'moisture' => 'Normal',
@@ -42,10 +45,10 @@ class LipExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/lip-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 13)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.color', 'Pink');
 
-        $this->assertDatabaseHas('lip_examinations', ['visit_id' => 13, 'color' => 'Pink']);
+        $this->assertDatabaseHas('lip_examinations', ['visit_id' => $visit->id, 'color' => 'Pink']);
     }
 
     public function test_it_lists_lip_examinations(): void

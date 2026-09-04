@@ -21,7 +21,6 @@ class StorePlanAndTherapyRequest extends FormRequest
             'plan_description' => ['required','string'],
             'therapy_type' => ['nullable','string','max:255'],
             'target_date' => ['nullable','date'],
-            'status' => ['nullable','in:active,completed,revised'],
             'ordered_at' => ['nullable','date'],
         ];
     }

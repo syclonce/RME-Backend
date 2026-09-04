@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordOtherHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordOtherHistory\Http\Requests\StoreOtherHistoryRequest;
 use Modules\MedicalRecordOtherHistory\Http\Resources\OtherHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordOtherHistory\Models\OtherHistory;
 
 class OtherHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = OtherHistory::query();
@@ -24,6 +27,8 @@ class OtherHistoryController extends Controller
     public function store(StoreOtherHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['recorded_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

@@ -3,6 +3,7 @@
 namespace Modules\LayananOxygenUsage\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananOxygenUsage\Http\Requests\StoreOxygenUsageRequest;
 use Modules\LayananOxygenUsage\Http\Requests\UpdateOxygenUsageRequest;
@@ -11,6 +12,8 @@ use Modules\LayananOxygenUsage\Models\OxygenUsage;
 
 class OxygenUsageController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = OxygenUsage::query();
@@ -21,6 +24,7 @@ class OxygenUsageController extends Controller
     public function store(StoreOxygenUsageRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
 
         $oxygen_usage = OxygenUsage::create($data);
 

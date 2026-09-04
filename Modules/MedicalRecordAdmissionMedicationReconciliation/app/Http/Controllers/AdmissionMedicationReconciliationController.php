@@ -5,8 +5,10 @@ namespace Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Controller
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Requests\StoreAdmissionMedicationReconciliationRequest;
+use Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Requests\UpdateAdmissionMedicationReconciliationRequest;
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Resources\AdmissionMedicationReconciliationResource;
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Models\AdmissionMedicationReconciliation;
+use Modules\MedicalRecordAdmissionMedicationReconciliation\Services\AdmissionMedicationReconciliationService;
 
 class AdmissionMedicationReconciliationController extends Controller
 {
@@ -21,14 +23,9 @@ class AdmissionMedicationReconciliationController extends Controller
         return AdmissionMedicationReconciliationResource::collection($query->latest('reconciled_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreAdmissionMedicationReconciliationRequest $request)
+    public function store(StoreAdmissionMedicationReconciliationRequest $request, AdmissionMedicationReconciliationService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'draft';
-        $data['reconciled_at'] ??= now();
-        $data['created_by'] = $request->user()->id;
-
-        $record = AdmissionMedicationReconciliation::create($data);
+        $record = $service->create($request->validated(), $request->user());
 
         return (new AdmissionMedicationReconciliationResource($record))->response()->setStatusCode(201);
     }
@@ -36,5 +33,12 @@ class AdmissionMedicationReconciliationController extends Controller
     public function show(AdmissionMedicationReconciliation $record): AdmissionMedicationReconciliationResource
     {
         return new AdmissionMedicationReconciliationResource($record);
+    }
+
+    public function update(UpdateAdmissionMedicationReconciliationRequest $request, AdmissionMedicationReconciliation $record, AdmissionMedicationReconciliationService $service): AdmissionMedicationReconciliationResource
+    {
+        return new AdmissionMedicationReconciliationResource(
+            $service->transition($record, $request->validated()['status'], $request->user())
+        );
     }
 }

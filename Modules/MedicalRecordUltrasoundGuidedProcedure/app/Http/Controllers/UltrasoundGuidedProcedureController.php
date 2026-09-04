@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordUltrasoundGuidedProcedure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordUltrasoundGuidedProcedure\Http\Requests\UltrasoundGuidedProcedureRequest;
 use Modules\MedicalRecordUltrasoundGuidedProcedure\Http\Resources\UltrasoundGuidedProcedureResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordUltrasoundGuidedProcedure\Models\UltrasoundGuidedProced
 
 class UltrasoundGuidedProcedureController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = UltrasoundGuidedProcedure::query();
@@ -34,6 +37,8 @@ class UltrasoundGuidedProcedureController extends Controller
     public function store(UltrasoundGuidedProcedureRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $procedure = UltrasoundGuidedProcedure::create($data);

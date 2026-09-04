@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordLowerLegExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordLowerLegExamination\Http\Requests\StoreLowerLegExaminationRequest;
 use Modules\MedicalRecordLowerLegExamination\Http\Requests\UpdateLowerLegExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordLowerLegExamination\Models\LowerLegExamination;
 
 class LowerLegExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = LowerLegExamination::query();
@@ -28,6 +31,8 @@ class LowerLegExaminationController extends Controller
     public function store(StoreLowerLegExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

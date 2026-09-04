@@ -2,6 +2,8 @@
 
 namespace Modules\InventorySterilizationCycle\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +16,7 @@ use Modules\InventorySterilizationCycle\Database\Factories\SterilizedItemFactory
  */
 class SterilizedItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'cycle_id',

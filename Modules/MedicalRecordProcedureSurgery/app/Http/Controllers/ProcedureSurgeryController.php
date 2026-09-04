@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordProcedureSurgery\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordProcedureSurgery\Http\Requests\StoreProcedureSurgeryRequest;
 use Modules\MedicalRecordProcedureSurgery\Http\Requests\UpdateProcedureSurgeryRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordProcedureSurgery\Models\ProcedureSurgery;
 
 class ProcedureSurgeryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ProcedureSurgery::query();
@@ -27,6 +30,8 @@ class ProcedureSurgeryController extends Controller
     public function store(StoreProcedureSurgeryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['performed_at'] ??= now();
 
         $record = ProcedureSurgery::create($data);

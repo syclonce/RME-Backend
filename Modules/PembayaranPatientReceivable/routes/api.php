@@ -6,5 +6,7 @@ use Modules\PembayaranPatientReceivable\Http\Controllers\PatientReceivableContro
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::apiResource('patient-receivables', PatientReceivableController::class)->only(['index', 'show']);
 
-    Route::apiResource('patient-receivables', PatientReceivableController::class)->only(['store', 'update']);
+    Route::apiResource('patient-receivables', PatientReceivableController::class)->only(['store']);
+
+    Route::patch('patient-receivables/{patient_receivable}/transition', [PatientReceivableController::class, 'transition']);
 });

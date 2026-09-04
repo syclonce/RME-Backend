@@ -12,12 +12,30 @@ class UpdatePatientRequest extends FormRequest
         return true;
     }
 
+    /** Lihat StorePatientRequest::prepareForValidation() — alasan yang sama. */
+    protected function prepareForValidation(): void
+    {
+        $nullable = [];
+
+        foreach (['medical_record_number', 'nik', 'no_bpjs'] as $field) {
+            if ($this->has($field) && $this->input($field) === '') {
+                $nullable[$field] = null;
+            }
+        }
+
+        if ($nullable !== []) {
+            $this->merge($nullable);
+        }
+    }
+
     public function rules(): array
     {
         $id = $this->route('patient')?->id;
 
         return [
             'medical_record_number' => ['nullable', 'string', 'max:255', Rule::unique('patients', 'medical_record_number')->ignore($id)],
+            'nik' => ['nullable', 'digits:16', Rule::unique('patients', 'nik')->ignore($id)],
+            'no_bpjs' => ['nullable', 'string', 'max:20'],
             'name' => ['sometimes', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:255'],
             'title_prefix' => ['nullable', 'string', 'max:255'],
@@ -39,6 +57,8 @@ class UpdatePatientRequest extends FormRequest
             'ethnicity_id' => ['nullable', 'integer', 'exists:ethnicities,id'],
             'language_id' => ['nullable', 'integer', 'exists:languages,id'],
             'is_unidentified' => ['sometimes', 'boolean'],
+            'patient_status_id' => ['nullable', 'integer', 'exists:patient_statuses,id'],
+            'patient_type_id' => ['nullable', 'integer', 'exists:patient_types,id'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

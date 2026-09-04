@@ -79,6 +79,32 @@ class ShipmentControllerTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_it_rejects_skipping_from_pending_to_delivered(): void
+    {
+        $this->actingUser();
+        $shipment = Shipment::factory()->create(['status' => 'pending']);
+
+        $this->putJson("/api/v1/shipments/{$shipment->id}", ['status' => 'delivered'])
+            ->assertStatus(422);
+    }
+
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $from = Ward::factory()->create();
+        $to = Ward::factory()->create();
+        $employee = Employee::factory()->create();
+
+        $response = $this->postJson('/api/v1/shipments', [
+            'from_ward_id' => $from->id,
+            'to_ward_id' => $to->id,
+            'shipped_by' => $employee->id,
+            'status' => 'delivered',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
     public function test_guest_cannot_access_shipments(): void
     {
         $this->getJson('/api/v1/shipments')->assertStatus(401);

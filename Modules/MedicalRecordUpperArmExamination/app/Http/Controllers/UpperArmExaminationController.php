@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordUpperArmExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordUpperArmExamination\Http\Requests\StoreUpperArmExaminationRequest;
 use Modules\MedicalRecordUpperArmExamination\Http\Requests\UpdateUpperArmExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordUpperArmExamination\Models\UpperArmExamination;
 
 class UpperArmExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = UpperArmExamination::query();
@@ -28,6 +31,8 @@ class UpperArmExaminationController extends Controller
     public function store(StoreUpperArmExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

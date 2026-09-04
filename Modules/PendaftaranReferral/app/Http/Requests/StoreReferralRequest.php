@@ -19,6 +19,8 @@ class StoreReferralRequest extends FormRequest
             'facility_name' => ['required', 'string', 'max:255'],
             'reason' => ['nullable', 'string'],
             'referred_at' => ['nullable', 'date'],
+            // status TIDAK diterima saat create — rujukan baru selalu mulai 'pending'
+            // (lihat ReferralService::create()).
         ];
     }
 }

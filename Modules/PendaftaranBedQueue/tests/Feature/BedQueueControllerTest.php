@@ -72,4 +72,50 @@ class BedQueueControllerTest extends TestCase
     {
         $this->getJson('/api/v1/bed-queues')->assertStatus(401);
     }
+
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $this->actingUser();
+        $bed = Bed::factory()->create();
+        $patient = Patient::factory()->create();
+
+        $response = $this->postJson('/api/v1/bed-queues', [
+            'bed_id' => $bed->id,
+            'patient_id' => $patient->id,
+            'queue_number' => 1,
+            'status' => 'assigned',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'waiting');
+    }
+
+    public function test_it_rejects_invalid_transition_from_assigned_to_waiting(): void
+    {
+        $this->actingUser();
+        $queue = BedQueue::factory()->create(['status' => 'assigned']);
+
+        $this->putJson("/api/v1/bed-queues/{$queue->id}", ['status' => 'waiting'])
+            ->assertStatus(422);
+
+        $this->assertSame('assigned', $queue->fresh()->status);
+    }
+
+    public function test_it_can_cancel_a_waiting_queue(): void
+    {
+        $this->actingUser();
+        $queue = BedQueue::factory()->create(['status' => 'waiting']);
+
+        $this->putJson("/api/v1/bed-queues/{$queue->id}", ['status' => 'cancelled'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'cancelled');
+    }
+
+    public function test_it_rejects_transition_from_final_status(): void
+    {
+        $this->actingUser();
+        $queue = BedQueue::factory()->create(['status' => 'cancelled']);
+
+        $this->putJson("/api/v1/bed-queues/{$queue->id}", ['status' => 'assigned'])
+            ->assertStatus(422);
+    }
 }

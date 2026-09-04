@@ -5,12 +5,15 @@ namespace Modules\BerkasKlaimRadiologyClaim\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\BerkasKlaimRadiologyClaim\Http\Requests\StoreRadiologyClaimRequest;
-use Modules\BerkasKlaimRadiologyClaim\Http\Requests\UpdateRadiologyClaimRequest;
+use Modules\BerkasKlaimRadiologyClaim\Http\Requests\TransitionRadiologyClaimRequest;
 use Modules\BerkasKlaimRadiologyClaim\Http\Resources\RadiologyClaimResource;
 use Modules\BerkasKlaimRadiologyClaim\Models\RadiologyClaim;
+use Modules\BerkasKlaimRadiologyClaim\Services\RadiologyClaimService;
 
 class RadiologyClaimController extends Controller
 {
+    public function __construct(protected RadiologyClaimService $service) {}
+
     public function index(Request $request)
     {
         $query = RadiologyClaim::query();
@@ -24,10 +27,7 @@ class RadiologyClaimController extends Controller
 
     public function store(StoreRadiologyClaimRequest $request)
     {
-        $data = $request->validated();
-        $data['status'] = 'draft';
-
-        $claim = RadiologyClaim::create($data);
+        $claim = $this->service->create($request->validated());
 
         return (new RadiologyClaimResource($claim))->response()->setStatusCode(201);
     }
@@ -37,14 +37,10 @@ class RadiologyClaimController extends Controller
         return new RadiologyClaimResource($radiology_claim);
     }
 
-    public function update(UpdateRadiologyClaimRequest $request, RadiologyClaim $radiology_claim): RadiologyClaimResource
+    public function transition(TransitionRadiologyClaimRequest $request, RadiologyClaim $radiology_claim): RadiologyClaimResource
     {
-        if ($radiology_claim->status !== 'draft' && $radiology_claim->status !== 'submitted') {
-            abort(422, 'Klaim sudah final.');
-        }
+        $claim = $this->service->transition($radiology_claim, $request->validated('status'));
 
-        $radiology_claim->update($request->validated());
-
-        return new RadiologyClaimResource($radiology_claim->fresh());
+        return new RadiologyClaimResource($claim);
     }
 }

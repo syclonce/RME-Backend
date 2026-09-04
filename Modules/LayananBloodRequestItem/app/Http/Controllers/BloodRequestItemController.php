@@ -3,11 +3,13 @@
 namespace Modules\LayananBloodRequestItem\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\LayananBloodRequestItem\Http\Requests\StoreBloodRequestItemRequest;
 use Modules\LayananBloodRequestItem\Http\Requests\UpdateBloodRequestItemRequest;
 use Modules\LayananBloodRequestItem\Http\Resources\BloodRequestItemResource;
 use Modules\LayananBloodRequestItem\Models\BloodRequestItem;
+use Modules\MedicalRecordBloodTransfusion\Models\BloodTransfusion;
 
 class BloodRequestItemController extends Controller
 {
@@ -21,6 +23,14 @@ class BloodRequestItemController extends Controller
     public function store(StoreBloodRequestItemRequest $request)
     {
         $data = $request->validated();
+
+        // Item request darah menempel ke episode kunjungan lewat
+        // blood_transfusion_id, bukan visit_id langsung — resolusi visit lewat
+        // parent supaya tetap tergerbang oleh MedicalRecordGate seperti modul
+        // klinis lain yang menyentuh visit_id.
+        $transfusion = BloodTransfusion::query()->findOrFail($data['blood_transfusion_id']);
+        app(MedicalRecordGate::class)->assertWritable((int) $transfusion->visit_id, $request->user());
+
         $data['status'] ??= 'pending';
 
         $record = BloodRequestItem::create($data);

@@ -56,4 +56,39 @@ class MedicationIterationControllerTest extends TestCase
         $this->getJson("/api/v1/medication-iterations/{$iteration->id}")->assertOk()->assertJsonPath('data.id', $iteration->id);
     }
 
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $this->actingUser();
+
+        $response = $this->postJson('/api/v1/medication-iterations', [
+            'prescription_id' => \Modules\LayananPrescription\Models\Prescription::factory()->create()->id,
+            'iteration_number' => 1,
+            'quantity' => 3,
+            'status' => 'dispensed',
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('pending', $response->json('data.status'));
+    }
+
+    public function test_it_transitions_pending_to_dispensed(): void
+    {
+        $this->actingUser();
+        $iteration = MedicationIteration::factory()->create(['status' => 'pending']);
+
+        $this->putJson("/api/v1/medication-iterations/{$iteration->id}", ['status' => 'dispensed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'dispensed');
+    }
+
+    public function test_it_rejects_transition_from_dispensed(): void
+    {
+        $this->actingUser();
+        $iteration = MedicationIteration::factory()->create(['status' => 'dispensed']);
+
+        $this->putJson("/api/v1/medication-iterations/{$iteration->id}", ['status' => 'pending'])
+            ->assertStatus(422);
+
+        $this->assertSame('dispensed', $iteration->fresh()->status);
+    }
 }

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordAnalExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAnalExamination\Http\Requests\StoreAnalExaminationRequest;
 use Modules\MedicalRecordAnalExamination\Http\Requests\UpdateAnalExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordAnalExamination\Models\AnalExamination;
 
 class AnalExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AnalExamination::query();
@@ -27,6 +30,8 @@ class AnalExaminationController extends Controller
     public function store(StoreAnalExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = AnalExamination::create($data);

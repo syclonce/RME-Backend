@@ -2,6 +2,8 @@
 
 namespace Modules\BpjsAntreanFktp\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class Antrean extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'antrean_fktp_antreans';
 

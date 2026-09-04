@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBackExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBackExamination\Http\Requests\StoreBackExaminationRequest;
 use Modules\MedicalRecordBackExamination\Http\Requests\UpdateBackExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordBackExamination\Models\BackExamination;
 
 class BackExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BackExamination::query();
@@ -28,6 +31,8 @@ class BackExaminationController extends Controller
     public function store(StoreBackExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordChestExamination\Models\ChestExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class ChestExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class ChestExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 15,
+            'visit_id' => $visit->id,
             'inspection' => 'Normal shape and movement',
             'auscultation_breath_sounds' => 'Wheezing on right lower lobe',
             'auscultation_heart_sounds' => 'S1 S2 Normal',
@@ -42,10 +45,10 @@ class ChestExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/chest-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 15)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.auscultation_breath_sounds', 'Wheezing on right lower lobe');
 
-        $this->assertDatabaseHas('chest_examinations', ['visit_id' => 15, 'auscultation_breath_sounds' => 'Wheezing on right lower lobe']);
+        $this->assertDatabaseHas('chest_examinations', ['visit_id' => $visit->id, 'auscultation_breath_sounds' => 'Wheezing on right lower lobe']);
     }
 
     public function test_it_lists_chest_examinations(): void

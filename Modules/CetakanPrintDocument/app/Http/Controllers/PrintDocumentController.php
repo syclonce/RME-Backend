@@ -3,8 +3,10 @@
 namespace Modules\CetakanPrintDocument\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Modules\CetakanPrintDocument\Models\PrintDocument;
 use Modules\CetakanPrintDocument\Services\PrintDocumentService;
 
@@ -40,6 +42,17 @@ class PrintDocumentController extends Controller
     public function show(PrintDocument $document): JsonResponse
     {
         return response()->json(['data' => $document]);
+    }
+
+    public function pdf(PrintDocument $document): Response
+    {
+        abort_unless($document->document_type === PrintDocument::TYPE_PATIENT_CARD, 422, 'Cetak PDF baru tersedia untuk kartu pasien.');
+
+        $html = $this->documents->renderPatientCardHtml($document);
+
+        return Pdf::loadHTML($html)
+            ->setPaper([0, 0, 300, 210], 'portrait')
+            ->stream("{$document->document_number}.pdf");
     }
 
     public function index(Request $request): JsonResponse

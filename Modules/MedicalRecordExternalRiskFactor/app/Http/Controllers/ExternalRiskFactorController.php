@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordExternalRiskFactor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordExternalRiskFactor\Http\Requests\StoreExternalRiskFactorRequest;
 use Modules\MedicalRecordExternalRiskFactor\Http\Requests\UpdateExternalRiskFactorRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordExternalRiskFactor\Models\ExternalRiskFactor;
 
 class ExternalRiskFactorController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ExternalRiskFactor::query();
@@ -21,6 +24,8 @@ class ExternalRiskFactorController extends Controller
     public function store(StoreExternalRiskFactorRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = ExternalRiskFactor::create($data);
 

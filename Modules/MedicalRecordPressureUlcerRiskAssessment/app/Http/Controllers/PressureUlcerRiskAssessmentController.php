@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPressureUlcerRiskAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPressureUlcerRiskAssessment\Http\Requests\StorePressureUlcerRiskAssessmentRequest;
 use Modules\MedicalRecordPressureUlcerRiskAssessment\Http\Requests\UpdatePressureUlcerRiskAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordPressureUlcerRiskAssessment\Models\PressureUlcerRiskAss
 
 class PressureUlcerRiskAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PressureUlcerRiskAssessment::query();
@@ -28,8 +31,16 @@ class PressureUlcerRiskAssessmentController extends Controller
     public function store(StorePressureUlcerRiskAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
+
+        // Total dan tingkat risiko dihitung ulang di server, menimpa apa pun yang
+        // dikirim klien. Skala Braden yang salah ketik bisa menghilangkan
+        // intervensi pencegahan luka tekan tanpa tanda apa pun di layar.
+        $data['total_score'] = PressureUlcerRiskAssessment::calculateTotalScore($data);
+        $data['risk_level'] = PressureUlcerRiskAssessment::riskLevelFor($data['total_score']);
 
         $record = PressureUlcerRiskAssessment::create($data);
 

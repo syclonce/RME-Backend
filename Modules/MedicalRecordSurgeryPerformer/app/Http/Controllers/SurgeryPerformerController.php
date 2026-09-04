@@ -2,6 +2,7 @@
 
 namespace Modules\MedicalRecordSurgeryPerformer\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordSurgeryPerformer\Http\Requests\StoreSurgeryPerformerRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordSurgeryPerformer\Models\SurgeryPerformer;
 
 class SurgeryPerformerController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = SurgeryPerformer::query();
@@ -30,7 +33,11 @@ class SurgeryPerformerController extends Controller
 
     public function store(StoreSurgeryPerformerRequest $request)
     {
-        $record = SurgeryPerformer::create($request->validated());
+        $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
+
+        $record = SurgeryPerformer::create($data);
 
         return (new SurgeryPerformerResource($record))->response()->setStatusCode(201);
     }

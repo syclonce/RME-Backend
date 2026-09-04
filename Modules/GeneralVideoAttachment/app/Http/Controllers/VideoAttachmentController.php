@@ -3,6 +3,7 @@
 namespace Modules\GeneralVideoAttachment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\GeneralVideoAttachment\Http\Requests\StoreVideoAttachmentRequest;
 use Modules\GeneralVideoAttachment\Http\Requests\UpdateVideoAttachmentRequest;
@@ -11,6 +12,8 @@ use Modules\GeneralVideoAttachment\Models\VideoAttachment;
 
 class VideoAttachmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = VideoAttachment::query();
@@ -21,6 +24,8 @@ class VideoAttachmentController extends Controller
     public function store(StoreVideoAttachmentRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['is_active'] = $data['is_active'] ?? true;
         $video_attachment = VideoAttachment::create($data);
 

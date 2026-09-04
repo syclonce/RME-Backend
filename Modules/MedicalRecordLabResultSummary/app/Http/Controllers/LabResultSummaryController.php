@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordLabResultSummary\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordLabResultSummary\Http\Requests\StoreLabResultSummaryRequest;
 use Modules\MedicalRecordLabResultSummary\Http\Resources\LabResultSummaryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordLabResultSummary\Models\LabResultSummary;
 
 class LabResultSummaryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = LabResultSummary::query();
@@ -24,6 +27,8 @@ class LabResultSummaryController extends Controller
     public function store(StoreLabResultSummaryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['summarized_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

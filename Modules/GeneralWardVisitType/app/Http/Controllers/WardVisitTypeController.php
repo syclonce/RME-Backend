@@ -20,6 +20,7 @@ class WardVisitTypeController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:ward_visit_types,name'],
             'code' => ['nullable', 'string', 'max:10', 'unique:ward_visit_types,code'],
             'is_active' => ['sometimes', 'boolean'],
+            'triggers_emergency_flag' => ['sometimes', 'boolean'],
         ]);
 
         return response()->json(WardVisitType::create($data)->refresh(), 201);
@@ -36,6 +37,7 @@ class WardVisitTypeController extends Controller
             'name' => ['sometimes', 'string', 'max:255', Rule::unique('ward_visit_types', 'name')->ignore($ward_visit_type->id)],
             'code' => ['nullable', 'string', 'max:10', Rule::unique('ward_visit_types', 'code')->ignore($ward_visit_type->id)],
             'is_active' => ['sometimes', 'boolean'],
+            'triggers_emergency_flag' => ['sometimes', 'boolean'],
         ]);
 
         $ward_visit_type->update($data);

@@ -2,6 +2,10 @@
 
 namespace Modules\PendaftaranReferral\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +14,7 @@ use Modules\PendaftaranReferral\Database\Factories\ReferralFactory;
 
 class Referral extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'referral_number',
@@ -35,15 +39,13 @@ class Referral extends Model
     }
 
     /**
-     * Format: RUJ-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateReferralNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('referral_number', 'like', "RUJ-{$year}-%")->count();
-
-        return sprintf('RUJ-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('RUJ', 'referral', now()->format('Y'));
     }
 
     protected static function newFactory(): ReferralFactory

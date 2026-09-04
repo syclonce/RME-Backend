@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordInterventionProtocol\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\MedicalRecordInterventionProtocol\Database\Factories\InterventionPro
 
 class InterventionProtocol extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'intervention_protocols';
 

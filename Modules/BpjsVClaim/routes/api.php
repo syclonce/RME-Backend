@@ -14,6 +14,10 @@ use Modules\BpjsVClaim\Http\Controllers\SepPengajuanController;
 use Modules\BpjsVClaim\Http\Controllers\SpriController;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+    // Draf SEP diturunkan dari pendaftaran, bukan diketik ulang petugas —
+    // pengetikan ulang adalah sumber selisih data yang baru ketahuan saat klaim ditolak.
+    Route::post('seps/from-registration', [SepController::class, 'draftFromRegistration']);
+
     // SEP - all 4 creation flows share one endpoint, StoreSepRequest branches on visit_type.
     Route::get('seps', [SepController::class, 'index']);
     Route::post('seps', [SepController::class, 'store']);

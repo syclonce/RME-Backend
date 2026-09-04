@@ -13,6 +13,7 @@ class PaymentResource extends JsonResource
             'id' => $this->id,
             'payment_number' => $this->payment_number,
             'invoice_id' => $this->invoice_id,
+            'cashier_shift_id' => $this->cashier_shift_id,
             'payment_method' => $this->payment_method,
             'amount' => $this->amount,
             'admin_fee' => $this->admin_fee,

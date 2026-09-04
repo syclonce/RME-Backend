@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\CetakanPrintDocument\Models\PrintDocument;
 use Modules\GeneralBed\Models\Bed;
+use Modules\GeneralPatient\Models\Patient;
 use Modules\GeneralRoom\Models\Room;
 use Modules\GeneralWard\Models\Ward;
 use Modules\PembayaranInvoice\Models\Invoice;
@@ -165,6 +166,39 @@ class PrintDocumentApiTest extends TestCase
         $filtered = $this->getJson('/api/v1/print-documents?type=karcis')->assertOk();
         $this->assertCount(1, $filtered->json('data.data'));
         $this->assertSame('karcis', $filtered->json('data.data.0.document_type'));
+    }
+
+    public function test_kartu_pasien_menerbitkan_payload_dan_pdf(): void
+    {
+        $patient = Patient::factory()->create(['name' => 'Budi Santoso', 'medical_record_number' => 'RM-2026-000042']);
+
+        $response = $this->postJson('/api/v1/print-documents/issue', [
+            'document_type' => 'patient_card',
+            'ref_type' => 'patients',
+            'ref_id' => $patient->id,
+        ]);
+
+        $response->assertStatus(201);
+        $document = $response->json('data.document');
+        $this->assertSame('KARTU BEROBAT PASIEN', $document['payload']['title']);
+        $this->assertSame('RM-2026-000042', $document['payload']['medical_record_number']);
+        $this->assertSame('Budi Santoso', $document['payload']['name']);
+
+        $pdf = $this->get("/api/v1/print-documents/{$document['id']}/pdf");
+        $pdf->assertOk();
+        $this->assertSame('application/pdf', $pdf->headers->get('Content-Type'));
+    }
+
+    public function test_pdf_ditolak_untuk_jenis_selain_kartu_pasien(): void
+    {
+        $registration = \Modules\PendaftaranRegistration\Models\Registration::factory()->create();
+        $document = $this->postJson('/api/v1/print-documents/issue', [
+            'document_type' => 'karcis',
+            'ref_type' => 'registrations',
+            'ref_id' => $registration->id,
+        ])->json('data.document');
+
+        $this->get("/api/v1/print-documents/{$document['id']}/pdf")->assertStatus(422);
     }
 
     public function test_endpoint_tertutup_untuk_tamu(): void

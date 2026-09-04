@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHospitalizationCertificate\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordHospitalizationCertificate\Http\Requests\HospitalizationCertificateRequest;
 use Modules\MedicalRecordHospitalizationCertificate\Http\Resources\HospitalizationCertificateResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordHospitalizationCertificate\Models\HospitalizationCertif
 
 class HospitalizationCertificateController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = HospitalizationCertificate::query();
@@ -34,6 +37,8 @@ class HospitalizationCertificateController extends Controller
     public function store(HospitalizationCertificateRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $certificate = HospitalizationCertificate::create($data);

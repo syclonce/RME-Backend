@@ -2,6 +2,8 @@
 
 namespace Modules\PendaftaranSelfCheckin\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\PendaftaranSelfCheckin\Database\Factories\SelfCheckinQueueFactory;
 
 class SelfCheckinQueue extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_WAITING = 'waiting';
 

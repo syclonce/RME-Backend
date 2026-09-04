@@ -55,4 +55,42 @@ class PharmacyOutpatientQueueControllerTest extends TestCase
         $this->getJson("/api/v1/pharmacy-outpatient-queues/{$queue->id}")->assertOk()->assertJsonPath('data.id', $queue->id);
     }
 
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $this->actingUser();
+
+        $response = $this->postJson('/api/v1/pharmacy-outpatient-queues', [
+            'prescription_id' => \Modules\LayananPrescription\Models\Prescription::factory()->create()->id,
+            'queue_number' => 'Q-001',
+            'status' => 'done',
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('waiting', $response->json('data.status'));
+    }
+
+    public function test_it_transitions_waiting_to_called_to_done(): void
+    {
+        $this->actingUser();
+        $queue = PharmacyOutpatientQueue::factory()->create(['status' => 'waiting']);
+
+        $this->putJson("/api/v1/pharmacy-outpatient-queues/{$queue->id}", ['status' => 'called'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'called');
+
+        $this->putJson("/api/v1/pharmacy-outpatient-queues/{$queue->id}", ['status' => 'done'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'done');
+    }
+
+    public function test_it_rejects_done_without_being_called_first(): void
+    {
+        $this->actingUser();
+        $queue = PharmacyOutpatientQueue::factory()->create(['status' => 'waiting']);
+
+        $this->putJson("/api/v1/pharmacy-outpatient-queues/{$queue->id}", ['status' => 'done'])
+            ->assertStatus(422);
+
+        $this->assertSame('waiting', $queue->fresh()->status);
+    }
 }

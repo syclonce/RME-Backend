@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordParentalHealthHistoryScreening\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordParentalHealthHistoryScreening\Http\Requests\StoreParentalHealthHistoryScreeningRequest;
 use Modules\MedicalRecordParentalHealthHistoryScreening\Http\Resources\ParentalHealthHistoryScreeningResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordParentalHealthHistoryScreening\Models\ParentalHealthHis
 
 class ParentalHealthHistoryScreeningController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ParentalHealthHistoryScreening::query();
@@ -24,6 +27,8 @@ class ParentalHealthHistoryScreeningController extends Controller
     public function store(StoreParentalHealthHistoryScreeningRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['consanguinity'] ??= false;
         $data['screened_at'] ??= now();
         $data['created_by'] = $request->user()->id;

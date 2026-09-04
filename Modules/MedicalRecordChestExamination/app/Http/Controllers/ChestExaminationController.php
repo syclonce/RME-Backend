@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordChestExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordChestExamination\Http\Requests\StoreChestExaminationRequest;
 use Modules\MedicalRecordChestExamination\Http\Requests\UpdateChestExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordChestExamination\Models\ChestExamination;
 
 class ChestExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ChestExamination::query();
@@ -27,6 +30,8 @@ class ChestExaminationController extends Controller
     public function store(StoreChestExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = ChestExamination::create($data);

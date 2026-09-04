@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPharynxExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPharynxExamination\Http\Requests\StorePharynxExaminationRequest;
 use Modules\MedicalRecordPharynxExamination\Http\Requests\UpdatePharynxExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordPharynxExamination\Models\PharynxExamination;
 
 class PharynxExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PharynxExamination::query();
@@ -27,6 +30,8 @@ class PharynxExaminationController extends Controller
     public function store(StorePharynxExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['exudate'] ??= false;
         $data['post_nasal_drip'] ??= false;
         $data['examined_at'] ??= now();

@@ -2,6 +2,8 @@
 
 namespace Modules\SystemTteDocument\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +20,7 @@ use Modules\SystemTteDocument\Database\Factories\TteDocumentFactory;
  */
 class TteDocument extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_DRAFT = 'draft';
 

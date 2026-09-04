@@ -1,0 +1,11 @@
+{
+    "name": "MedicalRecordEpisode",
+    "alias": "medicalrecordepisode",
+    "description": "Lifecycle aggregate for one medical record episode per visit",
+    "keywords": ["medical-record", "workflow"],
+    "priority": 0,
+    "providers": [
+        "Modules\\MedicalRecordEpisode\\Providers\\MedicalRecordEpisodeServiceProvider"
+    ],
+    "files": []
+}

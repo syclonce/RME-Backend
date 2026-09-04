@@ -73,6 +73,48 @@ class GoodsReturnControllerTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_it_rejects_skipping_from_pending_to_completed(): void
+    {
+        $this->actingUser();
+        $return = GoodsReturn::factory()->create(['status' => 'pending']);
+
+        $this->putJson("/api/v1/goods-returns/{$return->id}", ['status' => 'completed'])
+            ->assertStatus(422);
+    }
+
+    public function test_it_completes_an_approved_return(): void
+    {
+        $this->actingUser();
+        $return = GoodsReturn::factory()->create(['status' => 'approved']);
+
+        $this->putJson("/api/v1/goods-returns/{$return->id}", ['status' => 'completed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'completed');
+    }
+
+    public function test_it_rejects_transition_from_a_terminal_status(): void
+    {
+        $this->actingUser();
+        $return = GoodsReturn::factory()->create(['status' => 'rejected']);
+
+        $this->putJson("/api/v1/goods-returns/{$return->id}", ['status' => 'approved'])
+            ->assertStatus(422);
+    }
+
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $supplier = Supplier::factory()->create();
+
+        $response = $this->postJson('/api/v1/goods-returns', [
+            'supplier_id' => $supplier->id,
+            'reason' => 'Barang rusak saat pengiriman',
+            'status' => 'completed',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
     public function test_it_deletes_a_return(): void
     {
         $this->actingUser();

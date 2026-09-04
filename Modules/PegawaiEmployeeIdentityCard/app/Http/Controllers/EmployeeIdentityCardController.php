@@ -24,7 +24,21 @@ class EmployeeIdentityCardController extends Controller
 
     public function store(StoreEmployeeIdentityCardRequest $request)
     {
-        $card = EmployeeIdentityCard::create($request->validated());
+        $data = $request->validated();
+
+        // Satu jenis identitas satu kali per pegawai. Dua KTP dengan nomor berbeda
+        // untuk orang yang sama membuat verifikasi identitas menemukan dua jawaban,
+        // dan pencocokan ke Dukcapil/SATUSEHAT jadi tidak menentu.
+        abort_if(
+            EmployeeIdentityCard::query()
+                ->where('employee_id', $data['employee_id'])
+                ->where('id_type', $data['id_type'])
+                ->exists(),
+            422,
+            'Pegawai ini sudah memiliki identitas jenis tersebut.',
+        );
+
+        $card = EmployeeIdentityCard::create($data);
 
         return (new EmployeeIdentityCardResource($card))->response()->setStatusCode(201);
     }

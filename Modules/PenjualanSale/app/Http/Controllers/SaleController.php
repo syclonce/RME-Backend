@@ -8,6 +8,7 @@ use Modules\PenjualanSale\Http\Requests\StoreSaleRequest;
 use Modules\PenjualanSale\Http\Requests\UpdateSaleRequest;
 use Modules\PenjualanSale\Http\Resources\SaleResource;
 use Modules\PenjualanSale\Models\Sale;
+use Modules\PenjualanSale\Services\SaleService;
 
 class SaleController extends Controller
 {
@@ -22,13 +23,9 @@ class SaleController extends Controller
         return SaleResource::collection($query->latest('sold_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreSaleRequest $request)
+    public function store(StoreSaleRequest $request, SaleService $service)
     {
-        $data = $request->validated();
-        $data['sale_number'] = Sale::generateSaleNumber();
-        $data['sold_at'] ??= now();
-
-        $sale = Sale::create($data);
+        $sale = $service->create($request->validated());
 
         return (new SaleResource($sale))->response()->setStatusCode(201);
     }
@@ -38,10 +35,8 @@ class SaleController extends Controller
         return new SaleResource($sale);
     }
 
-    public function update(UpdateSaleRequest $request, Sale $sale): SaleResource
+    public function update(UpdateSaleRequest $request, Sale $sale, SaleService $service): SaleResource
     {
-        $sale->update($request->validated());
-
-        return new SaleResource($sale);
+        return new SaleResource($service->transition($sale, $request->validated('status')));
     }
 }

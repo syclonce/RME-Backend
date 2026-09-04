@@ -595,11 +595,14 @@
     "GeneralAmbulanceFleet": true,
     "LayananDrugInteractionCheck": true,
     "LayananEarlyWarningScore": true,
-    "LayananImagingOrder": true,
     "LayananLabAnalyzerOrder": true,
     "LayananMedicineDelivery": true,
     "LayananMortuaryRecord": true,
     "LayananPatientComplaint": true,
     "LayananTelemedicineSession": true,
-    "PendaftaranSelfCheckin": true
+    "PendaftaranSelfCheckin": true,
+    "PendaftaranVisitDestination": true,
+    "MedicalRecordEpisode": true,
+    "PembayaranCashierShift": true,
+    "GeneralPatientIdentityCard": true
 }

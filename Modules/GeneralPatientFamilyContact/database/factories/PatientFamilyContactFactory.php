@@ -3,6 +3,7 @@
 namespace Modules\GeneralPatientFamilyContact\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\GeneralPatientFamily\Models\PatientFamily;
 
 class PatientFamilyContactFactory extends Factory
 {
@@ -17,7 +18,7 @@ class PatientFamilyContactFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_family_id' => fake()->randomNumber(5),
+            'patient_family_id' => PatientFamily::factory(),
             'contact_type' => fake()->randomElement(['Phone', 'Email', 'WhatsApp']),
             'contact_value' => fake()->phoneNumber(),
             'is_active' => fake()->boolean(90),

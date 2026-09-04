@@ -24,7 +24,8 @@ class StoreImmunizationVaccinationRequest extends FormRequest
             'site' => ['nullable', 'string', 'max:100'],
             'route' => ['nullable', 'string', 'max:50'],
             'adverse_reaction' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            // 'status' sengaja tidak diterima dari request - selalu 'completed'
+            // (lihat ImmunizationVaccinationService::create()).
         ];
     }
 }

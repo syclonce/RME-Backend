@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDifferentialDiagnosis\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDifferentialDiagnosis\Http\Requests\StoreDifferentialDiagnosisRequest;
 use Modules\MedicalRecordDifferentialDiagnosis\Http\Requests\UpdateDifferentialDiagnosisRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordDifferentialDiagnosis\Models\DifferentialDiagnosis;
 
 class DifferentialDiagnosisController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DifferentialDiagnosis::query();
@@ -21,6 +24,8 @@ class DifferentialDiagnosisController extends Controller
     public function store(StoreDifferentialDiagnosisRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'considered';
 
         $record = DifferentialDiagnosis::create($data);

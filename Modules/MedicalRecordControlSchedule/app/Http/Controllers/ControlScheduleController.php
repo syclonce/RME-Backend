@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordControlSchedule\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordControlSchedule\Http\Requests\StoreControlScheduleRequest;
 use Modules\MedicalRecordControlSchedule\Http\Requests\UpdateControlScheduleRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordControlSchedule\Models\ControlSchedule;
 
 class ControlScheduleController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ControlSchedule::query();
@@ -21,6 +24,8 @@ class ControlScheduleController extends Controller
     public function store(StoreControlScheduleRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'scheduled';
 
         $record = ControlSchedule::create($data);

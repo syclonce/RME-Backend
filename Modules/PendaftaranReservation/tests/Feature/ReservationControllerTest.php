@@ -83,4 +83,50 @@ class ReservationControllerTest extends TestCase
             'status' => 'confirmed',
         ]);
     }
+
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $patient = Patient::factory()->create();
+        $ward = Ward::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/api/v1/reservations', [
+            'patient_id' => $patient->id,
+            'ward_id' => $ward->id,
+            'reserved_at' => now()->toDateTimeString(),
+            'scheduled_at' => now()->addDays(2)->toDateTimeString(),
+            'status' => 'confirmed',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
+    public function test_confirmed_can_transition_to_completed(): void
+    {
+        $reservation = Reservation::factory()->create(['status' => 'confirmed']);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/v1/reservations/{$reservation->id}", ['status' => 'completed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'completed');
+    }
+
+    public function test_it_rejects_invalid_transition_from_pending_to_completed(): void
+    {
+        $reservation = Reservation::factory()->create(['status' => 'pending']);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/v1/reservations/{$reservation->id}", ['status' => 'completed'])
+            ->assertStatus(422);
+
+        $this->assertSame('pending', $reservation->fresh()->status);
+    }
+
+    public function test_it_rejects_transition_from_final_status(): void
+    {
+        $reservation = Reservation::factory()->create(['status' => 'cancelled']);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/v1/reservations/{$reservation->id}", ['status' => 'confirmed'])
+            ->assertStatus(422);
+    }
 }

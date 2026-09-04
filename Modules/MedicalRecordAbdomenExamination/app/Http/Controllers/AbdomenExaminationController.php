@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordAbdomenExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAbdomenExamination\Http\Requests\StoreAbdomenExaminationRequest;
 use Modules\MedicalRecordAbdomenExamination\Http\Requests\UpdateAbdomenExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordAbdomenExamination\Models\AbdomenExamination;
 
 class AbdomenExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AbdomenExamination::query();
@@ -28,6 +31,8 @@ class AbdomenExaminationController extends Controller
     public function store(StoreAbdomenExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

@@ -2,6 +2,10 @@
 
 namespace Modules\InventorySterilizationCycle\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +19,7 @@ use Modules\InventorySterilizationCycle\Database\Factories\SterilizationCycleFac
  */
 class SterilizationCycle extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_IN_PROCESS = 'in_process';
 
@@ -58,15 +62,13 @@ class SterilizationCycle extends Model
     }
 
     /**
-     * Format CYC-{tahun}-{urut 6 digit}, mengikuti pola generateVisitNumber()
-     * di Modules\PendaftaranVisit\Models\Visit.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateCycleNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('cycle_number', 'like', "CYC-{$year}-%")->count();
-
-        return sprintf('CYC-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('CYC', 'sterilization_cycle', now()->format('Y'));
     }
 
     protected static function newFactory(): SterilizationCycleFactory

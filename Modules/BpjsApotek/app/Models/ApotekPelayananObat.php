@@ -2,6 +2,8 @@
 
 namespace Modules\BpjsApotek\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Modules\BpjsApotek\Database\Factories\ApotekPelayananObatFactory;
 
 class ApotekPelayananObat extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'resep_id',

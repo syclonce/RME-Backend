@@ -4,7 +4,6 @@ namespace Modules\PembayaranClaimInvoice\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Modules\PembayaranClaimInvoice\Models\ClaimInvoice;
 
 class UpdateClaimInvoiceRequest extends FormRequest
 {
@@ -18,10 +17,10 @@ class UpdateClaimInvoiceRequest extends FormRequest
         $id = $this->route('claim_invoice')?->id;
 
         return [
+            // 'status' sengaja TIDAK ada di sini - transisi status lewat
+            // endpoint PATCH /claim-invoices/{id}/transition
+            // (ClaimInvoiceService), bukan PUT generik.
             'claim_number' => ['nullable', 'string', 'max:255', Rule::unique('claim_invoices', 'claim_number')->ignore($id)],
-            'verified_amount' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['sometimes', Rule::in(ClaimInvoice::STATUSES)],
-            'rejection_reason' => ['nullable', 'string'],
         ];
     }
 }

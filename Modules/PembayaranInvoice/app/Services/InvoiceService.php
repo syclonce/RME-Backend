@@ -4,6 +4,7 @@ namespace Modules\PembayaranInvoice\Services;
 
 use App\Events\InvoiceLocked;
 use App\Modules\Contracts\BillingGate;
+use App\Modules\Contracts\ServiceEpisodeGate;
 use Illuminate\Support\Facades\DB;
 use Modules\PembayaranInvoice\Models\Invoice;
 use Modules\PembayaranInvoiceGuarantor\Models\InvoiceGuarantor;
@@ -30,6 +31,8 @@ use Modules\PendaftaranVisit\Models\Visit;
  */
 class InvoiceService implements BillingGate
 {
+    public function __construct(protected ServiceEpisodeGate $serviceEpisodeGate) {}
+
     /**
      * Gerbang locked SELALU membaca state DB (bukan atribut instance yang
      * mungkin basi di proses long-running), ala SP simgos2 yang membaca
@@ -48,7 +51,8 @@ class InvoiceService implements BillingGate
      */
     protected function collectedAmount(int $invoiceId): float
     {
-        return (float) Payment::query()->where('invoice_id', $invoiceId)->sum('amount');
+        return (float) Payment::query()->where('invoice_id', $invoiceId)
+            ->where('status', 'completed')->sum('amount');
     }
 
     /**
@@ -58,9 +62,12 @@ class InvoiceService implements BillingGate
     public function lock(int $invoiceId): void
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        $this->serviceEpisodeGate->assertFinalized((int) $invoice->visit_id);
 
-        DB::transaction(function () use ($invoice) {
-            $invoice->update(['is_locked' => true]);
+        DB::transaction(function () use ($invoiceId) {
+            $locked = Invoice::query()->whereKey($invoiceId)->lockForUpdate()->firstOrFail();
+            abort_if($locked->status === 'cancelled', 422, 'Invoice batal tidak dapat difinalkan.');
+            $locked->update(['is_locked' => true]);
         });
 
         // Event di luar transaksi: listener hanya boleh menyentuh data yang
@@ -81,6 +88,7 @@ class InvoiceService implements BillingGate
     public function markPaid(int $invoiceId): void
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        $this->serviceEpisodeGate->assertFinalized((int) $invoice->visit_id);
 
         DB::transaction(function () use ($invoice) {
             $invoice->update(['status' => 'paid', 'is_locked' => true]);
@@ -139,6 +147,13 @@ class InvoiceService implements BillingGate
     public function unlock(int $invoiceId): void
     {
         Invoice::query()->whereKey($invoiceId)->update(['is_locked' => false]);
+    }
+
+    public function reopenAfterReversal(int $invoiceId): void
+    {
+        $invoice = Invoice::query()->whereKey($invoiceId)->lockForUpdate()->firstOrFail();
+        abort_if($invoice->status === 'cancelled', 422, 'Invoice batal tidak dapat dibuka kembali.');
+        $invoice->update(['status' => 'open', 'is_locked' => false]);
     }
 
     /**
@@ -367,15 +382,19 @@ class InvoiceService implements BillingGate
      *
      * @throws HttpException bila tagihan terkunci.
      */
-    public function postServiceItem(int $visitId, string $description, ?string $category, int $quantity, float $unitPrice): void
+    public function postServiceItem(int $visitId, string $description, ?string $category, int $quantity, float $unitPrice, ?int $wardId = null): void
     {
         $invoice = $this->ensureForVisit($visitId);
 
         abort_if($this->isInvoiceLocked($invoice->id), 422, 'Tagihan sudah dikunci, posting layanan baru ditolak.');
 
-        DB::transaction(function () use ($invoice, $description, $category, $quantity, $unitPrice) {
+        DB::transaction(function () use ($invoice, $description, $category, $quantity, $unitPrice, $wardId) {
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
+                // Unit pengerja disimpan per baris — inilah yang membuat pendapatan
+                // dapat dipecah per unit tanpa menerbitkan kunjungan baru tiap
+                // pasien berpindah (keputusan 2026-09-04).
+                'ward_id' => $wardId,
                 'description' => $description,
                 'category' => $category,
                 'quantity' => max(1, $quantity),

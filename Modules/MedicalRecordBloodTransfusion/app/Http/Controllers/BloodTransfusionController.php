@@ -8,6 +8,7 @@ use Modules\MedicalRecordBloodTransfusion\Http\Requests\StoreBloodTransfusionReq
 use Modules\MedicalRecordBloodTransfusion\Http\Requests\UpdateBloodTransfusionRequest;
 use Modules\MedicalRecordBloodTransfusion\Http\Resources\BloodTransfusionResource;
 use Modules\MedicalRecordBloodTransfusion\Models\BloodTransfusion;
+use Modules\MedicalRecordBloodTransfusion\Services\BloodTransfusionService;
 
 class BloodTransfusionController extends Controller
 {
@@ -22,14 +23,9 @@ class BloodTransfusionController extends Controller
         return BloodTransfusionResource::collection($query->latest('started_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreBloodTransfusionRequest $request)
+    public function store(StoreBloodTransfusionRequest $request, BloodTransfusionService $service)
     {
-        $data = $request->validated();
-        $data['started_at'] ??= now();
-        $data['status'] ??= 'in_progress';
-        $data['created_by'] = $request->user()->id;
-
-        $transfusion = BloodTransfusion::create($data);
+        $transfusion = $service->create($request->validated(), $request->user());
 
         return (new BloodTransfusionResource($transfusion))->response()->setStatusCode(201);
     }
@@ -40,13 +36,18 @@ class BloodTransfusionController extends Controller
     }
 
     /**
-     * Only status/ended_at/reaction_notes are correctable post-creation - the
-     * transfusion given is not.
+     * Hanya transisi status (workflow) - detail klinis transfusi yang sudah
+     * dicatat saat create tidak lagi bisa diubah lewat endpoint ini.
      */
-    public function update(UpdateBloodTransfusionRequest $request, BloodTransfusion $blood_transfusion): BloodTransfusionResource
+    public function update(UpdateBloodTransfusionRequest $request, BloodTransfusion $blood_transfusion, BloodTransfusionService $service): BloodTransfusionResource
     {
-        $blood_transfusion->update($request->validated());
+        $validated = $request->validated();
 
-        return new BloodTransfusionResource($blood_transfusion);
+        return new BloodTransfusionResource($service->transition(
+            $blood_transfusion,
+            $validated['status'],
+            $request->user(),
+            $validated,
+        ));
     }
 }

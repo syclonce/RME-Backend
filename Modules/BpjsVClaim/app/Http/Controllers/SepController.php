@@ -8,6 +8,8 @@ use Modules\BpjsVClaim\Http\Requests\StoreSepRequest;
 use Modules\BpjsVClaim\Http\Requests\UpdateSepRequest;
 use Modules\BpjsVClaim\Http\Resources\SepResource;
 use Modules\BpjsVClaim\Models\Sep;
+use Modules\PendaftaranRegistration\Models\Registration;
+use Modules\BpjsVClaim\Services\SepDraftService;
 use Modules\BpjsVClaim\Services\VClaimService;
 use Modules\BpjsVClaim\Support\RecordsBpjsResult;
 
@@ -147,5 +149,24 @@ class SepController extends Controller
             'noSep' => $sep->no_sep,
             'user' => auth()->user()?->name ?? 'system',
         ], fn ($value) => $value !== null && $value !== []);
+    }
+
+    /**
+     * Susun draf SEP dari sebuah pendaftaran.
+     *
+     * Endpoint terpisah dari `store()` generik: yang ini menurunkan isinya dari
+     * data pendaftaran, bukan menerima ketikan petugas. `store()` tetap ada untuk
+     * kasus yang datanya memang tidak berasal dari pendaftaran internal.
+     */
+    public function draftFromRegistration(Request $request, SepDraftService $service)
+    {
+        $validated = $request->validate([
+            'registration_id' => ['required', 'integer', 'exists:registrations,id'],
+        ]);
+
+        $registration = Registration::findOrFail($validated['registration_id']);
+
+        return (new SepResource($service->draftFromRegistration($registration)))
+            ->response()->setStatusCode(201);
     }
 }

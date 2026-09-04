@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralBed\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +19,7 @@ use Modules\GeneralRoom\Models\Room;
  */
 class Bed extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_AVAILABLE = 'available';
 

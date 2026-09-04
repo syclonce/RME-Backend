@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDocumentUpload\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDocumentUpload\Http\Requests\DocumentUploadRequest;
 use Modules\MedicalRecordDocumentUpload\Http\Resources\DocumentUploadResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordDocumentUpload\Models\DocumentUpload;
 
 class DocumentUploadController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DocumentUpload::query();
@@ -30,6 +33,8 @@ class DocumentUploadController extends Controller
     public function store(DocumentUploadRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['uploaded_at'] ??= now();
         $data['created_by'] = $request->user()?->id;
 

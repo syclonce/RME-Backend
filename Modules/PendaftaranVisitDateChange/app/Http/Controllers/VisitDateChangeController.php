@@ -2,6 +2,7 @@
 
 namespace Modules\PendaftaranVisitDateChange\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PendaftaranVisitDateChange\Http\Requests\StoreVisitDateChangeRequest;
@@ -10,6 +11,8 @@ use Modules\PendaftaranVisitDateChange\Models\VisitDateChange;
 
 class VisitDateChangeController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = VisitDateChange::query();
@@ -25,6 +28,7 @@ class VisitDateChangeController extends Controller
     {
         $data = $request->validated();
         $data['changed_by'] = $request->user()->id;
+        $this->guardMedicalRecord($request, $data);
 
         $change = VisitDateChange::create($data);
 

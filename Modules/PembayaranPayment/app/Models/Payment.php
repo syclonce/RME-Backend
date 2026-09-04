@@ -2,6 +2,10 @@
 
 namespace Modules\PembayaranPayment\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,11 +16,12 @@ use Modules\PembayaranPayment\Database\Factories\PaymentFactory;
 
 class Payment extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'payment_number',
         'invoice_id',
+        'cashier_shift_id',
         'payment_method',
         'amount',
         'admin_fee',
@@ -45,15 +50,13 @@ class Payment extends Model
     }
 
     /**
-     * Format: PAY-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generatePaymentNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('payment_number', 'like', "PAY-{$year}-%")->count();
-
-        return sprintf('PAY-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('PAY', 'payment', now()->format('Y'));
     }
 
     protected static function newFactory(): PaymentFactory

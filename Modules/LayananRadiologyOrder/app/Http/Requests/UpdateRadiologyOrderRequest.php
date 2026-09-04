@@ -4,6 +4,7 @@ namespace Modules\LayananRadiologyOrder\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\LayananRadiologyOrder\Models\RadiologyOrder;
 
 class UpdateRadiologyOrderRequest extends FormRequest
 {
@@ -15,12 +16,12 @@ class UpdateRadiologyOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'visit_id' => ['sometimes', 'integer', 'exists:visits,id'],
-            'patient_id' => ['sometimes', 'integer', 'exists:patients,id'],
-            'ordering_doctor_id' => ['sometimes', 'integer', 'exists:employees,id'],
-            'ordered_at' => ['sometimes', 'date'],
-            'clinical_notes' => ['sometimes', 'string'],
-            'status' => ['sometimes', Rule::in(['pending', 'in_progress', 'completed', 'cancelled'])],
+            // Hanya status yang bisa disunting lewat endpoint ini — lihat
+            // RadiologyOrderController::update() dan RadiologyOrderService::transition().
+            // 'scheduled' disertakan di sini untuk validasi input umum, tapi jalur
+            // yang dianjurkan untuk masuk ke 'scheduled' adalah endpoint khusus
+            // POST .../schedule (mengisi scheduled_at juga) — lihat RadiologyOrderService::schedule().
+            'status' => ['required', Rule::in(RadiologyOrder::STATUSS)],
         ];
     }
 }

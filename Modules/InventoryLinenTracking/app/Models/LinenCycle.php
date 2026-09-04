@@ -2,6 +2,8 @@
 
 namespace Modules\InventoryLinenTracking\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +17,7 @@ use Modules\InventoryLinenTracking\Database\Factories\LinenCycleFactory;
  */
 class LinenCycle extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_DIKIRIM_LONDRI = 'dikirim_londri';
 

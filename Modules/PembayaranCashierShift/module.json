@@ -1,0 +1,9 @@
+{
+    "name": "PembayaranCashierShift",
+    "alias": "pembayarancashiershift",
+    "description": "Cashier session and reconciliation workflow",
+    "keywords": ["cashier", "shift", "reconciliation"],
+    "priority": 0,
+    "providers": ["Modules\\PembayaranCashierShift\\Providers\\PembayaranCashierShiftServiceProvider"],
+    "files": []
+}

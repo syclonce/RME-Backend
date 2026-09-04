@@ -9,9 +9,18 @@ use Modules\GeneralWard\Models\Ward;
 
 class WardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Ward::query()->orderBy('name')->paginate(15);
+        return Ward::query()
+            ->with('visitType')
+            ->orderBy('name')
+            ->paginate(min(max($request->integer('per_page', 15), 1), 100))
+            ->through(function (Ward $ward) {
+                $ward->setAttribute('triggers_emergency', (bool) ($ward->visitType?->triggers_emergency_flag ?? false));
+                $ward->setAttribute('visit_type_name', $ward->visitType?->name);
+
+                return $ward;
+            });
     }
 
     public function store(Request $request)
@@ -31,6 +40,9 @@ class WardController extends Controller
 
     public function show(Ward $ward): Ward
     {
+        $ward->loadMissing('visitType');
+        $ward->setAttribute('triggers_emergency', (bool) ($ward->visitType?->triggers_emergency_flag ?? false));
+
         return $ward;
     }
 

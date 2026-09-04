@@ -18,6 +18,9 @@ class CriticalLabValueFactory extends Factory
             'notified_to' => fake()->words(3, true),
             'notified_at' => fake()->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s'),
             'acknowledged' => false,
+            // notified_by/acknowledged_by/acknowledged_at sengaja tidak diisi
+            // default: sebagian besar skenario tes dimulai dari state "belum
+            // diakui", tes yang butuh state acknowledged mengisinya eksplisit.
         ];
     }
 }

@@ -2,6 +2,10 @@
 
 namespace Modules\LayananPrescription\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +19,7 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class Prescription extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'prescription_number',
@@ -75,15 +79,13 @@ class Prescription extends Model
     }
 
     /**
-     * Format: RX-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generatePrescriptionNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('prescription_number', 'like', "RX-{$year}-%")->count();
-
-        return sprintf('RX-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('RX', 'prescription', now()->format('Y'));
     }
 
     protected static function newFactory(): PrescriptionFactory

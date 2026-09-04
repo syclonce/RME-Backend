@@ -20,7 +20,6 @@ class StoreTransferMedicationReconciliationRequest extends FormRequest
             'transferred_to_ward_id' => ['required', 'integer', 'exists:wards,id'],
             'source_of_medication_list' => ['nullable','string','max:255'],
             'notes' => ['nullable','string'],
-            'status' => ['nullable','in:draft,completed'],
             'reconciled_at' => ['nullable','date'],
         ];
     }

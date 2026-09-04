@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordInhalantAllergenExamination\Models\InhalantAllergenExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class InhalantAllergenExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class InhalantAllergenExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 9,
+            'visit_id' => $visit->id,
             'patient_id' => 18,
             'allergen_name' => 'House Dust Mite',
             'reaction_grade' => '3+',
@@ -47,7 +50,7 @@ class InhalantAllergenExaminationControllerTest extends TestCase
             ->assertJsonPath('data.allergen_name', 'House Dust Mite')
             ->assertJsonPath('data.reaction_grade', '3+');
 
-        $this->assertDatabaseHas('inhalant_allergen_examinations', ['visit_id' => 9, 'allergen_name' => 'House Dust Mite']);
+        $this->assertDatabaseHas('inhalant_allergen_examinations', ['visit_id' => $visit->id, 'allergen_name' => 'House Dust Mite']);
     }
 
     public function test_it_lists_inhalant_allergen_examinations(): void

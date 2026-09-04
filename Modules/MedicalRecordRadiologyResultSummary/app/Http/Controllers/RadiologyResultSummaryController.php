@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordRadiologyResultSummary\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordRadiologyResultSummary\Http\Requests\StoreRadiologyResultSummaryRequest;
 use Modules\MedicalRecordRadiologyResultSummary\Http\Resources\RadiologyResultSummaryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordRadiologyResultSummary\Models\RadiologyResultSummary;
 
 class RadiologyResultSummaryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RadiologyResultSummary::query();
@@ -24,6 +27,8 @@ class RadiologyResultSummaryController extends Controller
     public function store(StoreRadiologyResultSummaryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['summarized_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

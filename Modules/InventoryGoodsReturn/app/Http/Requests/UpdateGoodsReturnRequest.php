@@ -15,7 +15,7 @@ class UpdateGoodsReturnRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'string', Rule::in(['pending', 'approved', 'completed', 'rejected'])],
+            'status' => ['required', 'string', Rule::in(['approved', 'completed', 'rejected'])],
         ];
     }
 }

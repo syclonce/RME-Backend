@@ -3,11 +3,13 @@
 namespace Modules\LayananPrescriptionInitialReview\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\LayananPrescriptionInitialReview\Http\Requests\StorePrescriptionInitialReviewRequest;
 use Modules\LayananPrescriptionInitialReview\Http\Requests\UpdatePrescriptionInitialReviewRequest;
 use Modules\LayananPrescriptionInitialReview\Http\Resources\PrescriptionInitialReviewResource;
 use Modules\LayananPrescriptionInitialReview\Models\PrescriptionInitialReview;
+use Modules\LayananPrescription\Models\Prescription;
 
 class PrescriptionInitialReviewController extends Controller
 {
@@ -21,6 +23,11 @@ class PrescriptionInitialReviewController extends Controller
     public function store(StorePrescriptionInitialReviewRequest $request)
     {
         $data = $request->validated();
+
+        // Menempel ke episode lewat prescription_id, bukan visit_id langsung.
+        $prescription = Prescription::query()->findOrFail($data['prescription_id']);
+        app(MedicalRecordGate::class)->assertWritable((int) $prescription->visit_id, $request->user());
+
         $data['is_appropriate'] ??= true;
         $data['status'] ??= 'reviewed';
 

@@ -7,6 +7,7 @@ use App\Modules\Contracts\WardScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\PendaftaranVisit\Services\VisitService;
+use Modules\PendaftaranVisit\Services\VisitFinalizationService;
 use Modules\PendaftaranVisit\Http\Requests\StoreVisitRequest;
 use Modules\PendaftaranVisit\Http\Requests\UpdateVisitRequest;
 use Modules\PendaftaranVisit\Http\Resources\VisitResource;
@@ -22,6 +23,21 @@ class VisitController extends Controller
 
         if ($request->filled('registration_id')) {
             $query->where('registration_id', $request->integer('registration_id'));
+        }
+
+        // Filter status (mis. ?status=active) — kolom ada langsung di visits.
+        // Dipakai halaman Triase IGD supaya tidak perlu tarik semua baris lalu
+        // filter di klien.
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        // Filter is_emergency — kolomnya ada di registrations, bukan visits,
+        // jadi harus lewat whereHas ke relasi registration(). Sama alasannya
+        // dengan filter status: dukung Triase IGD tanpa gabung manual di klien.
+        if ($request->filled('is_emergency')) {
+            $isEmergency = $request->boolean('is_emergency');
+            $query->whereHas('registration', fn ($q) => $q->where('is_emergency', $isEmergency));
         }
 
         // Baca juga di-scope ward (#3): petugas cuma lihat kunjungan rawat
@@ -143,5 +159,11 @@ class VisitController extends Controller
         );
 
         return new VisitResource($visit);
+    }
+
+    /** Final pelayanan terpisah dari final RME dan discharge. */
+    public function finalizeService(Request $request, Visit $visit, VisitFinalizationService $service): VisitResource
+    {
+        return new VisitResource($service->finalize($visit, $request->user()));
     }
 }

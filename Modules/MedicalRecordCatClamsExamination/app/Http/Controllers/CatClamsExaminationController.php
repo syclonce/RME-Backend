@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordCatClamsExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordCatClamsExamination\Http\Requests\StoreCatClamsExaminationRequest;
 use Modules\MedicalRecordCatClamsExamination\Http\Requests\UpdateCatClamsExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordCatClamsExamination\Models\CatClamsExamination;
 
 class CatClamsExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = CatClamsExamination::query();
@@ -31,6 +34,8 @@ class CatClamsExaminationController extends Controller
     public function store(StoreCatClamsExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = CatClamsExamination::create($data);

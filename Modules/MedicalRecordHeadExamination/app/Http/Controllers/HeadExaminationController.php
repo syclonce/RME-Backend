@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHeadExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordHeadExamination\Http\Requests\StoreHeadExaminationRequest;
 use Modules\MedicalRecordHeadExamination\Http\Requests\UpdateHeadExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordHeadExamination\Models\HeadExamination;
 
 class HeadExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = HeadExamination::query();
@@ -28,6 +31,8 @@ class HeadExaminationController extends Controller
     public function store(StoreHeadExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

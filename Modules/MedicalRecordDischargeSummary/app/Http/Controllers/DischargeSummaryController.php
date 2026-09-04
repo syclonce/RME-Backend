@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDischargeSummary\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDischargeSummary\Http\Requests\StoreDischargeSummaryRequest;
 use Modules\MedicalRecordDischargeSummary\Http\Resources\DischargeSummaryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordDischargeSummary\Models\DischargeSummary;
 
 class DischargeSummaryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DischargeSummary::query();
@@ -28,6 +31,8 @@ class DischargeSummaryController extends Controller
     public function store(StoreDischargeSummaryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['authored_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

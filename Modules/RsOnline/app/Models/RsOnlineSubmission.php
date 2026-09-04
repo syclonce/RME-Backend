@@ -2,6 +2,8 @@
 
 namespace Modules\RsOnline\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\RsOnline\Database\Factories\RsOnlineSubmissionFactory;
@@ -16,7 +18,7 @@ use Modules\RsOnline\Database\Factories\RsOnlineSubmissionFactory;
  */
 class RsOnlineSubmission extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'resource',

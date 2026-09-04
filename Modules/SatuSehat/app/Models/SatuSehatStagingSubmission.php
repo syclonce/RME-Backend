@@ -2,13 +2,15 @@
 
 namespace Modules\SatuSehat\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\SatuSehat\Database\Factories\SatuSehatStagingSubmissionFactory;
 
 class SatuSehatStagingSubmission extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'resource_type',

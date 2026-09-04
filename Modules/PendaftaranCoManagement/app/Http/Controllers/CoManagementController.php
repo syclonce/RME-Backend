@@ -2,6 +2,7 @@
 
 namespace Modules\PendaftaranCoManagement\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PendaftaranCoManagement\Http\Requests\StoreCoManagementRequest;
@@ -10,6 +11,8 @@ use Modules\PendaftaranCoManagement\Models\CoManagement;
 
 class CoManagementController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = CoManagement::query();
@@ -25,6 +28,7 @@ class CoManagementController extends Controller
     {
         $data = $request->validated();
         $data['started_at'] ??= now();
+        $this->guardMedicalRecord($request, $data);
 
         $comanagement = CoManagement::create($data);
 

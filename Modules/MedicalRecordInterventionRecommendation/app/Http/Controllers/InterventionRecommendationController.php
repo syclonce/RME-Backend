@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordInterventionRecommendation\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordInterventionRecommendation\Http\Requests\StoreInterventionRecommendationRequest;
 use Modules\MedicalRecordInterventionRecommendation\Http\Requests\UpdateInterventionRecommendationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordInterventionRecommendation\Models\InterventionRecommend
 
 class InterventionRecommendationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = InterventionRecommendation::query();
@@ -21,6 +24,8 @@ class InterventionRecommendationController extends Controller
     public function store(StoreInterventionRecommendationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'open';
 
         $record = InterventionRecommendation::create($data);

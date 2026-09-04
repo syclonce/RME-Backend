@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordToeExamination\Models\ToeExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class ToeExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class ToeExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 24,
+            'visit_id' => $visit->id,
             'foot_side' => 'left',
             'ulceration' => false,
             'capillary_refill_seconds' => 2.0,
@@ -42,10 +45,10 @@ class ToeExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/toe-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 24)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.foot_side', 'left');
 
-        $this->assertDatabaseHas('toe_examinations', ['visit_id' => 24, 'foot_side' => 'left']);
+        $this->assertDatabaseHas('toe_examinations', ['visit_id' => $visit->id, 'foot_side' => 'left']);
     }
 
     public function test_it_lists_toe_examinations(): void

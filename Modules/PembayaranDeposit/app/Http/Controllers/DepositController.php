@@ -8,6 +8,7 @@ use Modules\PembayaranDeposit\Http\Requests\StoreDepositRequest;
 use Modules\PembayaranDeposit\Http\Requests\UpdateDepositRequest;
 use Modules\PembayaranDeposit\Http\Resources\DepositResource;
 use Modules\PembayaranDeposit\Models\Deposit;
+use Modules\PembayaranDeposit\Services\DepositService;
 
 class DepositController extends Controller
 {
@@ -26,25 +27,9 @@ class DepositController extends Controller
      * Deposits are financial records - amount/visit are append-only. Only the
      * status transitions (held -> applied/refunded).
      */
-    public function store(StoreDepositRequest $request)
+    public function store(StoreDepositRequest $request, DepositService $service)
     {
-        $data = $request->validated();
-        $data['deposit_number'] = Deposit::generateDepositNumber();
-        $data['paid_at'] ??= now();
-        $data['received_by'] = $request->user()->id;
-        $data['status'] = 'held';
-
-        // Jumlah deposit adalah jangkar batas refund kumulatif. Petugas tidak
-        // boleh menetapkannya di atas plafon wajar tanpa jejak persetujuan
-        // admin, kalau tidak kap refund di DepositRefundController menjadi
-        // tidak bermakna (anchor inflation).
-        abort_if(
-            (float) $data['amount'] > Deposit::MAX_AMOUNT && ! $request->user()->hasRole('admin'),
-            422,
-            'Jumlah deposit melebihi plafon wajar; hanya admin yang dapat menyetujuinya.'
-        );
-
-        $deposit = Deposit::create($data);
+        $deposit = $service->create($request->validated(), $request->user());
 
         return (new DepositResource($deposit))->response()->setStatusCode(201);
     }
@@ -54,12 +39,8 @@ class DepositController extends Controller
         return new DepositResource($deposit);
     }
 
-    public function update(UpdateDepositRequest $request, Deposit $deposit): DepositResource
+    public function update(UpdateDepositRequest $request, Deposit $deposit, DepositService $service): DepositResource
     {
-        abort_if($deposit->status !== 'held', 422, 'Deposit ini sudah diproses.');
-
-        $deposit->update($request->validated());
-
-        return new DepositResource($deposit);
+        return new DepositResource($service->transition($deposit, $request->validated('status')));
     }
 }

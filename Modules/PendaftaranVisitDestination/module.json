@@ -1,0 +1,11 @@
+{
+    "name": "PendaftaranVisitDestination",
+    "alias": "pendaftaranvisitdestination",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PendaftaranVisitDestination\\Providers\\PendaftaranVisitDestinationServiceProvider"
+    ],
+    "files": []
+}

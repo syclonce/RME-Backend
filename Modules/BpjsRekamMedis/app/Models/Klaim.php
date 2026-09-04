@@ -2,6 +2,8 @@
 
 namespace Modules\BpjsRekamMedis\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -9,7 +11,7 @@ use Modules\BpjsRekamMedis\Database\Factories\KlaimFactory;
 
 class Klaim extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public $incrementing = false;
 

@@ -2,7 +2,9 @@
 
 namespace Modules\PembayaranClaimInvoice\Providers;
 
+use App\Events\InvoiceLocked;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Modules\PembayaranClaimInvoice\Listeners\CreateClaimInvoiceOnLock;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,9 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        InvoiceLocked::class => [CreateClaimInvoiceOnLock::class],
+    ];
 
     /**
      * Indicates if events should be discovered.

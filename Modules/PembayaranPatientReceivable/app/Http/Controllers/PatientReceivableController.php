@@ -4,14 +4,16 @@ namespace Modules\PembayaranPatientReceivable\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\PembayaranInvoice\Models\Invoice;
 use Modules\PembayaranPatientReceivable\Http\Requests\StorePatientReceivableRequest;
-use Modules\PembayaranPatientReceivable\Http\Requests\UpdatePatientReceivableRequest;
+use Modules\PembayaranPatientReceivable\Http\Requests\TransitionPatientReceivableRequest;
 use Modules\PembayaranPatientReceivable\Http\Resources\PatientReceivableResource;
 use Modules\PembayaranPatientReceivable\Models\PatientReceivable;
+use Modules\PembayaranPatientReceivable\Services\PatientReceivableService;
 
 class PatientReceivableController extends Controller
 {
+    public function __construct(protected PatientReceivableService $service) {}
+
     public function index(Request $request)
     {
         $query = PatientReceivable::query();
@@ -25,22 +27,7 @@ class PatientReceivableController extends Controller
 
     public function store(StorePatientReceivableRequest $request)
     {
-        $data = $request->validated();
-
-        // Piutang pasien adalah jangkar batas settlement kumulatif, jadi
-        // jumlahnya dibatasi bagian tagihan yang memang ditanggung pasien
-        // (total - coverage penjamin). Tanpa ini petugas bisa mencetak
-        // piutang oversized lalu melunasinya penuh lewat endpoint settlement.
-        $invoice = Invoice::findOrFail($data['invoice_id']);
-        abort_if(
-            (float) $data['amount'] > (float) $invoice->patient_share,
-            422,
-            'Jumlah piutang melebihi bagian tagihan yang ditanggung pasien.'
-        );
-
-        $data['status'] = 'outstanding';
-
-        $receivable = PatientReceivable::create($data);
+        $receivable = $this->service->create($request->validated());
 
         return (new PatientReceivableResource($receivable))->response()->setStatusCode(201);
     }
@@ -50,13 +37,10 @@ class PatientReceivableController extends Controller
         return new PatientReceivableResource($patient_receivable);
     }
 
-    /**
-     * Update is restricted to status transitions - amount/due_date are fixed at creation.
-     */
-    public function update(UpdatePatientReceivableRequest $request, PatientReceivable $patient_receivable): PatientReceivableResource
+    public function transition(TransitionPatientReceivableRequest $request, PatientReceivable $patient_receivable): PatientReceivableResource
     {
-        $patient_receivable->update($request->validated());
+        $receivable = $this->service->transition($patient_receivable, $request->validated('status'));
 
-        return new PatientReceivableResource($patient_receivable->fresh());
+        return new PatientReceivableResource($receivable);
     }
 }

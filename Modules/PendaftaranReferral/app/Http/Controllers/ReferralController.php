@@ -8,6 +8,7 @@ use Modules\PendaftaranReferral\Http\Requests\StoreReferralRequest;
 use Modules\PendaftaranReferral\Http\Requests\UpdateReferralRequest;
 use Modules\PendaftaranReferral\Http\Resources\ReferralResource;
 use Modules\PendaftaranReferral\Models\Referral;
+use Modules\PendaftaranReferral\Services\ReferralService;
 
 class ReferralController extends Controller
 {
@@ -22,13 +23,9 @@ class ReferralController extends Controller
         return ReferralResource::collection($query->latest('referred_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreReferralRequest $request)
+    public function store(StoreReferralRequest $request, ReferralService $service)
     {
-        $data = $request->validated();
-        $data['referral_number'] = Referral::generateReferralNumber();
-        $data['referred_at'] ??= now();
-
-        $referral = Referral::create($data);
+        $referral = $service->create($request->validated());
 
         return (new ReferralResource($referral))->response()->setStatusCode(201);
     }
@@ -38,10 +35,8 @@ class ReferralController extends Controller
         return new ReferralResource($referral);
     }
 
-    public function update(UpdateReferralRequest $request, Referral $referral): ReferralResource
+    public function update(UpdateReferralRequest $request, Referral $referral, ReferralService $service): ReferralResource
     {
-        $referral->update($request->validated());
-
-        return new ReferralResource($referral);
+        return new ReferralResource($service->transition($referral, $request->validated('status')));
     }
 }

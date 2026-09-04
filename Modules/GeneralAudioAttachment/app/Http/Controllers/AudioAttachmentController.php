@@ -3,6 +3,7 @@
 namespace Modules\GeneralAudioAttachment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\GeneralAudioAttachment\Http\Requests\StoreAudioAttachmentRequest;
 use Modules\GeneralAudioAttachment\Http\Requests\UpdateAudioAttachmentRequest;
@@ -11,6 +12,8 @@ use Modules\GeneralAudioAttachment\Models\AudioAttachment;
 
 class AudioAttachmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AudioAttachment::query();
@@ -21,6 +24,8 @@ class AudioAttachmentController extends Controller
     public function store(StoreAudioAttachmentRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['is_active'] = $data['is_active'] ?? true;
         $audio_attachment = AudioAttachment::create($data);
 

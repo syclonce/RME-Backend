@@ -8,6 +8,7 @@ use Modules\LayananPharmacyOutpatientQueue\Http\Requests\StorePharmacyOutpatient
 use Modules\LayananPharmacyOutpatientQueue\Http\Requests\UpdatePharmacyOutpatientQueueRequest;
 use Modules\LayananPharmacyOutpatientQueue\Http\Resources\PharmacyOutpatientQueueResource;
 use Modules\LayananPharmacyOutpatientQueue\Models\PharmacyOutpatientQueue;
+use Modules\LayananPharmacyOutpatientQueue\Services\PharmacyOutpatientQueueService;
 
 class PharmacyOutpatientQueueController extends Controller
 {
@@ -18,11 +19,9 @@ class PharmacyOutpatientQueueController extends Controller
         return PharmacyOutpatientQueueResource::collection($query->orderBy('id', 'desc')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StorePharmacyOutpatientQueueRequest $request)
+    public function store(StorePharmacyOutpatientQueueRequest $request, PharmacyOutpatientQueueService $service)
     {
-        $data = $request->validated();
-        $data['status'] = $data['status'] ?? 'waiting';
-        $queue = PharmacyOutpatientQueue::create($data);
+        $queue = $service->create($request->validated());
 
         return (new PharmacyOutpatientQueueResource($queue))->response()->setStatusCode(201);
     }
@@ -32,10 +31,8 @@ class PharmacyOutpatientQueueController extends Controller
         return new PharmacyOutpatientQueueResource($queue);
     }
 
-    public function update(UpdatePharmacyOutpatientQueueRequest $request, PharmacyOutpatientQueue $queue): PharmacyOutpatientQueueResource
+    public function update(UpdatePharmacyOutpatientQueueRequest $request, PharmacyOutpatientQueue $queue, PharmacyOutpatientQueueService $service): PharmacyOutpatientQueueResource
     {
-        $queue->update($request->validated());
-
-        return new PharmacyOutpatientQueueResource($queue);
+        return new PharmacyOutpatientQueueResource($service->transition($queue, $request->validated('status')));
     }
 }

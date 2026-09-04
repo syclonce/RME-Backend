@@ -19,7 +19,6 @@ class StoreDischargeMedicationReconciliationRequest extends FormRequest
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'source_of_medication_list' => ['nullable','string','max:255'],
             'notes' => ['nullable','string'],
-            'status' => ['nullable','in:draft,completed'],
             'reconciled_at' => ['nullable','date'],
         ];
     }

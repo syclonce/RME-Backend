@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordIntradialyticHdMonitoring\Models\IntradialyticHdMonitoring;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class IntradialyticHdMonitoringControllerTest extends TestCase
@@ -32,8 +33,10 @@ class IntradialyticHdMonitoringControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 8,
+            'visit_id' => $visit->id,
             'patient_id' => 16,
             'dialysis_hour' => 2,
             'blood_pressure_systolic' => 130,
@@ -49,7 +52,7 @@ class IntradialyticHdMonitoringControllerTest extends TestCase
             ->assertJsonPath('data.dialysis_hour', 2)
             ->assertJsonPath('data.blood_flow_rate', 220);
 
-        $this->assertDatabaseHas('intradialytic_hd_monitorings', ['visit_id' => 8, 'dialysis_hour' => 2]);
+        $this->assertDatabaseHas('intradialytic_hd_monitorings', ['visit_id' => $visit->id, 'dialysis_hour' => 2]);
     }
 
     public function test_it_lists_intradialytic_hd_monitorings(): void

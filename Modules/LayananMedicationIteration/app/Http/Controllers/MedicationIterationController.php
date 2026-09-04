@@ -8,6 +8,7 @@ use Modules\LayananMedicationIteration\Http\Requests\StoreMedicationIterationReq
 use Modules\LayananMedicationIteration\Http\Requests\UpdateMedicationIterationRequest;
 use Modules\LayananMedicationIteration\Http\Resources\MedicationIterationResource;
 use Modules\LayananMedicationIteration\Models\MedicationIteration;
+use Modules\LayananMedicationIteration\Services\MedicationIterationService;
 
 class MedicationIterationController extends Controller
 {
@@ -18,11 +19,9 @@ class MedicationIterationController extends Controller
         return MedicationIterationResource::collection($query->orderBy('id', 'desc')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreMedicationIterationRequest $request)
+    public function store(StoreMedicationIterationRequest $request, MedicationIterationService $service)
     {
-        $data = $request->validated();
-        $data['status'] = $data['status'] ?? 'pending';
-        $iteration = MedicationIteration::create($data);
+        $iteration = $service->create($request->validated());
 
         return (new MedicationIterationResource($iteration))->response()->setStatusCode(201);
     }
@@ -32,10 +31,8 @@ class MedicationIterationController extends Controller
         return new MedicationIterationResource($iteration);
     }
 
-    public function update(UpdateMedicationIterationRequest $request, MedicationIteration $iteration): MedicationIterationResource
+    public function update(UpdateMedicationIterationRequest $request, MedicationIteration $iteration, MedicationIterationService $service): MedicationIterationResource
     {
-        $iteration->update($request->validated());
-
-        return new MedicationIterationResource($iteration);
+        return new MedicationIterationResource($service->transition($iteration, $request->validated('status')));
     }
 }

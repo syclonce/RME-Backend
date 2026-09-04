@@ -20,7 +20,6 @@ class StorePatientNutritionProblemRequest extends FormRequest
             'problem_category' => ['required','string','max:40'],
             'problem_description' => ['required','string'],
             'intervention_plan' => ['nullable','string'],
-            'status' => ['nullable','in:open,in_progress,resolved'],
             'identified_at' => ['nullable','date'],
         ];
     }

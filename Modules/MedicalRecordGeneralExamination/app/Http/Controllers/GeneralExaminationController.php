@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGeneralExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordGeneralExamination\Http\Requests\StoreGeneralExaminationRequest;
 use Modules\MedicalRecordGeneralExamination\Http\Requests\UpdateGeneralExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordGeneralExamination\Models\GeneralExamination;
 
 class GeneralExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = GeneralExamination::query();
@@ -28,6 +31,8 @@ class GeneralExaminationController extends Controller
     public function store(StoreGeneralExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

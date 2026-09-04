@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordCoughAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordCoughAssessment\Http\Requests\StoreCoughAssessmentRequest;
 use Modules\MedicalRecordCoughAssessment\Http\Requests\UpdateCoughAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordCoughAssessment\Models\CoughAssessment;
 
 class CoughAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = CoughAssessment::query();
@@ -21,6 +24,8 @@ class CoughAssessmentController extends Controller
     public function store(StoreCoughAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['has_cough'] ??= false;
         $data['is_referred_tb_screening'] ??= false;
 

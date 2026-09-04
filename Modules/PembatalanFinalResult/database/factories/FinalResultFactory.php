@@ -12,7 +12,7 @@ class FinalResultFactory extends Factory {
             'reason' => $this->faker->sentence(),
             'cancellation_date' => $this->faker->dateTime(),
             'requested_by' => $this->faker->name(),
-            'status' => 'pending',
+            'status' => 'applied',
         ];
     }
 }

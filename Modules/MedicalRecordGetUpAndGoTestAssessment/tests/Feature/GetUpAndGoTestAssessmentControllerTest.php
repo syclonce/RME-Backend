@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordGetUpAndGoTestAssessment\Models\GetUpAndGoTestAssessment;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class GetUpAndGoTestAssessmentControllerTest extends TestCase
@@ -32,8 +33,10 @@ class GetUpAndGoTestAssessmentControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'time_seconds' => 11.5,
         ];
 

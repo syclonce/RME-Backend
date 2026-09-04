@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordRiskFactor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordRiskFactor\Http\Requests\StoreRiskFactorRequest;
 use Modules\MedicalRecordRiskFactor\Http\Requests\UpdateRiskFactorRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordRiskFactor\Models\RiskFactor;
 
 class RiskFactorController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RiskFactor::query();
@@ -21,6 +24,8 @@ class RiskFactorController extends Controller
     public function store(StoreRiskFactorRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = RiskFactor::create($data);
 

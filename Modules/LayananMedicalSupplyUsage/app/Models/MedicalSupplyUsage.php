@@ -2,6 +2,8 @@
 
 namespace Modules\LayananMedicalSupplyUsage\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\LayananMedicalSupplyUsage\Database\Factories\MedicalSupplyUsageFacto
 
 class MedicalSupplyUsage extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'medical_supply_usages';
 

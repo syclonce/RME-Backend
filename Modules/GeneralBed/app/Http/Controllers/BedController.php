@@ -17,10 +17,18 @@ class BedController extends Controller
 
     public function index(Request $request)
     {
-        $query = Bed::query();
+        $query = Bed::query()->with('room');
 
         if ($request->filled('room_id')) {
             $query->where('room_id', $request->integer('room_id'));
+        }
+
+        if ($request->filled('ward_id')) {
+            $query->whereHas('room', fn ($q) => $q->where('ward_id', $request->integer('ward_id')));
+        }
+
+        if ($request->boolean('available_only')) {
+            $query->where('is_active', true)->where('status', Bed::STATUS_AVAILABLE);
         }
 
         // Baca juga di-scope ward (#3): sama seperti gerbang tulis.
@@ -32,7 +40,7 @@ class BedController extends Controller
             }
         }
 
-        return $query->orderBy('bed_number')->paginate(15);
+        return $query->orderBy('bed_number')->paginate(min(max($request->integer('per_page', 15), 1), 100));
     }
 
     public function store(Request $request)

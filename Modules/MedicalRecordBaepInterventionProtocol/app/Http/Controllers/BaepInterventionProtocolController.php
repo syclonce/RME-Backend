@@ -5,8 +5,10 @@ namespace Modules\MedicalRecordBaepInterventionProtocol\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBaepInterventionProtocol\Http\Requests\StoreBaepInterventionProtocolRequest;
+use Modules\MedicalRecordBaepInterventionProtocol\Http\Requests\UpdateBaepInterventionProtocolRequest;
 use Modules\MedicalRecordBaepInterventionProtocol\Http\Resources\BaepInterventionProtocolResource;
 use Modules\MedicalRecordBaepInterventionProtocol\Models\BaepInterventionProtocol;
+use Modules\MedicalRecordBaepInterventionProtocol\Services\BaepInterventionProtocolService;
 
 class BaepInterventionProtocolController extends Controller
 {
@@ -21,14 +23,9 @@ class BaepInterventionProtocolController extends Controller
         return BaepInterventionProtocolResource::collection($query->latest('performed_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreBaepInterventionProtocolRequest $request)
+    public function store(StoreBaepInterventionProtocolRequest $request, BaepInterventionProtocolService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'in_progress';
-        $data['performed_at'] ??= now();
-        $data['created_by'] = $request->user()->id;
-
-        $record = BaepInterventionProtocol::create($data);
+        $record = $service->create($request->validated(), $request->user());
 
         return (new BaepInterventionProtocolResource($record))->response()->setStatusCode(201);
     }
@@ -36,5 +33,14 @@ class BaepInterventionProtocolController extends Controller
     public function show(BaepInterventionProtocol $record): BaepInterventionProtocolResource
     {
         return new BaepInterventionProtocolResource($record);
+    }
+
+    public function update(UpdateBaepInterventionProtocolRequest $request, BaepInterventionProtocol $record, BaepInterventionProtocolService $service): BaepInterventionProtocolResource
+    {
+        $validated = $request->validated();
+
+        return new BaepInterventionProtocolResource(
+            $service->transition($record, $validated['status'], $request->user(), $validated)
+        );
     }
 }

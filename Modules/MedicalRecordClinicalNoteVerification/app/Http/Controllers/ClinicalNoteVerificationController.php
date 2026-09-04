@@ -3,6 +3,8 @@
 namespace Modules\MedicalRecordClinicalNoteVerification\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Modules\MedicalRecordClinicalNote\Models\ClinicalNote;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordClinicalNoteVerification\Http\Requests\ClinicalNoteVerificationRequest;
 use Modules\MedicalRecordClinicalNoteVerification\Http\Resources\ClinicalNoteVerificationResource;

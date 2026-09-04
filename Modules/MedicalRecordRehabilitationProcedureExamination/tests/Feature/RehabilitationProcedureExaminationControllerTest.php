@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordRehabilitationProcedureExamination\Models\RehabilitationProcedureExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class RehabilitationProcedureExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class RehabilitationProcedureExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'procedure_name' => 'Passive range of motion exercise',
         ];
 

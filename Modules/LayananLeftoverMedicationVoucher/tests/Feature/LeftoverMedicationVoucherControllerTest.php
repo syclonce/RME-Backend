@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\LayananLeftoverMedicationVoucher\Models\LeftoverMedicationVoucher;
+use Modules\MedicalRecordEpisode\Models\MedicalRecordEpisode;
 use Tests\TestCase;
 
 class LeftoverMedicationVoucherControllerTest extends TestCase
@@ -96,5 +97,34 @@ class LeftoverMedicationVoucherControllerTest extends TestCase
 
         $this->putJson("/api/v1/leftover-medication-vouchers/{$voucher->id}", ['status' => 'redeemed'])
             ->assertStatus(422);
+    }
+
+    public function test_it_transitions_pending_to_expired(): void
+    {
+        $this->actingUser();
+        $voucher = LeftoverMedicationVoucher::factory()->create(['status' => 'pending']);
+
+        $this->putJson("/api/v1/leftover-medication-vouchers/{$voucher->id}", ['status' => 'expired'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'expired');
+    }
+
+    public function test_it_rejects_create_when_medical_record_is_finalized(): void
+    {
+        $this->actingUser();
+        $visit = \Modules\PendaftaranVisit\Models\Visit::factory()->create();
+        MedicalRecordEpisode::create([
+            'visit_id' => $visit->id,
+            'status' => MedicalRecordEpisode::STATUS_FINALIZED,
+        ]);
+
+        $this->postJson('/api/v1/leftover-medication-vouchers', [
+            'voucher_number' => 'VCH-FINAL-'.uniqid(),
+            'visit_id' => $visit->id,
+            'patient_id' => \Modules\GeneralPatient\Models\Patient::factory()->create()->id,
+            'issued_at' => '2026-08-26 08:00:00',
+        ])->assertStatus(422);
+
+        $this->assertDatabaseCount('leftover_medication_vouchers', 0);
     }
 }

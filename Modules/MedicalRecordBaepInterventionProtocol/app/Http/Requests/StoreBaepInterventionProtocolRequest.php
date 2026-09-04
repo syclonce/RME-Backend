@@ -25,7 +25,6 @@ class StoreBaepInterventionProtocolRequest extends FormRequest
             'wave_iii_latency_ms' => ['nullable','numeric'],
             'wave_v_latency_ms' => ['nullable','numeric'],
             'interpretation' => ['nullable','string'],
-            'status' => ['nullable','in:in_progress,completed'],
             'performed_at' => ['nullable','date'],
         ];
     }

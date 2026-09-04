@@ -2,6 +2,7 @@
 
 namespace Modules\MedicalRecordFamilyPlanningObstetrics\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFamilyPlanningObstetrics\Http\Requests\StoreFamilyPlanningObstetricsRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFamilyPlanningObstetrics\Models\FamilyPlanningObstetric
 
 class FamilyPlanningObstetricsController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FamilyPlanningObstetrics::query();
@@ -30,7 +33,11 @@ class FamilyPlanningObstetricsController extends Controller
 
     public function store(StoreFamilyPlanningObstetricsRequest $request)
     {
-        $record = FamilyPlanningObstetrics::create($request->validated());
+        $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
+
+        $record = FamilyPlanningObstetrics::create($data);
 
         return (new FamilyPlanningObstetricsResource($record))->response()->setStatusCode(201);
     }

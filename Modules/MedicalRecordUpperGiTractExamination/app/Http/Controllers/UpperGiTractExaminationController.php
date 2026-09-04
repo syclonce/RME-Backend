@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordUpperGiTractExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordUpperGiTractExamination\Http\Requests\StoreUpperGiTractExaminationRequest;
 use Modules\MedicalRecordUpperGiTractExamination\Http\Requests\UpdateUpperGiTractExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordUpperGiTractExamination\Models\UpperGiTractExamination;
 
 class UpperGiTractExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = UpperGiTractExamination::query();
@@ -28,6 +31,8 @@ class UpperGiTractExaminationController extends Controller
     public function store(StoreUpperGiTractExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

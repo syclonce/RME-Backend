@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordSurgeryPerformer\Models\SurgeryPerformer;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class SurgeryPerformerControllerTest extends TestCase
@@ -32,9 +33,11 @@ class SurgeryPerformerControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
             'surgery_id' => 12,
-            'visit_id' => 4,
+            'visit_id' => $visit->id,
             'doctor_id' => 8,
             'role' => 'Lead Surgeon',
         ];

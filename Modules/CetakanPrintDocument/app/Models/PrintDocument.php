@@ -2,6 +2,8 @@
 
 namespace Modules\CetakanPrintDocument\Models;
 
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +26,9 @@ class PrintDocument extends Model
 
     public const TYPE_TRACER = 'tracer';
 
-    public const TYPES = [self::TYPE_RECEIPT, self::TYPE_KARCIS, self::TYPE_WRISTBAND, self::TYPE_TRACER];
+    public const TYPE_PATIENT_CARD = 'patient_card';
+
+    public const TYPES = [self::TYPE_RECEIPT, self::TYPE_KARCIS, self::TYPE_WRISTBAND, self::TYPE_TRACER, self::TYPE_PATIENT_CARD];
 
     /** Prefix nomor seri per jenis — ala generateIdKarcis/generateIdPenggunaAksesLog. */
     public const PREFIXES = [
@@ -32,6 +36,7 @@ class PrintDocument extends Model
         self::TYPE_KARCIS => 'KRCS',
         self::TYPE_WRISTBAND => 'WSTB',
         self::TYPE_TRACER => 'TRCR',
+        self::TYPE_PATIENT_CARD => 'PCRD',
     ];
 
     protected $fillable = [
@@ -70,22 +75,22 @@ class PrintDocument extends Model
     }
 
     /**
-     * Format: {PREFIX}-{YYMMDD}-{seq4 harian}, lanjut dari nomor terbesar
-     * prefix-hari itu. Sama dikenal terbatas dengan generator nomor lain di
-     * proyek ini: tidak aman-konkurensi tanpa lock (service issue memakai
-     * transaksi + lockForUpdate).
+     * Format: {PREFIX}-{YYMMDD}-{seq4 harian}.
+     *
+     * Deretnya per-prefix per-hari, persis bentuk tabel penghitung legacy
+     * (mis. generator.no_pendaftaran berkunci TANGGAL, LPAD 4 digit).
+     * Sebelumnya nomor diturunkan dari max() baris yang ada -- aman dari daur
+     * ulang, tapi hanya terlindung bila pemanggilnya kebetulan berada dalam
+     * transaksi. NumberSequence tidak menitipkan syarat itu ke pemanggil.
      */
     public static function generateDocumentNumber(string $type): string
     {
-        $prefix = self::PREFIXES[$type];
-        $stamp = now()->format('ymd');
-        $last = static::query()
-            ->where('document_number', 'like', "{$prefix}-{$stamp}-%")
-            ->lockForUpdate()
-            ->max('document_number');
-        $seq = $last !== null ? (int) substr($last, -4) : 0;
-
-        return sprintf('%s-%s-%04d', $prefix, $stamp, $seq + 1);
+        return NumberSequence::format(
+            self::PREFIXES[$type],
+            'print_document:'.$type,
+            now()->format('ymd'),
+            pad: 4,
+        );
     }
 
     protected static function newFactory(): PrintDocumentFactory

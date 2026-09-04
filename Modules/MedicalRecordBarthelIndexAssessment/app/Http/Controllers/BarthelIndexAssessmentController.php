@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBarthelIndexAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBarthelIndexAssessment\Http\Requests\StoreBarthelIndexAssessmentRequest;
 use Modules\MedicalRecordBarthelIndexAssessment\Http\Requests\UpdateBarthelIndexAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordBarthelIndexAssessment\Models\BarthelIndexAssessment;
 
 class BarthelIndexAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BarthelIndexAssessment::query();
@@ -28,8 +31,22 @@ class BarthelIndexAssessmentController extends Controller
     public function store(StoreBarthelIndexAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
+
+        // Total dihitung ulang di server, menimpa apa pun yang dikirim klien.
+        // Skor ADL yang salah ketik bisa membuat kemandirian pasien tercatat
+        // keliru tanpa tanda apa pun di layar. Kolom `interpretation` TIDAK
+        // ditimpa: skema ini menyimpannya sebagai string bebas, bukan enum
+        // dengan ambang baku yang terkunci di validasi.
+        $data['total_score'] = BarthelIndexAssessment::calculateTotalScore($data);
+
+        // Interpretasi diturunkan dari skor, bukan diketik terpisah — supaya
+        // keduanya tidak pernah bertentangan (skor 100 berlabel "ketergantungan
+        // total" adalah kesalahan yang tidak terlihat sampai ada yang membacanya).
+        $data['interpretation'] = BarthelIndexAssessment::interpretationFor($data['total_score']);
 
         $record = BarthelIndexAssessment::create($data);
 

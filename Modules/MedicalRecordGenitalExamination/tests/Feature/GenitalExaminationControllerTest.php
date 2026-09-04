@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordGenitalExamination\Models\GenitalExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class GenitalExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class GenitalExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 21,
+            'visit_id' => $visit->id,
             'external_genitalia' => 'Normal',
             'discharge_characteristics' => 'None',
         ];
@@ -41,10 +44,10 @@ class GenitalExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/genital-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 21)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.external_genitalia', 'Normal');
 
-        $this->assertDatabaseHas('genital_examinations', ['visit_id' => 21, 'external_genitalia' => 'Normal']);
+        $this->assertDatabaseHas('genital_examinations', ['visit_id' => $visit->id, 'external_genitalia' => 'Normal']);
     }
 
     public function test_it_lists_genital_examinations(): void

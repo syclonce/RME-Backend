@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordPatientTransferSheet\Models\PatientTransferSheet;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class PatientTransferSheetControllerTest extends TestCase
@@ -32,8 +33,10 @@ class PatientTransferSheetControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 10,
+            'visit_id' => $visit->id,
             'patient_id' => 20,
             'from_ward_id' => 1,
             'to_ward_id' => 2,
@@ -44,10 +47,10 @@ class PatientTransferSheetControllerTest extends TestCase
         $response = $this->postJson('/api/v1/patient-transfer-sheets', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 10)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.transfer_reason', 'Condition improved');
 
-        $this->assertDatabaseHas('patient_transfer_sheets', ['visit_id' => 10, 'patient_id' => 20]);
+        $this->assertDatabaseHas('patient_transfer_sheets', ['visit_id' => $visit->id, 'patient_id' => 20]);
     }
 
     public function test_it_lists_patient_transfer_sheets(): void

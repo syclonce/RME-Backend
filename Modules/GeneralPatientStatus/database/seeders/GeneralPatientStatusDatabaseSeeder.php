@@ -8,38 +8,33 @@ use Illuminate\Support\Facades\DB;
 class GeneralPatientStatusDatabaseSeeder extends Seeder
 {
     /**
-     * Seed data nyata dari dump master.referensi SIMGOS (jenis 13).
+     * Status vital pasien (2 nilai).
+     *
+     * Sumber: SIMpel legacy — JENIS 13, dipakai pada `master.pasien.STATUS`.
+     * Kode aslinya dipertahankan di kolom `code` supaya pemetaan saat migrasi
+     * data tetap bisa dilakukan.
+     *
+     * Idempoten: dicocokkan berdasarkan `name` (kolomnya unik), `code`
+     * diperbarui sebagai atribut.
      */
     public function run(): void
     {
         $now = now();
 
-        $rows = array (
-  0 => 
-  array (
-    'name' => 'Dibatalkan / Tidak Aktif',
-    'code' => NULL,
-    'is_active' => true,
-  ),
-  1 => 
-  array (
-    'name' => 'Hidup / Aktif',
-    'code' => NULL,
-    'is_active' => true,
-  ),
-  2 => 
-  array (
-    'name' => 'Meninggal',
-    'code' => NULL,
-    'is_active' => true,
-  ),
-);
-
-        foreach (array_chunk($rows, 500) as $chunk) {
-            DB::table('patient_statuses')->insert(array_map(static fn ($row) => $row + [
-                'created_at' => $now,
-                'updated_at' => $now,
-            ], $chunk));
+        foreach ($this->rows() as $row) {
+            DB::table('patient_statuses')->updateOrInsert(
+                ['name' => $row['name']],
+                ['code' => $row['code'], 'is_active' => true, 'updated_at' => $now, 'created_at' => $now],
+            );
         }
+    }
+
+    /** @return array<int, array{code: string, name: string}> */
+    private function rows(): array
+    {
+        return [
+            ['code' => '1', 'name' => 'Hidup / Aktif'],
+            ['code' => '2', 'name' => 'Meninggal'],
+        ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Modules\SirsOnlineBor\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\SirsOnlineBor\Database\Factories\TempatTidurFactory;
@@ -13,7 +15,7 @@ use Modules\SirsOnlineBor\Database\Factories\TempatTidurFactory;
  */
 class TempatTidur extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'sirs_online_bor_tempat_tidurs';
 

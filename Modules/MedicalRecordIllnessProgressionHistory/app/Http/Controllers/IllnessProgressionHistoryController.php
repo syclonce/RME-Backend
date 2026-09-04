@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordIllnessProgressionHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordIllnessProgressionHistory\Http\Requests\StoreIllnessProgressionHistoryRequest;
 use Modules\MedicalRecordIllnessProgressionHistory\Http\Resources\IllnessProgressionHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordIllnessProgressionHistory\Models\IllnessProgressionHist
 
 class IllnessProgressionHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = IllnessProgressionHistory::query();
@@ -24,6 +27,8 @@ class IllnessProgressionHistoryController extends Controller
     public function store(StoreIllnessProgressionHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = IllnessProgressionHistory::create($data);

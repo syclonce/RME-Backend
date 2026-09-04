@@ -1,0 +1,15 @@
+{
+    "name": "asvuro/medicalrecordepisode",
+    "description": "Medical record episode workflow",
+    "autoload": {
+        "psr-4": {
+            "Modules\\MedicalRecordEpisode\\": "app/",
+            "Modules\\MedicalRecordEpisode\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\MedicalRecordEpisode\\Tests\\": "tests/"
+        }
+    }
+}

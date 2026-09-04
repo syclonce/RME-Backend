@@ -20,7 +20,6 @@ class StoreInpatientCarePlanRequest extends FormRequest
             'care_goals' => ['required','string'],
             'planned_length_of_stay_days' => ['nullable','integer','min:1'],
             'discharge_criteria' => ['nullable','string'],
-            'status' => ['nullable','in:active,completed,revised'],
             'planned_at' => ['nullable','date'],
         ];
     }

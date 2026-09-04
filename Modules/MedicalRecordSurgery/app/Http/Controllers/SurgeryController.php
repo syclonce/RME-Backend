@@ -8,6 +8,7 @@ use Modules\MedicalRecordSurgery\Http\Requests\StoreSurgeryRequest;
 use Modules\MedicalRecordSurgery\Http\Requests\UpdateSurgeryRequest;
 use Modules\MedicalRecordSurgery\Http\Resources\SurgeryResource;
 use Modules\MedicalRecordSurgery\Models\Surgery;
+use Modules\MedicalRecordSurgery\Services\SurgeryService;
 
 class SurgeryController extends Controller
 {
@@ -22,14 +23,9 @@ class SurgeryController extends Controller
         return SurgeryResource::collection($query->latest('started_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreSurgeryRequest $request)
+    public function store(StoreSurgeryRequest $request, SurgeryService $service)
     {
-        $data = $request->validated();
-        $data['started_at'] ??= now();
-        $data['status'] ??= 'scheduled';
-        $data['created_by'] = $request->user()->id;
-
-        $surgery = Surgery::create($data);
+        $surgery = $service->create($request->validated(), $request->user());
 
         return (new SurgeryResource($surgery))->response()->setStatusCode(201);
     }
@@ -40,13 +36,18 @@ class SurgeryController extends Controller
     }
 
     /**
-     * Only status/ended_at/notes are correctable - the procedure performed
-     * and who performed it are not.
+     * Hanya transisi status (workflow) - detail operasi yang sudah dicatat
+     * saat create (siapa, prosedur apa) tidak lagi bisa diubah lewat endpoint ini.
      */
-    public function update(UpdateSurgeryRequest $request, Surgery $surgery): SurgeryResource
+    public function update(UpdateSurgeryRequest $request, Surgery $surgery, SurgeryService $service): SurgeryResource
     {
-        $surgery->update($request->validated());
+        $validated = $request->validated();
 
-        return new SurgeryResource($surgery);
+        return new SurgeryResource($service->transition(
+            $surgery,
+            $validated['status'],
+            $request->user(),
+            $validated,
+        ));
     }
 }

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHandJointExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordHandJointExamination\Http\Requests\StoreHandJointExaminationRequest;
 use Modules\MedicalRecordHandJointExamination\Http\Requests\UpdateHandJointExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordHandJointExamination\Models\HandJointExamination;
 
 class HandJointExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = HandJointExamination::query();
@@ -28,6 +31,8 @@ class HandJointExaminationController extends Controller
     public function store(StoreHandJointExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

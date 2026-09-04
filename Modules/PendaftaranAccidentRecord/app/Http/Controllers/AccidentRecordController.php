@@ -2,6 +2,7 @@
 
 namespace Modules\PendaftaranAccidentRecord\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PendaftaranAccidentRecord\Http\Requests\StoreAccidentRecordRequest;
@@ -10,6 +11,8 @@ use Modules\PendaftaranAccidentRecord\Models\AccidentRecord;
 
 class AccidentRecordController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AccidentRecord::query();
@@ -24,6 +27,8 @@ class AccidentRecordController extends Controller
     public function store(StoreAccidentRecordRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $accident = AccidentRecord::create($data);
 
         return (new AccidentRecordResource($accident))->response()->setStatusCode(201);

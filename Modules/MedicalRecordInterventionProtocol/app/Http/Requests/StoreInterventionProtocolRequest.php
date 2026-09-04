@@ -19,7 +19,6 @@ class StoreInterventionProtocolRequest extends FormRequest
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'protocol_name' => ['required','string','max:255'],
             'indication' => ['nullable','string'],
-            'status' => ['nullable','in:active,completed,discontinued'],
             'started_at' => ['nullable','date'],
         ];
     }

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordIntradialyticHdMonitoring\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordIntradialyticHdMonitoring\Http\Requests\StoreIntradialyticHdMonitoringRequest;
 use Modules\MedicalRecordIntradialyticHdMonitoring\Http\Requests\UpdateIntradialyticHdMonitoringRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordIntradialyticHdMonitoring\Models\IntradialyticHdMonitor
 
 class IntradialyticHdMonitoringController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = IntradialyticHdMonitoring::query();
@@ -31,6 +34,8 @@ class IntradialyticHdMonitoringController extends Controller
     public function store(StoreIntradialyticHdMonitoringRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['dialysis_hour'] ??= 1;
         $data['monitored_at'] ??= now();
 

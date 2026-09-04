@@ -3,6 +3,9 @@
 namespace Modules\PembayaranInvoiceGuarantor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\HospitalConfig;
+use Modules\PembayaranInvoice\Models\Invoice;
+use App\Modules\Contracts\BillingGate;
 use Illuminate\Http\Request;
 use Modules\PembayaranInvoiceGuarantor\Http\Requests\StoreInvoiceGuarantorRequest;
 use Modules\PembayaranInvoiceGuarantor\Http\Requests\UpdateInvoiceGuarantorRequest;

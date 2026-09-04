@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGynecologyUltrasound\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordGynecologyUltrasound\Http\Requests\GynecologyUltrasoundRequest;
 use Modules\MedicalRecordGynecologyUltrasound\Http\Resources\GynecologyUltrasoundResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordGynecologyUltrasound\Models\GynecologyUltrasound;
 
 class GynecologyUltrasoundController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = GynecologyUltrasound::query();
@@ -34,6 +37,8 @@ class GynecologyUltrasoundController extends Controller
     public function store(GynecologyUltrasoundRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $ultrasound = GynecologyUltrasound::create($data);

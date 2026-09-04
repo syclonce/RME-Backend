@@ -2,12 +2,15 @@
 
 namespace Modules\PenjaminRSAttendingPhysician\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PenjaminRSAttendingPhysician\Models\AttendingPhysician;
 
 class PenjaminRSAttendingPhysicianController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AttendingPhysician::query();
@@ -29,6 +32,7 @@ class PenjaminRSAttendingPhysicianController extends Controller
         ]);
 
         $data['assigned_at'] = $data['assigned_at'] ?? now();
+        $this->guardMedicalRecord($request, $data);
 
         return response()->json(AttendingPhysician::create($data)->refresh(), 201);
     }

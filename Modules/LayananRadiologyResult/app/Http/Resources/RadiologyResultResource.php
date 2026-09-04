@@ -12,8 +12,10 @@ class RadiologyResultResource extends JsonResource
         return [
             'id' => $this->id,
             'radiology_order_id' => $this->radiology_order_id,
+            'study_instance_uid' => $this->study_instance_uid,
             'findings' => $this->findings,
             'impression' => $this->impression,
+            'report_url' => $this->report_url,
             'radiologist_id' => $this->radiologist_id,
             'examined_at' => $this->examined_at?->toIso8601String(),
             'status' => $this->status,

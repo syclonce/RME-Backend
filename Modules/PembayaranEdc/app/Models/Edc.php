@@ -2,6 +2,8 @@
 
 namespace Modules\PembayaranEdc\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\PembayaranPayment\Models\Payment;
 
 class Edc extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'edc_transactions';
 

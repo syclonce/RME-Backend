@@ -3,6 +3,7 @@
 namespace Modules\GeneralPatientFamilyIdentityCard\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\GeneralPatientFamily\Models\PatientFamily;
 
 class PatientFamilyIdentityCardFactory extends Factory
 {
@@ -17,7 +18,7 @@ class PatientFamilyIdentityCardFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_family_id' => fake()->randomNumber(5),
+            'patient_family_id' => PatientFamily::factory(),
             'identity_type' => fake()->randomElement(['KTP', 'SIM', 'Passport']),
             'identity_number' => fake()->unique()->numerify('1################'),
             'is_active' => fake()->boolean(90),

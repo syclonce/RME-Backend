@@ -70,4 +70,50 @@ class ReferralControllerTest extends TestCase
     {
         $this->getJson('/api/v1/referrals')->assertStatus(401);
     }
+
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $this->actingUser();
+        $patient = Patient::factory()->create();
+
+        $response = $this->postJson('/api/v1/referrals', [
+            'patient_id' => $patient->id,
+            'direction' => 'incoming',
+            'facility_name' => 'Puskesmas Sehat',
+            'status' => 'completed',
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('pending', $response->json('data.status'));
+    }
+
+    public function test_it_transitions_accepted_to_completed(): void
+    {
+        $this->actingUser();
+        $referral = Referral::factory()->create(['status' => 'accepted']);
+
+        $response = $this->putJson("/api/v1/referrals/{$referral->id}", ['status' => 'completed']);
+
+        $response->assertOk()->assertJsonPath('data.status', 'completed');
+    }
+
+    public function test_it_rejects_invalid_transition_from_pending_to_completed(): void
+    {
+        $this->actingUser();
+        $referral = Referral::factory()->create(['status' => 'pending']);
+
+        $this->putJson("/api/v1/referrals/{$referral->id}", ['status' => 'completed'])
+            ->assertStatus(422);
+
+        $this->assertSame('pending', $referral->fresh()->status);
+    }
+
+    public function test_it_rejects_transition_from_final_status(): void
+    {
+        $this->actingUser();
+        $referral = Referral::factory()->create(['status' => 'completed']);
+
+        $this->putJson("/api/v1/referrals/{$referral->id}", ['status' => 'accepted'])
+            ->assertStatus(422);
+    }
 }

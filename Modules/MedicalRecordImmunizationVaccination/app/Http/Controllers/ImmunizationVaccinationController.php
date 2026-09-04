@@ -8,6 +8,7 @@ use Modules\MedicalRecordImmunizationVaccination\Http\Requests\StoreImmunization
 use Modules\MedicalRecordImmunizationVaccination\Http\Requests\UpdateImmunizationVaccinationRequest;
 use Modules\MedicalRecordImmunizationVaccination\Http\Resources\ImmunizationVaccinationResource;
 use Modules\MedicalRecordImmunizationVaccination\Models\ImmunizationVaccination;
+use Modules\MedicalRecordImmunizationVaccination\Services\ImmunizationVaccinationService;
 
 class ImmunizationVaccinationController extends Controller
 {
@@ -18,12 +19,9 @@ class ImmunizationVaccinationController extends Controller
         return ImmunizationVaccinationResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreImmunizationVaccinationRequest $request)
+    public function store(StoreImmunizationVaccinationRequest $request, ImmunizationVaccinationService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'completed';
-
-        $record = ImmunizationVaccination::create($data);
+        $record = $service->create($request->validated(), $request->user());
 
         return (new ImmunizationVaccinationResource($record))->response()->setStatusCode(201);
     }
@@ -33,16 +31,20 @@ class ImmunizationVaccinationController extends Controller
         return new ImmunizationVaccinationResource($record);
     }
 
-    public function update(UpdateImmunizationVaccinationRequest $request, ImmunizationVaccination $record): ImmunizationVaccinationResource
+    /**
+     * Imunisasi adalah pencatatan sekali-jadi (diberikan lalu selesai) - tidak
+     * ada transisi status bermakna (lihat ImmunizationVaccinationService).
+     * Endpoint ini hanya mengoreksi field non-status (catatan reaksi, dsb),
+     * tetap lewat gerbang RME supaya koreksi tidak menyentuh episode final.
+     */
+    public function update(UpdateImmunizationVaccinationRequest $request, ImmunizationVaccination $record, ImmunizationVaccinationService $service): ImmunizationVaccinationResource
     {
-        $record->update($request->validated());
-
-        return new ImmunizationVaccinationResource($record);
+        return new ImmunizationVaccinationResource($service->update($record, $request->validated(), $request->user()));
     }
 
-    public function destroy(ImmunizationVaccination $record)
+    public function destroy(Request $request, ImmunizationVaccination $record, ImmunizationVaccinationService $service)
     {
-        $record->delete();
+        $service->delete($record, $request->user());
 
         return response()->json(null, 204);
     }

@@ -2,6 +2,8 @@
 
 namespace Modules\LayananPrescriptionInitialReview\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\LayananPrescriptionInitialReview\Database\Factories\PrescriptionInit
 
 class PrescriptionInitialReview extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'prescription_id',

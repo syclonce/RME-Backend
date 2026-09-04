@@ -3,6 +3,7 @@
 namespace Modules\LayananBirthRecord\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananBirthRecord\Http\Requests\StoreBirthRecordRequest;
 use Modules\LayananBirthRecord\Http\Requests\UpdateBirthRecordRequest;
@@ -11,6 +12,8 @@ use Modules\LayananBirthRecord\Models\BirthRecord;
 
 class BirthRecordController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BirthRecord::query();
@@ -21,6 +24,7 @@ class BirthRecordController extends Controller
     public function store(StoreBirthRecordRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
 
         $birth_record = BirthRecord::create($data);
 

@@ -48,6 +48,16 @@ class RegistrationController extends Controller
 
     public function destroy(Registration $registration)
     {
+        // registrations.id di-cascade oleh visits.registration_id — hapus di sini
+        // akan menghapus seluruh kunjungan (dan turunannya) tanpa jejak. Pendaftaran
+        // yang sudah punya kunjungan wajib dibatalkan lewat jalur kunjungan, bukan
+        // dihapus di titik ini.
+        abort_if(
+            $registration->visits()->exists(),
+            422,
+            'Pendaftaran sudah memiliki kunjungan; tidak dapat dihapus langsung.'
+        );
+
         $registration->delete();
 
         return response()->json(null, 204);

@@ -2,31 +2,49 @@
 
 namespace Modules\SatuSehat\Providers;
 
+use App\Events\VisitDischarged;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Modules\GeneralPatient\Models\Patient;
+use Modules\LayananMedicalProcedure\Models\MedicalProcedure;
+use Modules\MedicalRecordDiagnosis\Models\Diagnosis;
+use Modules\MedicalRecordVitalSign\Models\VitalSign;
+use Modules\SatuSehat\Listeners\QueueEncounterOnDischarge;
+use Modules\SatuSehat\Observers\QueueConditionOnDiagnosisCreated;
+use Modules\SatuSehat\Observers\QueueObservationOnVitalSignCreated;
+use Modules\SatuSehat\Observers\QueuePatientOnSave;
+use Modules\SatuSehat\Observers\QueueProcedureOnMedicalProcedureSaved;
 
 class EventServiceProvider extends ServiceProvider
 {
     /**
-     * The event handler mappings for the application.
-     *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        VisitDischarged::class => [QueueEncounterOnDischarge::class],
+    ];
 
     /**
-     * Indicates if events should be discovered.
-     *
-     * Off by default - no module uses event auto-discovery, and leaving it on
-     * makes every module scan/reflect a Listeners directory on every boot
-     * (real cost at 50+ modules). Flip to true only if a module actually adds
-     * listeners.
-     *
      * @var bool
      */
     protected static $shouldDiscoverEvents = false;
 
     /**
-     * Configure the proper event listeners for email verification.
+     * Patient, Diagnosis, VitalSign dan MedicalProcedure tidak punya event
+     * domain sendiri (`EventServiceProvider` modul masing-masing kosong,
+     * controller memanggil `Model::create()`/`update()` langsung) — dipakai
+     * model observer di sini, bukan event baru, sesuai arahan untuk tidak
+     * menambah event kalau tidak perlu. Observer didaftarkan lewat container
+     * (`app(...)`) karena masing-masing butuh `SatuSehatOutboxService`.
      */
+    public function boot(): void
+    {
+        parent::boot();
+
+        Patient::observe($this->app->make(QueuePatientOnSave::class));
+        Diagnosis::observe($this->app->make(QueueConditionOnDiagnosisCreated::class));
+        VitalSign::observe($this->app->make(QueueObservationOnVitalSignCreated::class));
+        MedicalProcedure::observe($this->app->make(QueueProcedureOnMedicalProcedureSaved::class));
+    }
+
     protected function configureEmailVerification(): void {}
 }

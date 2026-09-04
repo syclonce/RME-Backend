@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordMedicalCheckupResult\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMedicalCheckupResult\Http\Requests\StoreMedicalCheckupResultRequest;
 use Modules\MedicalRecordMedicalCheckupResult\Http\Requests\UpdateMedicalCheckupResultRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordMedicalCheckupResult\Models\MedicalCheckupResult;
 
 class MedicalCheckupResultController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MedicalCheckupResult::query();
@@ -21,6 +24,8 @@ class MedicalCheckupResultController extends Controller
     public function store(StoreMedicalCheckupResultRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'completed';
 
         $record = MedicalCheckupResult::create($data);

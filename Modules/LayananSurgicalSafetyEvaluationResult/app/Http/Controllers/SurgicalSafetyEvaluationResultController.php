@@ -3,6 +3,7 @@
 namespace Modules\LayananSurgicalSafetyEvaluationResult\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananSurgicalSafetyEvaluationResult\Http\Requests\StoreSurgicalSafetyEvaluationResultRequest;
 use Modules\LayananSurgicalSafetyEvaluationResult\Http\Resources\SurgicalSafetyEvaluationResultResource;
@@ -10,6 +11,8 @@ use Modules\LayananSurgicalSafetyEvaluationResult\Models\SurgicalSafetyEvaluatio
 
 class SurgicalSafetyEvaluationResultController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = SurgicalSafetyEvaluationResult::query();
@@ -20,6 +23,8 @@ class SurgicalSafetyEvaluationResultController extends Controller
     public function store(StoreSurgicalSafetyEvaluationResultRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['compliant'] = $data['compliant'] ?? true;
         $sst_result = SurgicalSafetyEvaluationResult::create($data);
 

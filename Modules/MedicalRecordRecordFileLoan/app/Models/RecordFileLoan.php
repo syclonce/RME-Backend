@@ -2,13 +2,15 @@
 
 namespace Modules\MedicalRecordRecordFileLoan\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\MedicalRecordRecordFileLoan\Database\Factories\RecordFileLoanFactory;
 
 class RecordFileLoan extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'record_file_loans';
 

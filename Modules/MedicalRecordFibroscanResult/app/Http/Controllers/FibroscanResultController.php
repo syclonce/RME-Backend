@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFibroscanResult\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFibroscanResult\Http\Requests\StoreFibroscanResultRequest;
 use Modules\MedicalRecordFibroscanResult\Http\Requests\UpdateFibroscanResultRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFibroscanResult\Models\FibroscanResult;
 
 class FibroscanResultController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FibroscanResult::query();
@@ -21,6 +24,8 @@ class FibroscanResultController extends Controller
     public function store(StoreFibroscanResultRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = FibroscanResult::create($data);
 

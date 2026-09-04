@@ -3,11 +3,13 @@
 namespace Modules\PendaftaranGuarantor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\PendaftaranGuarantor\Http\Requests\StoreGuarantorRequest;
 use Modules\PendaftaranGuarantor\Http\Requests\UpdateGuarantorRequest;
 use Modules\PendaftaranGuarantor\Http\Resources\GuarantorResource;
 use Modules\PendaftaranGuarantor\Models\Guarantor;
+use Modules\PendaftaranVisit\Models\Visit;
 
 class GuarantorController extends Controller
 {
@@ -25,6 +27,15 @@ class GuarantorController extends Controller
     public function store(StoreGuarantorRequest $request)
     {
         $data = $request->validated();
+        // Data pendukung pendaftaran ikut tunduk pada gerbang RME: bila episode
+        // kunjungannya sudah final, penambahan penjamin/pengantar/penanggung jawab
+        // mengubah berkas yang sudah ditutup.
+        $visitId = Visit::query()->where('registration_id', $data['registration_id'])->value('id');
+
+        if ($visitId !== null) {
+            app(MedicalRecordGate::class)->assertWritable((int) $visitId, $request->user());
+        }
+
         $data['created_by'] = $request->user()->id;
 
         $guarantor = Guarantor::create($data);

@@ -20,6 +20,8 @@ class StoreBloodTransfusionRequest extends FormRequest
             'started_at' => ['nullable', 'date'],
             'administered_by' => ['required', 'integer', 'exists:employees,id'],
             'reaction_notes' => ['nullable', 'string'],
+            // 'status' sengaja tidak diterima dari request - transfusi baru selalu
+            // dimulai 'in_progress' (lihat BloodTransfusionService::create()).
         ];
     }
 }

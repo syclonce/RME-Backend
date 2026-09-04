@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordMmpiTest\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMmpiTest\Http\Requests\MmpiTestRequest;
 use Modules\MedicalRecordMmpiTest\Http\Resources\MmpiTestResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordMmpiTest\Models\MmpiTest;
 
 class MmpiTestController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MmpiTest::query();
@@ -34,6 +37,8 @@ class MmpiTestController extends Controller
     public function store(MmpiTestRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $test = MmpiTest::create($data);

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\GeneralWard\Models\Ward;
+use Modules\GeneralWardVisitType\Models\WardVisitType;
 use Tests\TestCase;
 
 class WardControllerTest extends TestCase
@@ -32,6 +33,21 @@ class WardControllerTest extends TestCase
         Ward::factory()->count(2)->create();
 
         $this->getJson('/api/v1/wards')->assertOk()->assertJsonCount(2, 'data');
+    }
+
+    public function test_it_exposes_visit_type_and_emergency_flag_for_registration(): void
+    {
+        $this->actingUser();
+        $type = WardVisitType::factory()->create([
+            'name' => 'Gawat Darurat',
+            'triggers_emergency_flag' => true,
+        ]);
+        Ward::factory()->create(['name' => 'IGD', 'visit_type_id' => $type->id]);
+
+        $this->getJson('/api/v1/wards?per_page=100')
+            ->assertOk()
+            ->assertJsonPath('data.0.visit_type_name', 'Gawat Darurat')
+            ->assertJsonPath('data.0.triggers_emergency', true);
     }
 
     public function test_it_creates_ward(): void

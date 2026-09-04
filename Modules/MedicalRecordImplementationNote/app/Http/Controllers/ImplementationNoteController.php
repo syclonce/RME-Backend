@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordImplementationNote\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImplementationNote\Http\Requests\StoreImplementationNoteRequest;
 use Modules\MedicalRecordImplementationNote\Http\Requests\UpdateImplementationNoteRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordImplementationNote\Models\ImplementationNote;
 
 class ImplementationNoteController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ImplementationNote::query();
@@ -21,6 +24,8 @@ class ImplementationNoteController extends Controller
     public function store(StoreImplementationNoteRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = ImplementationNote::create($data);
 

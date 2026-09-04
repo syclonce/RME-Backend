@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordEmgExamination\Models\EmgExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class EmgExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class EmgExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 18,
+            'visit_id' => $visit->id,
             'patient_id' => 36,
             'nerve_conduction_velocity' => 58.5,
             'spontaneous_activity' => 'Fibrillations',
@@ -46,7 +49,7 @@ class EmgExaminationControllerTest extends TestCase
             ->assertJsonPath('data.nerve_conduction_velocity', 58.5)
             ->assertJsonPath('data.spontaneous_activity', 'Fibrillations');
 
-        $this->assertDatabaseHas('emg_examinations', ['visit_id' => 18, 'patient_id' => 36]);
+        $this->assertDatabaseHas('emg_examinations', ['visit_id' => $visit->id, 'patient_id' => 36]);
     }
 
     public function test_it_lists_emg_examinations(): void

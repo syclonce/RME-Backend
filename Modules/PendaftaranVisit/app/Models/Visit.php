@@ -2,9 +2,14 @@
 
 namespace Modules\PendaftaranVisit\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\AuditActivityLog\Support\Auditable;
 use Modules\Auth\Models\User;
 use Modules\GeneralBed\Models\Bed;
@@ -16,11 +21,13 @@ use Modules\PendaftaranVisit\Database\Factories\VisitFactory;
 
 class Visit extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'visit_number',
         'registration_id',
+        'origin_type',
+        'origin_id',
         'attending_physician_id',
         'ward_id',
         'bed_id',
@@ -33,6 +40,8 @@ class Visit extends Model
         'final_outcome',
         'final_outcome_by',
         'final_outcome_at',
+        'service_finalized_at',
+        'service_finalized_by',
         'status',
     ];
 
@@ -44,7 +53,21 @@ class Visit extends Model
             'is_new_visit' => 'boolean',
             'is_deposit' => 'boolean',
             'final_outcome_at' => 'datetime',
+            'service_finalized_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Transaksi yang menerbitkan kunjungan ini — padanan `kunjungan.REF` legacy.
+     *
+     * NULL berarti kunjungan lahir langsung dari pendaftaran (mayoritas rawat
+     * jalan). Terisi bila kunjungan ini turunan: konsul, mutasi, order lab,
+     * order radiologi, atau resep. Tanpa tautan ini unit penunjang tahu ia
+     * melayani pasien, tetapi tidak tahu atas permintaan siapa.
+     */
+    public function origin(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function registration(): BelongsTo
@@ -83,15 +106,13 @@ class Visit extends Model
     }
 
     /**
-     * Format: KJ-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateVisitNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('visit_number', 'like', "KJ-{$year}-%")->count();
-
-        return sprintf('KJ-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('KJ', 'visit', now()->format('Y'));
     }
 
     protected static function newFactory(): VisitFactory

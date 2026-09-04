@@ -74,6 +74,20 @@ class DepositControllerTest extends TestCase
         $this->putJson("/api/v1/deposits/{$deposit->id}", ['status' => 'refunded'])->assertStatus(422);
     }
 
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $visit = Visit::factory()->create();
+
+        $response = $this->postJson('/api/v1/deposits', [
+            'visit_id' => $visit->id,
+            'amount' => 500000,
+            'status' => 'applied',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'held');
+    }
+
     public function test_guest_cannot_access_deposits(): void
     {
         $this->getJson('/api/v1/deposits')->assertStatus(401);
