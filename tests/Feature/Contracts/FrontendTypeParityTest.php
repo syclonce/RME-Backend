@@ -40,6 +40,11 @@ class FrontendTypeParityTest extends TestCase
             'Diagnosis' => ['MedicalRecordDiagnosis', 'diagnoses', ['is_primary', 'diagnosis_code_id']],
             'VitalSign' => ['MedicalRecordVitalSign', 'vital_signs', ['systolic', 'diastolic', 'pain_scale']],
             'Anamnesis' => ['MedicalRecordAnamnesis', 'anamneses', ['allergy_history', 'recorded_at']],
+            // Modul multi-tabel: luput dari penyapuan paritas otomatis karena
+            // satu types.ts memuat beberapa interface. Ditambahkan manual
+            // setelah `status` dan `cashier_shift_id` ketahuan hilang.
+            'Payment' => ['PembayaranPayment', 'payments', ['status', 'cashier_shift_id']],
+            'CashierShift' => ['PembayaranCashierShift', 'cashier_shifts', ['status', 'cash_variance', 'expected_cash', 'payment_totals']],
         ];
     }
 
