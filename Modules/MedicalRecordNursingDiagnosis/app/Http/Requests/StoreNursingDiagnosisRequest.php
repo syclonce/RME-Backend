@@ -19,7 +19,7 @@ class StoreNursingDiagnosisRequest extends FormRequest
             'related_factors' => ['nullable', 'string'],
             'defining_characteristics' => ['nullable', 'string'],
             'priority' => ['nullable', 'string', 'max:20'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];

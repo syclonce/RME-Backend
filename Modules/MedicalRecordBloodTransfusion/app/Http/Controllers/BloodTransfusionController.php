@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordBloodTransfusion\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBloodTransfusion\Http\Requests\StoreBloodTransfusionRequest;
@@ -12,6 +14,8 @@ use Modules\MedicalRecordBloodTransfusion\Services\BloodTransfusionService;
 
 class BloodTransfusionController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = BloodTransfusion::query();
@@ -25,7 +29,7 @@ class BloodTransfusionController extends Controller
 
     public function store(StoreBloodTransfusionRequest $request, BloodTransfusionService $service)
     {
-        $transfusion = $service->create($request->validated(), $request->user());
+        $transfusion = $service->create($this->fillActingEmployee($request, $request->validated(), 'administered_by'), $request->user());
 
         return (new BloodTransfusionResource($transfusion))->response()->setStatusCode(201);
     }

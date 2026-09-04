@@ -18,7 +18,7 @@ class StoreDischargePlanningScreeningRequest extends FormRequest
             'screening_criteria' => ['nullable', 'string'],
             'total_score' => ['nullable', 'integer'],
             'requires_planning' => ['sometimes', 'boolean'],
-            'screened_by' => ['required', 'integer', 'exists:employees,id'],
+            'screened_by' => ['nullable', 'integer', 'exists:employees,id'],
             'screened_at' => ['required', 'date'],
         ];
     }

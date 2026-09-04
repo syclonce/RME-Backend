@@ -19,7 +19,7 @@ class StoreFluidFinalBalanceRequest extends FormRequest
             'total_intake_ml' => ['required', 'numeric'],
             'total_output_ml' => ['required', 'numeric'],
             'balance_ml' => ['nullable', 'numeric'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
         ];
     }

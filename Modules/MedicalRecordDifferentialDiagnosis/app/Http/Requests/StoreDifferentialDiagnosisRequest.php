@@ -18,7 +18,7 @@ class StoreDifferentialDiagnosisRequest extends FormRequest
             'diagnosis_code_id' => ['nullable', 'integer', 'exists:diagnosis_codes,id'],
             'description' => ['required', 'string', 'max:255'],
             'rank' => ['nullable', 'integer'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];

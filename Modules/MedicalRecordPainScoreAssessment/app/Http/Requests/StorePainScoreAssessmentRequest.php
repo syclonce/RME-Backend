@@ -15,7 +15,7 @@ class StorePainScoreAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'scale_type' => ['required','in:NRS,WONG_BAKER,FLACC,CRIES'],
             'score' => ['required','integer','between:0,10'],

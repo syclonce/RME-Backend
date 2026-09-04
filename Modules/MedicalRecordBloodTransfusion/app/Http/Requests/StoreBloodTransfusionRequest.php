@@ -18,7 +18,7 @@ class StoreBloodTransfusionRequest extends FormRequest
             'blood_type_id' => ['required', 'integer', 'exists:blood_types,id'],
             'volume_ml' => ['nullable', 'integer', 'min:0'],
             'started_at' => ['nullable', 'date'],
-            'administered_by' => ['required', 'integer', 'exists:employees,id'],
+            'administered_by' => ['nullable', 'integer', 'exists:employees,id'],
             'reaction_notes' => ['nullable', 'string'],
             // 'status' sengaja tidak diterima dari request - transfusi baru selalu
             // dimulai 'in_progress' (lihat BloodTransfusionService::create()).

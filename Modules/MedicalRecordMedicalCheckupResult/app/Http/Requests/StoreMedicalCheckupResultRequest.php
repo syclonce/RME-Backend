@@ -20,7 +20,7 @@ class StoreMedicalCheckupResultRequest extends FormRequest
             'category' => ['nullable', 'string', 'max:100'],
             'summary' => ['nullable', 'string'],
             'recommendation' => ['nullable', 'string'],
-            'examined_by' => ['required', 'integer', 'exists:employees,id'],
+            'examined_by' => ['nullable', 'integer', 'exists:employees,id'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];
     }

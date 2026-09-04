@@ -20,7 +20,7 @@ class StoreImmunizationVaccinationRequest extends FormRequest
             'dose_number' => ['nullable', 'integer'],
             'batch_number' => ['nullable', 'string', 'max:100'],
             'administered_at' => ['required', 'date'],
-            'administered_by' => ['required', 'integer', 'exists:employees,id'],
+            'administered_by' => ['nullable', 'integer', 'exists:employees,id'],
             'site' => ['nullable', 'string', 'max:100'],
             'route' => ['nullable', 'string', 'max:50'],
             'adverse_reaction' => ['nullable', 'string'],

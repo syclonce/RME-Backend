@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordDischargePlanningScreening\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
@@ -12,6 +14,8 @@ use Modules\MedicalRecordDischargePlanningScreening\Models\DischargePlanningScre
 
 class DischargePlanningScreeningController extends Controller
 {
+    use ResolvesActingEmployee;
+
     use GuardsMedicalRecord;
 
     public function index(Request $request)
@@ -24,6 +28,7 @@ class DischargePlanningScreeningController extends Controller
     public function store(StoreDischargePlanningScreeningRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'screened_by');
         // Cegah penulisan ke rekam medis yang sudah difinalkan.
         $this->guardMedicalRecord($request, $data);
         $data['requires_planning'] ??= false;

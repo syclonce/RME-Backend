@@ -19,7 +19,7 @@ class StorePharmacyDiagnosisRequest extends FormRequest
             'problem_category' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'recommendation' => ['nullable', 'string'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'assessed_at' => ['required', 'date'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];

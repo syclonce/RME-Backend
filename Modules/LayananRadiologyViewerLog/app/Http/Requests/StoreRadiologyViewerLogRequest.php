@@ -16,7 +16,7 @@ class StoreRadiologyViewerLogRequest extends FormRequest
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'accession_number' => ['nullable', 'string', 'max:100'],
-            'viewed_by' => ['required', 'integer', 'exists:employees,id'],
+            'viewed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'viewed_at' => ['required', 'date'],
             'ip_address' => ['nullable', 'string', 'max:45'],
             'notes' => ['nullable', 'string'],

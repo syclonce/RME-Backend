@@ -16,7 +16,7 @@ class StoreNursingImplementationRequest extends FormRequest
         return [
             'nursing_diagnosis_id' => ['required', 'integer', 'exists:nursing_diagnoses,id'],
             'action_taken' => ['nullable', 'string'],
-            'performed_by' => ['required', 'integer', 'exists:employees,id'],
+            'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'performed_at' => ['required', 'date'],
             'patient_response' => ['nullable', 'string'],
         ];

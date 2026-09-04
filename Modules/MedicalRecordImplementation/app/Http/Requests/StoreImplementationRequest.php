@@ -17,7 +17,7 @@ class StoreImplementationRequest extends FormRequest
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'order_reference' => ['nullable', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
-            'performed_by' => ['required', 'integer', 'exists:employees,id'],
+            'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'performed_at' => ['required', 'date'],
             'status' => ['sometimes', 'string', 'max:255'],
         ];

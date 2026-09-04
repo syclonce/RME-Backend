@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordImmunizationVaccination\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImmunizationVaccination\Http\Requests\StoreImmunizationVaccinationRequest;
@@ -12,6 +14,8 @@ use Modules\MedicalRecordImmunizationVaccination\Services\ImmunizationVaccinatio
 
 class ImmunizationVaccinationController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = ImmunizationVaccination::query();
@@ -21,7 +25,7 @@ class ImmunizationVaccinationController extends Controller
 
     public function store(StoreImmunizationVaccinationRequest $request, ImmunizationVaccinationService $service)
     {
-        $record = $service->create($request->validated(), $request->user());
+        $record = $service->create($this->fillActingEmployee($request, $request->validated(), 'administered_by'), $request->user());
 
         return (new ImmunizationVaccinationResource($record))->response()->setStatusCode(201);
     }

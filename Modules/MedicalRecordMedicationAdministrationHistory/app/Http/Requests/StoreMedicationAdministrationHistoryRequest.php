@@ -15,7 +15,7 @@ class StoreMedicationAdministrationHistoryRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'administered_by' => ['required', 'integer', 'exists:employees,id'],
+            'administered_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'drug_name' => ['required','string','max:255'],
             'dose' => ['nullable','string','max:50'],

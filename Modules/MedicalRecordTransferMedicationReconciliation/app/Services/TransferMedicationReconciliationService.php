@@ -5,6 +5,7 @@ namespace Modules\MedicalRecordTransferMedicationReconciliation\Services;
 use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Modules\GeneralEmployee\Models\Employee;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordTransferMedicationReconciliation\Models\TransferMedicationReconciliation;
 
@@ -29,6 +30,16 @@ class TransferMedicationReconciliationService
     /** @param array<string, mixed> $data */
     public function create(array $data, User $user): TransferMedicationReconciliation
     {
+        // Kolom pelaku menunjuk employees, BUKAN users. Diisi dari profil
+        // pegawai user login supaya petugas tidak perlu menghafal id
+        // pegawainya sendiri (lihat App\Http\Concerns\ResolvesActingEmployee).
+        $data['reconciled_by'] ??= Employee::query()->where('user_id', $user->id)->value('id');
+        abort_if(
+            $data['reconciled_by'] === null,
+            422,
+            'Akun Anda belum tertaut ke data pegawai, sehingga pencatat tidak dapat ditetapkan. Hubungi admin untuk menautkannya.',
+        );
+
         $this->medicalRecordGate->assertWritable((int) $data['visit_id'], $user);
 
         return DB::transaction(fn () => TransferMedicationReconciliation::create([

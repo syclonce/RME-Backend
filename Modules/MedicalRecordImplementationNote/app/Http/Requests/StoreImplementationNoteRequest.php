@@ -17,7 +17,7 @@ class StoreImplementationNoteRequest extends FormRequest
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'note_type' => ['nullable', 'string', 'max:100'],
             'content' => ['nullable', 'string'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
         ];
     }

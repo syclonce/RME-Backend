@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordAllergy\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAllergy\Http\Requests\StoreAllergyRequest;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordAllergy\Models\Allergy;
 
 class AllergyController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = Allergy::query();
@@ -29,6 +33,7 @@ class AllergyController extends Controller
     public function store(StoreAllergyRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
         $data['created_by'] = $request->user()->id;
 
         $allergy = Allergy::create($data);

@@ -19,7 +19,7 @@ class StoreEndOfLifePsychosocialRelationshipRequest extends FormRequest
             'support_system' => ['nullable', 'string'],
             'spiritual_needs' => ['nullable', 'string'],
             'emotional_state' => ['nullable', 'string', 'max:100'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'assessed_at' => ['required', 'date'],
         ];
     }

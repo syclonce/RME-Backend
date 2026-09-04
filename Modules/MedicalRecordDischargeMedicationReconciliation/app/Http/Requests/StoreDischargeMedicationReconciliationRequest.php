@@ -15,7 +15,7 @@ class StoreDischargeMedicationReconciliationRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'reconciled_by' => ['required', 'integer', 'exists:employees,id'],
+            'reconciled_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'source_of_medication_list' => ['nullable','string','max:255'],
             'notes' => ['nullable','string'],

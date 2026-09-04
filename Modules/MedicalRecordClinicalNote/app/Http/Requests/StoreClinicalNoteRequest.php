@@ -22,7 +22,7 @@ class StoreClinicalNoteRequest extends FormRequest
             'planning' => ['nullable', 'string'],
             'instructions' => ['nullable', 'string'],
             'note_type' => ['nullable', 'string', 'max:255'],
-            'author_id' => ['required', 'integer', 'exists:employees,id'],
+            'author_id' => ['nullable', 'integer', 'exists:employees,id'],
             'sub_division' => ['nullable', 'string', 'max:255'],
             'has_discharge_plan' => ['sometimes', 'boolean'],
             'discharge_plan_date' => ['nullable', 'date'],

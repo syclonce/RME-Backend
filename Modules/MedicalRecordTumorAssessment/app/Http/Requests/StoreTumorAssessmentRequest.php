@@ -16,7 +16,7 @@ class StoreTumorAssessmentRequest extends FormRequest
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'diagnosis_id' => ['nullable', 'integer', 'exists:diagnoses,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'tumor_location' => ['required','string','max:255'],
             'size_cm' => ['nullable','numeric','min:0'],

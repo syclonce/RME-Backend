@@ -20,7 +20,7 @@ class StoreCoughAssessmentRequest extends FormRequest
             'cough_type' => ['nullable', 'string', 'max:50'],
             'other_symptoms' => ['nullable', 'string'],
             'is_referred_tb_screening' => ['sometimes', 'boolean'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'assessed_at' => ['required', 'date'],
         ];
     }

@@ -19,7 +19,7 @@ class StoreSocialConditionRequest extends FormRequest
             'occupation_status' => ['nullable', 'string', 'max:100'],
             'financial_status' => ['nullable', 'string', 'max:100'],
             'support_system' => ['nullable', 'string'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
         ];
     }

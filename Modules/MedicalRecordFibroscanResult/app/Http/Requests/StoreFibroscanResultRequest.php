@@ -19,7 +19,7 @@ class StoreFibroscanResultRequest extends FormRequest
             'liver_stiffness_kpa' => ['nullable', 'numeric'],
             'cap_score' => ['nullable', 'numeric'],
             'fibrosis_stage' => ['nullable', 'string', 'max:20'],
-            'examined_by' => ['required', 'integer', 'exists:employees,id'],
+            'examined_by' => ['nullable', 'integer', 'exists:employees,id'],
             'notes' => ['nullable', 'string'],
         ];
     }

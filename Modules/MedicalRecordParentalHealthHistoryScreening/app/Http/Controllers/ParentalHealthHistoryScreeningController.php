@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordParentalHealthHistoryScreening\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordParentalHealthHistoryScreening\Models\ParentalHealthHis
 
 class ParentalHealthHistoryScreeningController extends Controller
 {
+    use ResolvesActingEmployee;
+
     use GuardsMedicalRecord;
 
     public function index(Request $request)
@@ -27,6 +31,7 @@ class ParentalHealthHistoryScreeningController extends Controller
     public function store(StoreParentalHealthHistoryScreeningRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'screened_by');
         // Cegah penulisan ke rekam medis yang sudah difinalkan.
         $this->guardMedicalRecord($request, $data);
         $data['consanguinity'] ??= false;

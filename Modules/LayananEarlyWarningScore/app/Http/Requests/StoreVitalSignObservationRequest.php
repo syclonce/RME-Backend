@@ -33,7 +33,7 @@ class StoreVitalSignObservationRequest extends FormRequest
                 VitalSignObservation::CONSCIOUSNESS_UNRESPONSIVE,
             ])],
             'temperature_celsius' => ['required', 'numeric'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['nullable', 'date'],
         ];
     }

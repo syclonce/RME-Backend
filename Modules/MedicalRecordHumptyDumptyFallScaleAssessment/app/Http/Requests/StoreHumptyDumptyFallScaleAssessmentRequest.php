@@ -15,7 +15,7 @@ class StoreHumptyDumptyFallScaleAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'age_score' => ['required','integer','between:1,4'],
             'gender_score' => ['required','integer','between:1,3'],

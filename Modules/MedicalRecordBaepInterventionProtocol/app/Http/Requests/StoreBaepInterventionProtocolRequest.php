@@ -15,7 +15,7 @@ class StoreBaepInterventionProtocolRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'performed_by' => ['required', 'integer', 'exists:employees,id'],
+            'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'indication' => ['nullable','string'],
             'stimulation_ear' => ['required','in:left,right,bilateral'],

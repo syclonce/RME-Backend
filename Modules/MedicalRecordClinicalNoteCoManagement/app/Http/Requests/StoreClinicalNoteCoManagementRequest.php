@@ -17,7 +17,7 @@ class StoreClinicalNoteCoManagementRequest extends FormRequest
             'clinical_note_id' => ['required', 'integer', 'exists:clinical_notes,id'],
             'medical_department_id' => ['required', 'integer', 'exists:medical_departments,id'],
             'notes' => ['nullable', 'string'],
-            'author_id' => ['required', 'integer', 'exists:employees,id'],
+            'author_id' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
         ];
     }

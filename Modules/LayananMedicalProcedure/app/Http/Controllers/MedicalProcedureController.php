@@ -2,6 +2,8 @@
 
 namespace Modules\LayananMedicalProcedure\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use App\Modules\Contracts\BillingGate;
 use App\Modules\Contracts\HospitalConfig;
@@ -16,6 +18,8 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class MedicalProcedureController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = MedicalProcedure::query();
@@ -34,6 +38,7 @@ class MedicalProcedureController extends Controller
         HospitalConfig $config,
     ) {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'performed_by');
 
         // Gerbang RME, sama seperti Prescription/Diagnosis/ClinicalNote. Sebelumnya
         // modul ini melewatkannya, sehingga tindakan masih bisa dicatat pada rekam

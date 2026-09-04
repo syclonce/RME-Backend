@@ -15,7 +15,7 @@ class StoreFunctionalStatusAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'bathing_status' => ['nullable','in:independent,assisted,dependent'],
             'dressing_status' => ['nullable','in:independent,assisted,dependent'],

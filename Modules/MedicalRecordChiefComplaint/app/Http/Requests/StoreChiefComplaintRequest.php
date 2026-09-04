@@ -18,7 +18,7 @@ class StoreChiefComplaintRequest extends FormRequest
             'complaint' => ['nullable', 'string'],
             'onset' => ['nullable', 'string', 'max:100'],
             'duration' => ['nullable', 'string', 'max:100'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'recorded_at' => ['required', 'date'],
         ];
     }

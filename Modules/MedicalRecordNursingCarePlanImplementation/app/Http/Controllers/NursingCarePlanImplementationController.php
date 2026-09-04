@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordNursingCarePlanImplementation\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingCarePlanImplementation\Http\Requests\StoreNursingCarePlanImplementationRequest;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordNursingCarePlanImplementation\Models\NursingCarePlanImp
 
 class NursingCarePlanImplementationController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = NursingCarePlanImplementation::query();
@@ -21,6 +25,7 @@ class NursingCarePlanImplementationController extends Controller
     public function store(StoreNursingCarePlanImplementationRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'performed_by');
 
         $record = NursingCarePlanImplementation::create($data);
 

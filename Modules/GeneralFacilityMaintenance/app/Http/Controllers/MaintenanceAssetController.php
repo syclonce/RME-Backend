@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralFacilityMaintenance\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralFacilityMaintenance\Http\Requests\StoreMaintenanceAssetRequest;
@@ -10,6 +12,8 @@ use Modules\GeneralFacilityMaintenance\Models\MaintenanceAsset;
 
 class MaintenanceAssetController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = MaintenanceAsset::query();
@@ -27,7 +31,7 @@ class MaintenanceAssetController extends Controller
 
     public function store(StoreMaintenanceAssetRequest $request)
     {
-        return response()->json(MaintenanceAsset::create($request->validated())->refresh(), 201);
+        return response()->json(MaintenanceAsset::create($this->fillActingEmployee($request, $request->validated(), 'reported_by'))->refresh(), 201);
     }
 
     public function show(MaintenanceAsset $maintenance_asset): MaintenanceAsset

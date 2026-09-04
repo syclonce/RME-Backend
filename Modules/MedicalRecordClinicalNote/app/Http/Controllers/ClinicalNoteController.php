@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordClinicalNote\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordClinicalNote\Models\ClinicalNote;
 
 class ClinicalNoteController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = ClinicalNote::query();
@@ -29,6 +33,7 @@ class ClinicalNoteController extends Controller
     public function store(StoreClinicalNoteRequest $request, MedicalRecordGate $medicalRecordGate)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'author_id');
         $medicalRecordGate->assertWritable((int) $data['visit_id'], $request->user());
         $data['recorded_at'] ??= now();
         $data['created_by'] = $request->user()->id;

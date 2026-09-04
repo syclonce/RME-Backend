@@ -2,6 +2,8 @@
 
 namespace Modules\LayananEarlyWarningScore\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,8 @@ use Modules\LayananEarlyWarningScore\Services\VitalSignObservationService;
  */
 class VitalSignObservationController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function __construct(protected VitalSignObservationService $service) {}
 
     public function index(Request $request): JsonResponse
@@ -37,7 +41,7 @@ class VitalSignObservationController extends Controller
 
     public function store(StoreVitalSignObservationRequest $request): JsonResponse
     {
-        $observation = $this->service->store($request->validated());
+        $observation = $this->service->store($this->fillActingEmployee($request, $request->validated(), 'recorded_by'));
 
         // 201 + skor hasil kalkulasi server, bukan apa pun yang dikirim klien.
         return response()->json(['data' => $observation], 201);

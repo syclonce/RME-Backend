@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordClinicalNoteCoManagement\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordClinicalNoteCoManagement\Http\Requests\StoreClinicalNoteCoManagementRequest;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordClinicalNoteCoManagement\Models\ClinicalNoteCoManagemen
 
 class ClinicalNoteCoManagementController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = ClinicalNoteCoManagement::query();
@@ -21,6 +25,7 @@ class ClinicalNoteCoManagementController extends Controller
     public function store(StoreClinicalNoteCoManagementRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'author_id');
 
         $record = ClinicalNoteCoManagement::create($data);
 

@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordHumptyDumptyFallScaleAssessment\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
@@ -11,6 +13,8 @@ use Modules\MedicalRecordHumptyDumptyFallScaleAssessment\Models\HumptyDumptyFall
 
 class HumptyDumptyFallScaleAssessmentController extends Controller
 {
+    use ResolvesActingEmployee;
+
     use GuardsMedicalRecord;
 
     public function index(Request $request)
@@ -27,6 +31,7 @@ class HumptyDumptyFallScaleAssessmentController extends Controller
     public function store(StoreHumptyDumptyFallScaleAssessmentRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'assessed_by');
         // Cegah penulisan ke rekam medis yang sudah difinalkan.
         $this->guardMedicalRecord($request, $data);
         $data['assessed_at'] ??= now();

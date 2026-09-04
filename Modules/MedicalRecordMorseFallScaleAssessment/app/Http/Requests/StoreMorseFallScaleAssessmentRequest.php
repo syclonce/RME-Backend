@@ -15,7 +15,7 @@ class StoreMorseFallScaleAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'history_of_falling' => ['required','in:0,25'],
             'secondary_diagnosis' => ['required','in:0,15'],

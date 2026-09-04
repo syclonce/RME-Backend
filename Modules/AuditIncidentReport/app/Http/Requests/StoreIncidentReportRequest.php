@@ -25,7 +25,7 @@ class StoreIncidentReportRequest extends FormRequest
             'incident_category' => ['required', 'string', 'in:' . implode(',', IncidentReport::CATEGORIES)],
             'description' => ['required', 'string', 'max:65535'],
             'occurred_at' => ['required', 'date'],
-            'reported_by' => ['required', 'integer', 'exists:employees,id'],
+            'reported_by' => ['nullable', 'integer', 'exists:employees,id'],
             'impact_score' => ['required', 'integer', 'min:1', 'max:5'],
             'probability_score' => ['required', 'integer', 'min:1', 'max:5'],
         ];

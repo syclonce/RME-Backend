@@ -2,6 +2,8 @@
 
 namespace Modules\AuditIncidentReport\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ use Modules\AuditIncidentReport\Services\IncidentReportService;
 
 class IncidentReportController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function __construct(protected IncidentReportService $service) {}
 
     /** Baca: semua staf terautentikasi. Filter kategori/status/grade opsional. */
@@ -40,7 +44,7 @@ class IncidentReportController extends Controller
     {
         // risk_grade & sla_due_at lahir dari IncidentReportService::create(),
         // bukan dari payload — controller dilarang create() model langsung.
-        $report = $this->service->create($request->validated());
+        $report = $this->service->create($this->fillActingEmployee($request, $request->validated(), 'reported_by'));
 
         return (new IncidentReportResource($report))->response()->setStatusCode(201);
     }

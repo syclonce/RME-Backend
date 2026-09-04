@@ -15,7 +15,7 @@ class StoreTransferMedicationReconciliationRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'reconciled_by' => ['required', 'integer', 'exists:employees,id'],
+            'reconciled_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'transferred_to_ward_id' => ['required', 'integer', 'exists:wards,id'],
             'source_of_medication_list' => ['nullable','string','max:255'],
