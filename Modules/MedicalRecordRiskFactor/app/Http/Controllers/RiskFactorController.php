@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordRiskFactor\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Concerns\ResolvesActingEmployee;
 
 use App\Http\Controllers\Controller;
@@ -14,6 +16,8 @@ use Modules\MedicalRecordRiskFactor\Models\RiskFactor;
 
 class RiskFactorController extends Controller
 {
+    use SearchesListing;
+
     use ResolvesActingEmployee;
 
     use GuardsMedicalRecord;
@@ -21,6 +25,10 @@ class RiskFactorController extends Controller
     public function index(Request $request)
     {
         $query = RiskFactor::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return RiskFactorResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }

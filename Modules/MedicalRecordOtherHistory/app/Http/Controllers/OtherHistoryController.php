@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordOtherHistory\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Concerns\ResolvesActingEmployee;
 
 use App\Http\Controllers\Controller;
@@ -13,6 +15,8 @@ use Modules\MedicalRecordOtherHistory\Models\OtherHistory;
 
 class OtherHistoryController extends Controller
 {
+    use SearchesListing;
+
     use ResolvesActingEmployee;
 
     use GuardsMedicalRecord;
@@ -24,6 +28,10 @@ class OtherHistoryController extends Controller
         if ($request->filled('visit_id')) {
             $query->where('visit_id', $request->integer('visit_id'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return OtherHistoryResource::collection($query->latest('recorded_at')->paginate($request->integer('per_page', 15)));
     }

@@ -2,6 +2,8 @@
 
 namespace Modules\PembayaranInvoiceItem\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use App\Modules\Contracts\VisitGate;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ use Modules\PembayaranInvoiceItem\Models\InvoiceItem;
 
 class InvoiceItemController extends Controller
 {
+    use SearchesListing;
+
     public function __construct(protected readonly VisitGate $visitGate)
     {
     }
@@ -25,6 +29,10 @@ class InvoiceItemController extends Controller
         if ($request->filled('invoice_id')) {
             $query->where('invoice_id', $request->integer('invoice_id'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return InvoiceItemResource::collection($query->paginate($request->integer('per_page', 15)));
     }

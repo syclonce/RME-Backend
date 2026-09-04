@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordImageMarkerPoint\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImageMarkerPoint\Http\Requests\StoreImageMarkerPointRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordImageMarkerPoint\Models\ImageMarkerPoint;
 
 class ImageMarkerPointController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ImageMarkerPoint::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
 
         if ($request->filled('image_marker_id')) {

@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralReferralCode\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralReferralCode\Http\Requests\StoreReferralCodeRequest;
@@ -11,9 +13,15 @@ use Modules\GeneralReferralCode\Models\ReferralCode;
 
 class ReferralCodeController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ReferralCode::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return ReferralCodeResource::collection($query->orderBy('id')->paginate($request->integer('per_page', 15)));
     }

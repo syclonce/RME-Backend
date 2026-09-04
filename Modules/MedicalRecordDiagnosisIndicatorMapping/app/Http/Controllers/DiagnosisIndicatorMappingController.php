@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordDiagnosisIndicatorMapping\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDiagnosisIndicatorMapping\Http\Requests\StoreDiagnosisIndicatorMappingRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordDiagnosisIndicatorMapping\Models\DiagnosisIndicatorMapp
 
 class DiagnosisIndicatorMappingController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = DiagnosisIndicatorMapping::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         if ($request->filled('diagnosis_id')) {
             $query->where('diagnosis_id', $request->integer('diagnosis_id'));

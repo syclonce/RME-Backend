@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordIcd10Code\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordIcd10Code\Http\Requests\StoreIcd10CodeRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordIcd10Code\Models\Icd10Code;
 
 class Icd10CodeController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = Icd10Code::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return Icd10CodeResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }

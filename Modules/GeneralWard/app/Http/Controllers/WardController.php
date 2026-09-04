@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralWard\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,9 +11,16 @@ use Modules\GeneralWard\Models\Ward;
 
 class WardController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
-        return Ward::query()
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik.
+        $query = $this->applySearch(Ward::query(), $request);
+
+        return $query
             ->with('visitType')
             ->orderBy('name')
             ->paginate(min(max($request->integer('per_page', 15), 1), 100))

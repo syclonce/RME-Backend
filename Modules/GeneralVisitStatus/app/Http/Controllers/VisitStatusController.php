@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralVisitStatus\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,8 +11,14 @@ use Modules\GeneralVisitStatus\Models\VisitStatus;
 
 class VisitStatusController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
+
         return VisitStatus::query()->orderBy('name')->paginate(15);
     }
 

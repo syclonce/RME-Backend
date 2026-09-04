@@ -4,7 +4,7 @@
 // disunting manual, akan tertimpa. Sumber kebenaran untuk RoleAndPermissionSeeder
 // (grant baseline) dan RoutePermissionGate (peta izin saat request) -- keduanya
 // TIDAK scan rute sendiri, cuma baca file ini supaya cepat di ribuan proses test.
-// Generated: 2026-09-04 16:22:12
+// Generated: 2026-09-04 17:29:39
 
 return array (
   0 => 

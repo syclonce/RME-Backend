@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordNursingIndicator\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingIndicator\Http\Requests\StoreNursingIndicatorRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordNursingIndicator\Models\NursingIndicator;
 
 class NursingIndicatorController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = NursingIndicator::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return NursingIndicatorResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }

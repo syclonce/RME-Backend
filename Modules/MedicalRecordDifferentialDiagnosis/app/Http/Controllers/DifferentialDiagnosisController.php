@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordDifferentialDiagnosis\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Concerns\ResolvesActingEmployee;
 
 use App\Http\Controllers\Controller;
@@ -14,6 +16,8 @@ use Modules\MedicalRecordDifferentialDiagnosis\Models\DifferentialDiagnosis;
 
 class DifferentialDiagnosisController extends Controller
 {
+    use SearchesListing;
+
     use ResolvesActingEmployee;
 
     use GuardsMedicalRecord;
@@ -21,6 +25,10 @@ class DifferentialDiagnosisController extends Controller
     public function index(Request $request)
     {
         $query = DifferentialDiagnosis::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return DifferentialDiagnosisResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }

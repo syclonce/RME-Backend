@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralGuarantorParticipantType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,6 +11,8 @@ use Modules\GeneralGuarantorParticipantType\Models\GuarantorParticipantType;
 
 class GuarantorParticipantTypeController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = GuarantorParticipantType::query();
@@ -16,6 +20,10 @@ class GuarantorParticipantTypeController extends Controller
         if ($request->filled('payer_type')) {
             $query->where('payer_type', $request->string('payer_type'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return $query->orderBy('name')->paginate($request->integer('per_page', 15));
     }

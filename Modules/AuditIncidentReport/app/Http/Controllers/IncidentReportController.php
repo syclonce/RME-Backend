@@ -2,6 +2,8 @@
 
 namespace Modules\AuditIncidentReport\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Concerns\ResolvesActingEmployee;
 
 use App\Http\Controllers\Controller;
@@ -16,6 +18,8 @@ use Modules\AuditIncidentReport\Services\IncidentReportService;
 
 class IncidentReportController extends Controller
 {
+    use SearchesListing;
+
     use ResolvesActingEmployee;
 
     public function __construct(protected IncidentReportService $service) {}
@@ -28,7 +32,12 @@ class IncidentReportController extends Controller
             ->when($request->filled('incident_category'), fn ($q) => $q->where('incident_category', $request->string('incident_category')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->when($request->filled('risk_grade'), fn ($q) => $q->where('risk_grade', $request->string('risk_grade')))
-            ->latest('occurred_at')
+            ->latest('occurred_at');
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik. Harus SEBELUM
+        // paginate(): sesudahnya yang tersisa paginator, bukan builder.
+        $reports = $this->applySearch($reports, $request)
             ->paginate($request->integer('per_page', 15));
 
         return IncidentReportResource::collection($reports);

@@ -2,6 +2,8 @@
 
 namespace Modules\FinanceGeneralLedger\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\FinanceGeneralLedger\Http\Resources\AccountResource;
@@ -13,6 +15,8 @@ use Modules\FinanceGeneralLedger\Models\Account;
  */
 class AccountController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = Account::query();
@@ -20,6 +24,10 @@ class AccountController extends Controller
         if ($request->filled('type')) {
             $query->where('type', $request->string('type'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return AccountResource::collection($query->orderBy('code')->paginate($request->integer('per_page', 15)));
     }

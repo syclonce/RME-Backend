@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordExaminationType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordExaminationType\Http\Requests\StoreExaminationTypeRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordExaminationType\Models\ExaminationType;
 
 class ExaminationTypeController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ExaminationType::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return ExaminationTypeResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }

@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordImplementationChecklistItem\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImplementationChecklistItem\Http\Requests\StoreImplementationChecklistItemRequest;
@@ -11,9 +13,15 @@ use Modules\MedicalRecordImplementationChecklistItem\Models\ImplementationCheckl
 
 class ImplementationChecklistItemController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ImplementationChecklistItem::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return ImplementationChecklistItemResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
