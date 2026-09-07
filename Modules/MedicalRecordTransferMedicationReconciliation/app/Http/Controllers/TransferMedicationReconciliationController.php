@@ -9,9 +9,13 @@ use Modules\MedicalRecordTransferMedicationReconciliation\Http\Requests\UpdateTr
 use Modules\MedicalRecordTransferMedicationReconciliation\Http\Resources\TransferMedicationReconciliationResource;
 use Modules\MedicalRecordTransferMedicationReconciliation\Models\TransferMedicationReconciliation;
 use Modules\MedicalRecordTransferMedicationReconciliation\Services\TransferMedicationReconciliationService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class TransferMedicationReconciliationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TransferMedicationReconciliation::query();
@@ -37,6 +41,8 @@ class TransferMedicationReconciliationController extends Controller
 
     public function update(UpdateTransferMedicationReconciliationRequest $request, TransferMedicationReconciliation $record, TransferMedicationReconciliationService $service): TransferMedicationReconciliationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new TransferMedicationReconciliationResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

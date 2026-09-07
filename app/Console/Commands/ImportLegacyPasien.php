@@ -116,6 +116,13 @@ class ImportLegacyPasien extends Command
             'nik' => ['nullable', 'digits:16', 'unique:patients,nik'],
             'name' => ['required', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date'],
+            'birth_place' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'rt' => ['nullable', 'string', 'max:5'],
+            'rw' => ['nullable', 'string', 'max:5'],
+            'postal_code' => ['nullable', 'string', 'max:10'],
+            'gender_id' => ['nullable', 'integer', 'exists:genders,id'],
+            'religion_id' => ['nullable', 'integer', 'exists:religions,id'],
         ]);
 
         if ($validator->fails()) {
@@ -144,12 +151,25 @@ class ImportLegacyPasien extends Command
             ? (string) $row['NIK']
             : null;
 
+        // Backfill FK master berkode legacy: seeder SIMGOS memakai kode yang
+        // SAMA dengan referensi legacy (gender 1/2, agama 1=Islam, ...), jadi
+        // resolusi via kolom `code` — bukan id mentah. Tak cocok → null
+        // (nullable), bukan baris gagal.
+        $genderId = isset($row['JENIS_KELAMIN']) && $row['JENIS_KELAMIN'] !== ''
+            ? DB::table('genders')->where('code', (string) $row['JENIS_KELAMIN'])->value('id')
+            : null;
+        $religionId = isset($row['AGAMA']) && $row['AGAMA'] !== ''
+            ? DB::table('religions')->where('code', (string) $row['AGAMA'])->value('id')
+            : null;
+
         return [
             'medical_record_number' => isset($row['NORM']) && $row['NORM'] !== '' ? (string) $row['NORM'] : null,
             'nik' => $nik,
             'name' => $latin(isset($row['NAMA']) ? (string) $row['NAMA'] : null) ?? 'Tanpa Nama',
             'birth_place' => $latin(isset($row['TEMPAT_LAHIR']) ? (string) $row['TEMPAT_LAHIR'] : null),
             'birth_date' => $row['TANGGAL_LAHIR'] ?? null,
+            'gender_id' => $genderId ?: null,
+            'religion_id' => $religionId ?: null,
             'address' => $latin(isset($row['ALAMAT']) ? (string) $row['ALAMAT'] : null),
             'rt' => isset($row['RT']) ? (string) $row['RT'] : null,
             'rw' => isset($row['RW']) ? (string) $row['RW'] : null,

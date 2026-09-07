@@ -20,6 +20,7 @@ class Payment extends Model
 
     protected $fillable = [
         'payment_number',
+        'idempotency_key',
         'invoice_id',
         'cashier_shift_id',
         'payment_method',

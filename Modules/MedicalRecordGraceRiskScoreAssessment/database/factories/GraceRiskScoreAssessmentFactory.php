@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGraceRiskScoreAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordGraceRiskScoreAssessment\Models\GraceRiskScoreAssessment;
 
 class GraceRiskScoreAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class GraceRiskScoreAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'age' => 65,
             'heart_rate' => 88,
             'systolic_bp' => 130,

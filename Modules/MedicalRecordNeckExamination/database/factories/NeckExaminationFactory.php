@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordNeckExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordNeckExamination\Models\NeckExamination;
 
 class NeckExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class NeckExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'lymph_nodes' => 'No palpable lymphadenopathy',
             'thyroid' => 'Not enlarged',
             'jugular_venous_pressure' => 'Not elevated',

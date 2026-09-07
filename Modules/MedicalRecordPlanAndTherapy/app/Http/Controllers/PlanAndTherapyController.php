@@ -9,9 +9,13 @@ use Modules\MedicalRecordPlanAndTherapy\Http\Requests\UpdatePlanAndTherapyReques
 use Modules\MedicalRecordPlanAndTherapy\Http\Resources\PlanAndTherapyResource;
 use Modules\MedicalRecordPlanAndTherapy\Models\PlanAndTherapy;
 use Modules\MedicalRecordPlanAndTherapy\Services\PlanAndTherapyService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class PlanAndTherapyController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PlanAndTherapy::query();
@@ -37,6 +41,8 @@ class PlanAndTherapyController extends Controller
 
     public function update(UpdatePlanAndTherapyRequest $request, PlanAndTherapy $record, PlanAndTherapyService $service): PlanAndTherapyResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new PlanAndTherapyResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

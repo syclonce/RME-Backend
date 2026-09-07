@@ -9,9 +9,13 @@ use Modules\MedicalRecordPatientNutritionProblem\Http\Requests\UpdatePatientNutr
 use Modules\MedicalRecordPatientNutritionProblem\Http\Resources\PatientNutritionProblemResource;
 use Modules\MedicalRecordPatientNutritionProblem\Models\PatientNutritionProblem;
 use Modules\MedicalRecordPatientNutritionProblem\Services\PatientNutritionProblemService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class PatientNutritionProblemController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PatientNutritionProblem::query();
@@ -37,6 +41,8 @@ class PatientNutritionProblemController extends Controller
 
     public function update(UpdatePatientNutritionProblemRequest $request, PatientNutritionProblem $record, PatientNutritionProblemService $service): PatientNutritionProblemResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new PatientNutritionProblemResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

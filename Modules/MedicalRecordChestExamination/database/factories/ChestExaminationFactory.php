@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordChestExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordChestExamination\Models\ChestExamination;
 
 class ChestExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class ChestExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'inspection' => 'Symmetrical chest expansion',
             'palpation' => 'Normal tactile fremitus',
             'percussion' => 'Resonant',

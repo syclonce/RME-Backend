@@ -9,9 +9,13 @@ use Modules\MedicalRecordSurgery\Http\Requests\UpdateSurgeryRequest;
 use Modules\MedicalRecordSurgery\Http\Resources\SurgeryResource;
 use Modules\MedicalRecordSurgery\Models\Surgery;
 use Modules\MedicalRecordSurgery\Services\SurgeryService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class SurgeryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = Surgery::query();
@@ -41,6 +45,8 @@ class SurgeryController extends Controller
      */
     public function update(UpdateSurgeryRequest $request, Surgery $surgery, SurgeryService $service): SurgeryResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($surgery)]);
+
         $validated = $request->validated();
 
         return new SurgeryResource($service->transition(

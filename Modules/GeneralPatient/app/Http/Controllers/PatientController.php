@@ -62,7 +62,18 @@ class PatientController extends Controller
         $patient = DB::transaction(function () use ($data) {
             $data['medical_record_number'] ??= Patient::generateMedicalRecordNumber();
 
-            return Patient::create($data);
+            $patient = Patient::create(collect($data)->except(['is_infant', 'mother'])->all());
+
+            if (! empty($data['mother']['name'])) {
+                $patient->families()->create([
+                    'name' => $data['mother']['name'],
+                    'relationship' => 'ibu',
+                    'identity_number' => $data['mother']['identity_number'] ?? null,
+                    'is_active' => true,
+                ]);
+            }
+
+            return $patient;
         });
 
         return (new PatientResource($patient))->response()->setStatusCode(201);

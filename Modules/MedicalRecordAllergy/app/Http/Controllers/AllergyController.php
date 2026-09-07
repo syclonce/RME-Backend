@@ -10,9 +10,13 @@ use Modules\MedicalRecordAllergy\Http\Requests\StoreAllergyRequest;
 use Modules\MedicalRecordAllergy\Http\Requests\UpdateAllergyRequest;
 use Modules\MedicalRecordAllergy\Http\Resources\AllergyResource;
 use Modules\MedicalRecordAllergy\Models\Allergy;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class AllergyController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use ResolvesActingEmployee;
 
     public function index(Request $request)
@@ -48,6 +52,8 @@ class AllergyController extends Controller
 
     public function update(UpdateAllergyRequest $request, Allergy $allergy): AllergyResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($allergy)]);
+
         $allergy->update($request->validated());
 
         return new AllergyResource($allergy);

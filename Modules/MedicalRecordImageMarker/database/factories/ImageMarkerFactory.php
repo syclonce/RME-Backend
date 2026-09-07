@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordImageMarker\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordImageMarker\Models\ImageMarker;
 
 class ImageMarkerFactory extends Factory
@@ -12,7 +13,7 @@ class ImageMarkerFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'image_path' => 'anatomy-templates/body-diagram.png',
             'template_name' => 'Body Diagram - Anterior',
             'notes' => null,

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFingernailExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordFingernailExamination\Models\FingernailExamination;
 
 class FingernailExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class FingernailExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'color' => 'Pink',
             'capillary_refill_seconds' => 2,
             'clubbing' => false,

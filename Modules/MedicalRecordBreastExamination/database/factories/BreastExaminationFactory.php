@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBreastExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordBreastExamination\Models\BreastExamination;
 
 class BreastExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class BreastExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'side' => 'bilateral',
             'inspection' => 'Symmetrical, no skin changes',
             'palpation' => 'No masses palpated',

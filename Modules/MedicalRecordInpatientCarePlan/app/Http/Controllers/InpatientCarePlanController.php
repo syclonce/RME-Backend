@@ -9,9 +9,13 @@ use Modules\MedicalRecordInpatientCarePlan\Http\Requests\UpdateInpatientCarePlan
 use Modules\MedicalRecordInpatientCarePlan\Http\Resources\InpatientCarePlanResource;
 use Modules\MedicalRecordInpatientCarePlan\Models\InpatientCarePlan;
 use Modules\MedicalRecordInpatientCarePlan\Services\InpatientCarePlanService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class InpatientCarePlanController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = InpatientCarePlan::query();
@@ -37,6 +41,8 @@ class InpatientCarePlanController extends Controller
 
     public function update(UpdateInpatientCarePlanRequest $request, InpatientCarePlan $record, InpatientCarePlanService $service): InpatientCarePlanResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new InpatientCarePlanResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

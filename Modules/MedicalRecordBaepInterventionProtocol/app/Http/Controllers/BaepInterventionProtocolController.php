@@ -9,9 +9,13 @@ use Modules\MedicalRecordBaepInterventionProtocol\Http\Requests\UpdateBaepInterv
 use Modules\MedicalRecordBaepInterventionProtocol\Http\Resources\BaepInterventionProtocolResource;
 use Modules\MedicalRecordBaepInterventionProtocol\Models\BaepInterventionProtocol;
 use Modules\MedicalRecordBaepInterventionProtocol\Services\BaepInterventionProtocolService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class BaepInterventionProtocolController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BaepInterventionProtocol::query();
@@ -37,6 +41,8 @@ class BaepInterventionProtocolController extends Controller
 
     public function update(UpdateBaepInterventionProtocolRequest $request, BaepInterventionProtocol $record, BaepInterventionProtocolService $service): BaepInterventionProtocolResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $validated = $request->validated();
 
         return new BaepInterventionProtocolResource(

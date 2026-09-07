@@ -99,6 +99,25 @@ class PaymentControllerTest extends TestCase
         $this->assertFalse($invoice->fresh()->is_locked);
     }
 
+    public function test_double_submit_dengan_kunci_sama_tidak_ganda(): void
+    {
+        $this->actingUser();
+        $invoice = Invoice::factory()->create(['total_amount' => 100000]);
+        $payload = [
+            'invoice_id' => $invoice->id,
+            'cashier_shift_id' => $this->shiftId,
+            'payment_method' => 'cash',
+            'amount' => 40000,
+            'idempotency_key' => 'kasir-1-'.uniqid(),
+        ];
+
+        $first = $this->postJson('/api/v1/payments', $payload)->assertCreated();
+        $second = $this->postJson('/api/v1/payments', $payload)->assertOk();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertDatabaseCount('payments', 1);
+    }
+
     public function test_it_rejects_payment_exceeding_remaining_balance_after_partial_payment(): void
     {
         $this->actingUser();

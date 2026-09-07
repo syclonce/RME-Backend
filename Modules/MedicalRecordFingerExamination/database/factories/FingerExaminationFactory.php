@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFingerExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordFingerExamination\Models\FingerExamination;
 
 class FingerExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class FingerExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'hand_side' => 'both',
             'clubbing' => false,
             'cyanosis' => false,

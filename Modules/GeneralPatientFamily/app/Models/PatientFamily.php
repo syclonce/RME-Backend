@@ -19,6 +19,7 @@ class PatientFamily extends Model
         'patient_id',
         'name',
         'relationship',
+        'identity_number',
         'is_active',
     ];
 

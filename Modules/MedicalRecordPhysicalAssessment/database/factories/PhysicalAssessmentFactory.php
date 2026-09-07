@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPhysicalAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPhysicalAssessment\Models\PhysicalAssessment;
 
 class PhysicalAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class PhysicalAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'mobility_status' => 'Independent',
             'adl_status' => 'Independent',
             'cognitive_status' => 'Alert and oriented',

@@ -9,9 +9,13 @@ use Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Requests\UpdateA
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Http\Resources\AdmissionMedicationReconciliationResource;
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Models\AdmissionMedicationReconciliation;
 use Modules\MedicalRecordAdmissionMedicationReconciliation\Services\AdmissionMedicationReconciliationService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class AdmissionMedicationReconciliationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AdmissionMedicationReconciliation::query();
@@ -37,6 +41,8 @@ class AdmissionMedicationReconciliationController extends Controller
 
     public function update(UpdateAdmissionMedicationReconciliationRequest $request, AdmissionMedicationReconciliation $record, AdmissionMedicationReconciliationService $service): AdmissionMedicationReconciliationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new AdmissionMedicationReconciliationResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

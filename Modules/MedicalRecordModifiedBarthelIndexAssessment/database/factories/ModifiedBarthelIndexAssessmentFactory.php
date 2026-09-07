@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordModifiedBarthelIndexAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordModifiedBarthelIndexAssessment\Models\ModifiedBarthelIndexAssessment;
 
 class ModifiedBarthelIndexAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class ModifiedBarthelIndexAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'feeding' => 10,
             'bathing' => 5,
             'personal_hygiene' => 5,

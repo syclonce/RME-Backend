@@ -86,4 +86,20 @@ class ImportLegacyPasienTest extends TestCase
 
         $this->assertDatabaseCount('patients', 0);
     }
+
+    public function test_kode_master_dipetakan_ke_id_simgos(): void
+    {
+        $genderId = \Modules\GeneralGender\Models\Gender::query()->create(['code' => '2', 'name' => 'Perempuan'])->id;
+        $religionId = \Modules\GeneralReligion\Models\Religion::query()->create(['code' => '1', 'name' => 'Islam'])->id;
+
+        $path = $this->writeRows([[
+            'NORM' => '88', 'NAMA' => 'Dewi', 'JENIS_KELAMIN' => '2', 'AGAMA' => '1',
+        ]]);
+
+        $this->artisan('legacy:import-pasien', ['file' => $path])->assertSuccessful();
+
+        $this->assertDatabaseHas('patients', [
+            'medical_record_number' => '88', 'gender_id' => $genderId, 'religion_id' => $religionId,
+        ]);
+    }
 }

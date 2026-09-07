@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFluidBalanceAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordFluidBalanceAssessment\Models\FluidBalanceAssessment;
 
 class FluidBalanceAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class FluidBalanceAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'shift' => 'pagi',
             'assessed_at' => now(),
             'total_intake_ml' => 1500.00,

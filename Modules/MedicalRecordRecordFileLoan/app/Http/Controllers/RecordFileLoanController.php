@@ -10,9 +10,13 @@ use Modules\MedicalRecordRecordFileLoan\Http\Requests\UpdateRecordFileLoanReques
 use Modules\MedicalRecordRecordFileLoan\Http\Resources\RecordFileLoanResource;
 use Modules\MedicalRecordRecordFileLoan\Models\RecordFileLoan;
 use Modules\MedicalRecordRecordFileLoan\Services\RecordFileLoanService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class RecordFileLoanController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RecordFileLoan::query();
@@ -46,6 +50,8 @@ class RecordFileLoanController extends Controller
      */
     public function update(UpdateRecordFileLoanRequest $request, RecordFileLoan $record): RecordFileLoanResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new RecordFileLoanResource($record);
@@ -56,8 +62,10 @@ class RecordFileLoanController extends Controller
         return new RecordFileLoanResource($service->transition($record, $request->validated('status')));
     }
 
-    public function destroy(RecordFileLoan $record)
+    public function destroy(Request $request, RecordFileLoan $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

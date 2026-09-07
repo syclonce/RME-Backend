@@ -11,9 +11,13 @@ use Modules\MedicalRecordBloodTransfusion\Http\Requests\UpdateBloodTransfusionRe
 use Modules\MedicalRecordBloodTransfusion\Http\Resources\BloodTransfusionResource;
 use Modules\MedicalRecordBloodTransfusion\Models\BloodTransfusion;
 use Modules\MedicalRecordBloodTransfusion\Services\BloodTransfusionService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class BloodTransfusionController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use ResolvesActingEmployee;
 
     public function index(Request $request)
@@ -45,6 +49,8 @@ class BloodTransfusionController extends Controller
      */
     public function update(UpdateBloodTransfusionRequest $request, BloodTransfusion $blood_transfusion, BloodTransfusionService $service): BloodTransfusionResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($blood_transfusion)]);
+
         $validated = $request->validated();
 
         return new BloodTransfusionResource($service->transition(

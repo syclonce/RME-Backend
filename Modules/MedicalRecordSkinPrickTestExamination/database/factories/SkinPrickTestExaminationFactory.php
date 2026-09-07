@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordSkinPrickTestExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordSkinPrickTestExamination\Models\SkinPrickTestExamination;
 
 class SkinPrickTestExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class SkinPrickTestExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'allergen' => 'House dust mite',
             'wheal_size_mm' => 3.0,
             'flare_size_mm' => 5.0,

@@ -8,9 +8,13 @@ use Modules\MedicalRecordFluidBalanceAssessmentDetail\Http\Requests\StoreFluidBa
 use Modules\MedicalRecordFluidBalanceAssessmentDetail\Http\Requests\UpdateFluidBalanceAssessmentDetailRequest;
 use Modules\MedicalRecordFluidBalanceAssessmentDetail\Http\Resources\FluidBalanceAssessmentDetailResource;
 use Modules\MedicalRecordFluidBalanceAssessmentDetail\Models\FluidBalanceAssessmentDetail;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class FluidBalanceAssessmentDetailController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FluidBalanceAssessmentDetail::query();
@@ -41,13 +45,17 @@ class FluidBalanceAssessmentDetailController extends Controller
 
     public function update(UpdateFluidBalanceAssessmentDetailRequest $request, FluidBalanceAssessmentDetail $record): FluidBalanceAssessmentDetailResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new FluidBalanceAssessmentDetailResource($record);
     }
 
-    public function destroy(FluidBalanceAssessmentDetail $record)
+    public function destroy(Request $request, FluidBalanceAssessmentDetail $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

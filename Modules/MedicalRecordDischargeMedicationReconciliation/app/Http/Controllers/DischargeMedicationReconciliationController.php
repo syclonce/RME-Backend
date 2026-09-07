@@ -9,9 +9,13 @@ use Modules\MedicalRecordDischargeMedicationReconciliation\Http\Requests\UpdateD
 use Modules\MedicalRecordDischargeMedicationReconciliation\Http\Resources\DischargeMedicationReconciliationResource;
 use Modules\MedicalRecordDischargeMedicationReconciliation\Models\DischargeMedicationReconciliation;
 use Modules\MedicalRecordDischargeMedicationReconciliation\Services\DischargeMedicationReconciliationService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class DischargeMedicationReconciliationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DischargeMedicationReconciliation::query();
@@ -37,6 +41,8 @@ class DischargeMedicationReconciliationController extends Controller
 
     public function update(UpdateDischargeMedicationReconciliationRequest $request, DischargeMedicationReconciliation $record, DischargeMedicationReconciliationService $service): DischargeMedicationReconciliationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new DischargeMedicationReconciliationResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

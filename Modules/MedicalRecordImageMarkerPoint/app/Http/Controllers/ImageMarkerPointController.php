@@ -10,9 +10,13 @@ use Modules\MedicalRecordImageMarkerPoint\Http\Requests\StoreImageMarkerPointReq
 use Modules\MedicalRecordImageMarkerPoint\Http\Requests\UpdateImageMarkerPointRequest;
 use Modules\MedicalRecordImageMarkerPoint\Http\Resources\ImageMarkerPointResource;
 use Modules\MedicalRecordImageMarkerPoint\Models\ImageMarkerPoint;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ImageMarkerPointController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -49,13 +53,17 @@ class ImageMarkerPointController extends Controller
 
     public function update(UpdateImageMarkerPointRequest $request, ImageMarkerPoint $record): ImageMarkerPointResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new ImageMarkerPointResource($record);
     }
 
-    public function destroy(ImageMarkerPoint $record)
+    public function destroy(Request $request, ImageMarkerPoint $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

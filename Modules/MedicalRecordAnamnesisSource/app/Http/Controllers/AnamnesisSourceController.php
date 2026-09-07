@@ -8,9 +8,13 @@ use Modules\MedicalRecordAnamnesisSource\Http\Requests\StoreAnamnesisSourceReque
 use Modules\MedicalRecordAnamnesisSource\Http\Requests\UpdateAnamnesisSourceRequest;
 use Modules\MedicalRecordAnamnesisSource\Http\Resources\AnamnesisSourceResource;
 use Modules\MedicalRecordAnamnesisSource\Models\AnamnesisSource;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class AnamnesisSourceController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AnamnesisSource::query();
@@ -34,13 +38,17 @@ class AnamnesisSourceController extends Controller
 
     public function update(UpdateAnamnesisSourceRequest $request, AnamnesisSource $record): AnamnesisSourceResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new AnamnesisSourceResource($record);
     }
 
-    public function destroy(AnamnesisSource $record)
+    public function destroy(Request $request, AnamnesisSource $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

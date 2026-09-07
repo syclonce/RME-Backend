@@ -47,6 +47,18 @@ class PaymentController extends Controller
         $data['paid_at'] ??= now();
         $data['received_by'] = $request->user()->id;
 
+        // Idempotency (padanan "tunai upsert" legacy): kunci yang pernah
+        // dipakai mengembalikan baris aslinya (200), bukan membuat ganda.
+        // Dicek di DALAM transaksi + lock agar dua request serentak dengan
+        // kunci sama tidak lolos berdua (unique DB sebagai jaring terakhir).
+        if (! empty($data['idempotency_key'])) {
+            $existing = Payment::query()->where('idempotency_key', $data['idempotency_key'])->first();
+
+            if ($existing !== null) {
+                return (new PaymentResource($existing))->response()->setStatusCode(200);
+            }
+        }
+
         $payment = DB::transaction(function () use ($data) {
             $invoice = Invoice::query()->whereKey($data['invoice_id'])->lockForUpdate()->firstOrFail();
 

@@ -27,6 +27,8 @@ class Sep extends Model
         'tgl_sep',
         'poli_tujuan',
         'kelas_rawat',
+        'participant_class',
+        'peserta_verified_at',
         'dpjp_doctor_id',
         'diagnosa_awal',
         'catatan',
@@ -49,6 +51,7 @@ class Sep extends Model
             'suplesi_jasa_raharja' => 'boolean',
             'bpjs_response' => 'array',
             'submitted_at' => 'datetime',
+            'peserta_verified_at' => 'datetime',
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPhysicalExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPhysicalExamination\Models\PhysicalExamination;
 
 class PhysicalExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class PhysicalExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'general_condition' => 'Good',
             'consciousness_gcs' => 'E4V5M6 (Compos Mentis)',
             'head_to_toe_notes' => 'Head-to-toe examination within normal limits',

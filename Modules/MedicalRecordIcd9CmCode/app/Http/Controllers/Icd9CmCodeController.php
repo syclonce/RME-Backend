@@ -10,9 +10,13 @@ use Modules\MedicalRecordIcd9CmCode\Http\Requests\StoreIcd9CmCodeRequest;
 use Modules\MedicalRecordIcd9CmCode\Http\Requests\UpdateIcd9CmCodeRequest;
 use Modules\MedicalRecordIcd9CmCode\Http\Resources\Icd9CmCodeResource;
 use Modules\MedicalRecordIcd9CmCode\Models\Icd9CmCode;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class Icd9CmCodeController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -43,13 +47,17 @@ class Icd9CmCodeController extends Controller
 
     public function update(UpdateIcd9CmCodeRequest $request, Icd9CmCode $record): Icd9CmCodeResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new Icd9CmCodeResource($record);
     }
 
-    public function destroy(Icd9CmCode $record)
+    public function destroy(Request $request, Icd9CmCode $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGenitalExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordGenitalExamination\Models\GenitalExamination;
 
 class GenitalExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class GenitalExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'external_genitalia' => 'Normal external genitalia',
             'discharge_characteristics' => 'None',
             'lesions_or_masses' => 'None',

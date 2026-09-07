@@ -124,4 +124,29 @@ class PatientControllerTest extends TestCase
             'is_unidentified' => true, 'birth_date' => '2026-09-06', 'address' => 'Depan IGD',
         ])->assertCreated();
     }
+
+    public function test_infant_requires_mother_data(): void
+    {
+        $this->actingUser();
+
+        $this->postJson('/api/v1/patients', [
+            'name' => 'Bayi Ny. Ani', 'is_infant' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('mother.name');
+    }
+
+    public function test_infant_creates_mother_family_row(): void
+    {
+        $this->actingUser();
+
+        $response = $this->postJson('/api/v1/patients', [
+            'name' => 'Bayi Ny. Ani', 'is_infant' => true,
+            'mother' => ['name' => 'Ani', 'identity_number' => '3201010101900001'],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('patient_families', [
+            'patient_id' => $response->json('data.id'),
+            'name' => 'Ani', 'relationship' => 'ibu',
+            'identity_number' => '3201010101900001',
+        ]);
+    }
 }

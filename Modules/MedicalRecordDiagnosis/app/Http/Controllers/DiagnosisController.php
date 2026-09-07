@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 use Modules\MedicalRecordDiagnosis\Http\Requests\StoreDiagnosisRequest;
 use Modules\MedicalRecordDiagnosis\Http\Resources\DiagnosisResource;
 use Modules\MedicalRecordDiagnosis\Models\Diagnosis;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class DiagnosisController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $request->validate([
@@ -51,6 +55,8 @@ class DiagnosisController extends Controller
 
     public function destroy(Request $request, Diagnosis $diagnosis, MedicalRecordGate $medicalRecordGate)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($diagnosis)]);
+
         $medicalRecordGate->assertWritable((int) $diagnosis->visit_id, $request->user());
         $diagnosis->delete();
 

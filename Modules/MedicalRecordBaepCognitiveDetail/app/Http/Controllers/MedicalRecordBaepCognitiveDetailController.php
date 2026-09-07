@@ -4,9 +4,13 @@ namespace Modules\MedicalRecordBaepCognitiveDetail\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class MedicalRecordBaepCognitiveDetailController extends Controller
 {
+    use GuardsMedicalRecord;
+
     /**
      * Display a listing of the resource.
      */
@@ -42,6 +46,8 @@ class MedicalRecordBaepCognitiveDetailController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($id)]);
+
         //
 
         return response()->json([]);

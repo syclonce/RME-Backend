@@ -8,9 +8,13 @@ use Modules\MedicalRecordBloodTransfusionObservation\Http\Requests\StoreBloodTra
 use Modules\MedicalRecordBloodTransfusionObservation\Http\Requests\UpdateBloodTransfusionObservationRequest;
 use Modules\MedicalRecordBloodTransfusionObservation\Http\Resources\BloodTransfusionObservationResource;
 use Modules\MedicalRecordBloodTransfusionObservation\Models\BloodTransfusionObservation;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class BloodTransfusionObservationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BloodTransfusionObservation::query();
@@ -43,13 +47,17 @@ class BloodTransfusionObservationController extends Controller
 
     public function update(UpdateBloodTransfusionObservationRequest $request, BloodTransfusionObservation $record): BloodTransfusionObservationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new BloodTransfusionObservationResource($record);
     }
 
-    public function destroy(BloodTransfusionObservation $record)
+    public function destroy(Request $request, BloodTransfusionObservation $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

@@ -10,9 +10,13 @@ use Modules\MedicalRecordImplementationChecklistItem\Http\Requests\StoreImplemen
 use Modules\MedicalRecordImplementationChecklistItem\Http\Requests\UpdateImplementationChecklistItemRequest;
 use Modules\MedicalRecordImplementationChecklistItem\Http\Resources\ImplementationChecklistItemResource;
 use Modules\MedicalRecordImplementationChecklistItem\Models\ImplementationChecklistItem;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ImplementationChecklistItemController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -43,13 +47,17 @@ class ImplementationChecklistItemController extends Controller
 
     public function update(UpdateImplementationChecklistItemRequest $request, ImplementationChecklistItem $record): ImplementationChecklistItemResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new ImplementationChecklistItemResource($record);
     }
 
-    public function destroy(ImplementationChecklistItem $record)
+    public function destroy(Request $request, ImplementationChecklistItem $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

@@ -46,7 +46,30 @@ class SepController extends Controller
 
     public function store(StoreSepRequest $request)
     {
+        // Draf saja — penerbitan lewat publish() setelah cek peserta. Dulu
+        // store langsung insertSep sehingga draf tak terverifikasi bisa terbit.
         $sep = Sep::create($request->validated() + ['local_status' => 'draft']);
+
+        return (new SepResource($sep))->response()->setStatusCode(201);
+    }
+
+    /**
+     * Terbitkan draf ke VClaim. Port BaseService:419-571 simgos2: HANYA setelah
+     * cek peserta (kelas hak wajib diketahui dulu). Idempoten per draf: SEP
+     * yang sudah success tidak diterbitkan ulang (anti klaim ganda).
+     */
+    public function publish(Sep $sep)
+    {
+        abort_if(
+            $sep->local_status === 'success' && $sep->no_sep !== null,
+            422,
+            'SEP ini sudah terbit; tidak dapat diterbitkan ulang.'
+        );
+        abort_if(
+            $sep->peserta_verified_at === null || $sep->participant_class === null,
+            422,
+            'Cek peserta BPJS dulu (POST seps/{id}/verify-peserta) sebelum menerbitkan SEP.'
+        );
 
         $bpjsResponse = $this->vclaim->insertSep($this->buildSepPayload($sep));
 
@@ -77,6 +100,12 @@ class SepController extends Controller
 
     public function update(UpdateSepRequest $request, Sep $sep)
     {
+        abort_if(
+            $sep->peserta_verified_at === null || $sep->participant_class === null,
+            422,
+            'Cek peserta BPJS dulu (POST seps/{id}/verify-peserta) sebelum mengubah SEP terbit.'
+        );
+
         $sep->fill($request->validated());
 
         $bpjsResponse = $this->vclaim->updateSep($this->buildSepPayload($sep));
@@ -129,7 +158,10 @@ class SepController extends Controller
             'noKartu' => $sep->no_kartu,
             'tglSep' => $sep->tgl_sep?->toDateString(),
             'jnsPelayanan' => $sep->visit_type === 'rawat_inap' ? '1' : '2',
-            'klsRawat' => $sep->kelas_rawat,
+            // Port BaseService:485: klsRawat DIPAKSA = kelas hak peserta, bukan
+            // input petugas. Input kelas_rawat hanya arsip draf; yang terkirim
+            // selalu hasil cek peserta.
+            'klsRawat' => $sep->participant_class ?? $sep->kelas_rawat,
             'noRujukan' => $sep->no_rujukan,
             'poliTujuan' => $sep->poli_tujuan,
             'dpjp' => $sep->dpjpDoctor?->sip_number,
@@ -149,6 +181,42 @@ class SepController extends Controller
             'noSep' => $sep->no_sep,
             'user' => auth()->user()?->name ?? 'system',
         ], fn ($value) => $value !== null && $value !== []);
+    }
+
+    /**
+     * Cek peserta ke VClaim dan catat kelas haknya. Port BaseService:419-451:
+     * penerbitan SEP wajib memperoleh `kelasTanggungan` dari peserta DULU.
+     *
+     * Keputusan sadar vs legacy: TIDAK ada fallback cache peserta
+     * (`bpjs.peserta` dipakai otoritatif saat down di BaseService:441-450).
+     * Cache basi memasok kelas yang menentukan uang klaim — gagal cek =
+     * 422 eksplisit, bukan degradasi diam-diam.
+     */
+    public function verifyPeserta(Sep $sep)
+    {
+        $response = $this->vclaim->pesertaByNoKartu(
+            (string) $sep->no_kartu,
+            $sep->tgl_sep?->toDateString() ?? now()->toDateString()
+        );
+
+        if (! $this->bpjsSucceeded($response)) {
+            return response()->json([
+                'message' => $this->bpjsMessage($response) ?? 'Peserta tidak ditemukan/aktif di BPJS.',
+            ], 422);
+        }
+
+        $peserta = $response->response->peserta ?? null;
+        $hakKelas = is_object($peserta) ? ($peserta->hakKelas ?? null) : null;
+        $kelas = is_object($hakKelas) ? ($hakKelas->kode ?? null) : $hakKelas;
+
+        abort_if($kelas === null || $kelas === '', 422, 'Respons BPJS tidak memuat kelas hak peserta.');
+
+        $sep->update([
+            'participant_class' => (string) $kelas,
+            'peserta_verified_at' => now(),
+        ]);
+
+        return new SepResource($sep->fresh());
     }
 
     /**

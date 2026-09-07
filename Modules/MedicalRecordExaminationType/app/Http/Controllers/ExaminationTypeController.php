@@ -10,9 +10,13 @@ use Modules\MedicalRecordExaminationType\Http\Requests\StoreExaminationTypeReque
 use Modules\MedicalRecordExaminationType\Http\Requests\UpdateExaminationTypeRequest;
 use Modules\MedicalRecordExaminationType\Http\Resources\ExaminationTypeResource;
 use Modules\MedicalRecordExaminationType\Models\ExaminationType;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ExaminationTypeController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -43,13 +47,17 @@ class ExaminationTypeController extends Controller
 
     public function update(UpdateExaminationTypeRequest $request, ExaminationType $record): ExaminationTypeResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new ExaminationTypeResource($record);
     }
 
-    public function destroy(ExaminationType $record)
+    public function destroy(Request $request, ExaminationType $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

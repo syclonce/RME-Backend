@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEmgExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordEmgExamination\Models\EmgExamination;
 
 class EmgExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class EmgExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'nerve_conduction_velocity' => 55.0,
             'spontaneous_activity' => 'None',

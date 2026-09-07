@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 use Modules\MedicalRecordClinicalNoteVerification\Http\Requests\ClinicalNoteVerificationRequest;
 use Modules\MedicalRecordClinicalNoteVerification\Http\Resources\ClinicalNoteVerificationResource;
 use Modules\MedicalRecordClinicalNoteVerification\Models\ClinicalNoteVerification;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ClinicalNoteVerificationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ClinicalNoteVerification::query();
@@ -47,13 +51,17 @@ class ClinicalNoteVerificationController extends Controller
 
     public function update(ClinicalNoteVerificationRequest $request, ClinicalNoteVerification $verification): ClinicalNoteVerificationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($verification)]);
+
         $verification->update($request->validated());
 
         return new ClinicalNoteVerificationResource($verification);
     }
 
-    public function destroy(ClinicalNoteVerification $verification)
+    public function destroy(Request $request, ClinicalNoteVerification $verification)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($verification)]);
+
         $verification->delete();
 
         return response()->json(['message' => 'Clinical note verification record deleted successfully']);

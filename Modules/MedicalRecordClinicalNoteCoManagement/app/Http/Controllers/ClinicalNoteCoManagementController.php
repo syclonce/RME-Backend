@@ -10,9 +10,13 @@ use Modules\MedicalRecordClinicalNoteCoManagement\Http\Requests\StoreClinicalNot
 use Modules\MedicalRecordClinicalNoteCoManagement\Http\Requests\UpdateClinicalNoteCoManagementRequest;
 use Modules\MedicalRecordClinicalNoteCoManagement\Http\Resources\ClinicalNoteCoManagementResource;
 use Modules\MedicalRecordClinicalNoteCoManagement\Models\ClinicalNoteCoManagement;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ClinicalNoteCoManagementController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use ResolvesActingEmployee;
 
     public function index(Request $request)
@@ -40,13 +44,17 @@ class ClinicalNoteCoManagementController extends Controller
 
     public function update(UpdateClinicalNoteCoManagementRequest $request, ClinicalNoteCoManagement $record): ClinicalNoteCoManagementResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new ClinicalNoteCoManagementResource($record);
     }
 
-    public function destroy(ClinicalNoteCoManagement $record)
+    public function destroy(Request $request, ClinicalNoteCoManagement $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

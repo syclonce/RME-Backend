@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordCaseManagerAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordCaseManagerAssessment\Models\CaseManagerAssessment;
 
 class CaseManagerAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class CaseManagerAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'case_manager_id' => 1,
             'screening_criteria' => 'Length of stay > 5 days, complex discharge needs',
             'risk_level' => 'medium',

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordNoseExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordNoseExamination\Models\NoseExamination;
 
 class NoseExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class NoseExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'deformity' => 'None',
             'septum_deviation' => false,
             'turbinate_hypertrophy' => false,

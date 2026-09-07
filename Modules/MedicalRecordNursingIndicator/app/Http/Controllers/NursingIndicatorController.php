@@ -10,9 +10,13 @@ use Modules\MedicalRecordNursingIndicator\Http\Requests\StoreNursingIndicatorReq
 use Modules\MedicalRecordNursingIndicator\Http\Requests\UpdateNursingIndicatorRequest;
 use Modules\MedicalRecordNursingIndicator\Http\Resources\NursingIndicatorResource;
 use Modules\MedicalRecordNursingIndicator\Models\NursingIndicator;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class NursingIndicatorController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -43,13 +47,17 @@ class NursingIndicatorController extends Controller
 
     public function update(UpdateNursingIndicatorRequest $request, NursingIndicator $record): NursingIndicatorResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new NursingIndicatorResource($record);
     }
 
-    public function destroy(NursingIndicator $record)
+    public function destroy(Request $request, NursingIndicator $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

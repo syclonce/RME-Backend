@@ -9,9 +9,13 @@ use Modules\MedicalRecordInterventionProtocol\Http\Requests\UpdateInterventionPr
 use Modules\MedicalRecordInterventionProtocol\Http\Resources\InterventionProtocolResource;
 use Modules\MedicalRecordInterventionProtocol\Models\InterventionProtocol;
 use Modules\MedicalRecordInterventionProtocol\Services\InterventionProtocolService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class InterventionProtocolController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = InterventionProtocol::query();
@@ -37,6 +41,8 @@ class InterventionProtocolController extends Controller
 
     public function update(UpdateInterventionProtocolRequest $request, InterventionProtocol $record, InterventionProtocolService $service): InterventionProtocolResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new InterventionProtocolResource(
             $service->transition($record, $request->validated()['status'], $request->user())
         );

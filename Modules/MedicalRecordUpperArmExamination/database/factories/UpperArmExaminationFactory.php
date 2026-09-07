@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordUpperArmExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordUpperArmExamination\Models\UpperArmExamination;
 
 class UpperArmExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class UpperArmExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'side' => 'bilateral',
             'muscle_strength' => '5/5',
             'range_of_motion' => 'Full',

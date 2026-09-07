@@ -11,9 +11,13 @@ use Modules\MedicalRecordImmunizationVaccination\Http\Requests\UpdateImmunizatio
 use Modules\MedicalRecordImmunizationVaccination\Http\Resources\ImmunizationVaccinationResource;
 use Modules\MedicalRecordImmunizationVaccination\Models\ImmunizationVaccination;
 use Modules\MedicalRecordImmunizationVaccination\Services\ImmunizationVaccinationService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ImmunizationVaccinationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use ResolvesActingEmployee;
 
     public function index(Request $request)
@@ -43,11 +47,15 @@ class ImmunizationVaccinationController extends Controller
      */
     public function update(UpdateImmunizationVaccinationRequest $request, ImmunizationVaccination $record, ImmunizationVaccinationService $service): ImmunizationVaccinationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         return new ImmunizationVaccinationResource($service->update($record, $request->validated(), $request->user()));
     }
 
     public function destroy(Request $request, ImmunizationVaccination $record, ImmunizationVaccinationService $service)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $service->delete($record, $request->user());
 
         return response()->json(null, 204);

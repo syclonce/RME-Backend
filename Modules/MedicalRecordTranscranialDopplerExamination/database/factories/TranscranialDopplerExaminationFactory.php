@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordTranscranialDopplerExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordTranscranialDopplerExamination\Models\TranscranialDopplerExamination;
 
 class TranscranialDopplerExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class TranscranialDopplerExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'indication' => 'Suspected vasospasm',
             'vessel' => 'MCA',
             'mean_velocity_cm_s' => 55.0,

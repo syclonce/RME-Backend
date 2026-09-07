@@ -10,9 +10,13 @@ use Modules\MedicalRecordDiagnosisIndicatorMapping\Http\Requests\StoreDiagnosisI
 use Modules\MedicalRecordDiagnosisIndicatorMapping\Http\Requests\UpdateDiagnosisIndicatorMappingRequest;
 use Modules\MedicalRecordDiagnosisIndicatorMapping\Http\Resources\DiagnosisIndicatorMappingResource;
 use Modules\MedicalRecordDiagnosisIndicatorMapping\Models\DiagnosisIndicatorMapping;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class DiagnosisIndicatorMappingController extends Controller
 {
+    use GuardsMedicalRecord;
+
     use SearchesListing;
 
     public function index(Request $request)
@@ -49,13 +53,17 @@ class DiagnosisIndicatorMappingController extends Controller
 
     public function update(UpdateDiagnosisIndicatorMappingRequest $request, DiagnosisIndicatorMapping $record): DiagnosisIndicatorMappingResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new DiagnosisIndicatorMappingResource($record);
     }
 
-    public function destroy(DiagnosisIndicatorMapping $record)
+    public function destroy(Request $request, DiagnosisIndicatorMapping $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

@@ -8,9 +8,13 @@ use Modules\MedicalRecordRehabilitationProcedureExaminationItem\Http\Requests\St
 use Modules\MedicalRecordRehabilitationProcedureExaminationItem\Http\Requests\UpdateRehabilitationProcedureExaminationItemRequest;
 use Modules\MedicalRecordRehabilitationProcedureExaminationItem\Http\Resources\RehabilitationProcedureExaminationItemResource;
 use Modules\MedicalRecordRehabilitationProcedureExaminationItem\Models\RehabilitationProcedureExaminationItem;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class RehabilitationProcedureExaminationItemController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RehabilitationProcedureExaminationItem::query();
@@ -41,13 +45,17 @@ class RehabilitationProcedureExaminationItemController extends Controller
 
     public function update(UpdateRehabilitationProcedureExaminationItemRequest $request, RehabilitationProcedureExaminationItem $record): RehabilitationProcedureExaminationItemResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new RehabilitationProcedureExaminationItemResource($record);
     }
 
-    public function destroy(RehabilitationProcedureExaminationItem $record)
+    public function destroy(Request $request, RehabilitationProcedureExaminationItem $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

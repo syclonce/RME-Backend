@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordAnalExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordAnalExamination\Models\AnalExamination;
 
 class AnalExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class AnalExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'inspection' => 'Normal external appearance',
             'palpation' => 'No tenderness or mass',
             'sphincter_tone' => 'Normal',

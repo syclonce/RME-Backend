@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordToenailExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordToenailExamination\Models\ToenailExamination;
 
 class ToenailExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class ToenailExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'color' => 'Pink',
             'capillary_refill_seconds' => 2,
             'clubbing' => false,

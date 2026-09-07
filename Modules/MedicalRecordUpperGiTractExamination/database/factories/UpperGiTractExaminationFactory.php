@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordUpperGiTractExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordUpperGiTractExamination\Models\UpperGiTractExamination;
 
 class UpperGiTractExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class UpperGiTractExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'procedure_type' => 'endoscopy',
             'esophagus_findings' => 'No varices, no strictures',
             'stomach_findings' => 'No ulcers or masses',

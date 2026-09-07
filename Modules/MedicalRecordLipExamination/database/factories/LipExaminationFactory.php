@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordLipExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordLipExamination\Models\LipExamination;
 
 class LipExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class LipExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'color' => 'Normal Pink',
             'symmetry' => 'Symmetrical',
             'lesions' => 'None',

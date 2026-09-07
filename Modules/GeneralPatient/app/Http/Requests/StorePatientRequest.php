@@ -52,7 +52,7 @@ class StorePatientRequest extends FormRequest
                 // eksisting). NIK/MRN sudah unique di DB; yang ditangkap di sini
                 // adalah pasien sama yang NIK-nya tidak diisi. Dilewati untuk
                 // tak-dikenal (identitas memang belum ada) dan tgl lahir kosong.
-                if ($value === null || $this->boolean('is_unidentified')) {
+                if ($value === null || $this->boolean('is_unidentified') || $this->boolean('is_infant')) {
                     return;
                 }
 
@@ -83,6 +83,13 @@ class StorePatientRequest extends FormRequest
             'ethnicity_id' => ['nullable', 'integer', 'exists:ethnicities,id'],
             'language_id' => ['nullable', 'integer', 'exists:languages,id'],
             'is_unidentified' => ['sometimes', 'boolean'],
+            // Port PasienService:357-413 (IS_BAYI): bayi dikenal wajib data Ibu
+            // (nama + KTP); blok alamat dilonggarkan; dedup dilewati (identitas
+            // bayi kembar tak terbedakan demografis).
+            'is_infant' => ['sometimes', 'boolean'],
+            'mother' => ['nullable', 'array', 'required_if:is_infant,true'],
+            'mother.name' => ['required_if:is_infant,true', 'nullable', 'string', 'max:255'],
+            'mother.identity_number' => ['required_if:is_infant,true', 'nullable', 'string', 'max:64'],
             'patient_status_id' => ['nullable', 'integer', 'exists:patient_statuses,id'],
             'patient_type_id' => ['nullable', 'integer', 'exists:patient_types,id'],
             'is_active' => ['sometimes', 'boolean'],
