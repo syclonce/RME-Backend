@@ -17,9 +17,9 @@ class VisitActivityStatusController extends Controller
     {
         // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
         // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
-        $query = $this->applySearch($query, $request);
+        $query = $this->applySearch(VisitActivityStatus::query(), $request);
 
-        return VisitActivityStatus::query()->orderBy('name')->paginate(15);
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

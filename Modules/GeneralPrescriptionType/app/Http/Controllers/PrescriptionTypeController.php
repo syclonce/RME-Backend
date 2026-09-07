@@ -17,9 +17,9 @@ class PrescriptionTypeController extends Controller
     {
         // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
         // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
-        $query = $this->applySearch($query, $request);
+        $query = $this->applySearch(PrescriptionType::query(), $request);
 
-        return PrescriptionType::query()->orderBy('name')->paginate(15);
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

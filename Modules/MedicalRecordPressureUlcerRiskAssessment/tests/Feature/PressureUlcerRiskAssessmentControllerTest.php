@@ -94,9 +94,10 @@ class PressureUlcerRiskAssessmentControllerTest extends TestCase
     public function test_total_score_is_recomputed_server_side(): void
     {
         $this->actingUser();
+        $visit = Visit::factory()->create();
 
         $response = $this->postJson('/api/v1/pressure-ulcer-risk-assessments', [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'sensory_perception' => 4,
             'moisture' => 4,
             'activity' => 4,
@@ -109,7 +110,7 @@ class PressureUlcerRiskAssessmentControllerTest extends TestCase
 
         $response->assertCreated();
         $this->assertDatabaseHas('pressure_ulcer_risk_assessments', [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'total_score' => 23,
             'risk_level' => 'no_risk',
         ]);

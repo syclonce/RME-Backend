@@ -20,6 +20,27 @@ class RoutePermissionFixtureIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Rute yang dikelola fixture: controller produk (Modules\*) + 3 rute
+     * framework yang memang publik (sanctum csrf, up, storage). Rute dev-tool
+     * (Telescope, hanya terdaftar bila Telescope aktif — ada di local, tidak
+     * di testing) SENGAJA di luar perbandingan: memaksakannya membuat test
+     * gagal silang-env tanpa hubungan dengan keamanan produk.
+     */
+    private static function isManaged(string $controllerAction): bool
+    {
+        if (str_starts_with($controllerAction, 'Modules\\')) {
+            return true;
+        }
+
+        return in_array($controllerAction, [
+            'GET sanctum/csrf-cookie',
+            'GET up',
+            'GET storage/{path}',
+            'PUT storage/{path}',
+        ], true);
+    }
+
     public function test_setiap_rute_live_ada_di_fixture(): void
     {
         $map = RoutePermissionFixture::map();
@@ -27,6 +48,9 @@ class RoutePermissionFixtureIntegrityTest extends TestCase
         $missing = [];
         foreach (app('router')->getRoutes() as $route) {
             $key = RoutePermission::deriveControllerAction($route);
+            if (! self::isManaged($key)) {
+                continue;
+            }
             if (! array_key_exists($key, $map)) {
                 $missing[] = $key;
             }
@@ -43,6 +67,7 @@ class RoutePermissionFixtureIntegrityTest extends TestCase
 
         $stale = collect(RoutePermissionFixture::load())
             ->pluck('controller_action')
+            ->filter(fn ($key) => self::isManaged($key))
             ->reject(fn ($key) => in_array($key, $liveKeys, true))
             ->all();
 

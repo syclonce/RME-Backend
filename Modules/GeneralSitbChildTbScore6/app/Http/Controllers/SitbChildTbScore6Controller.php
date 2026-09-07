@@ -17,9 +17,9 @@ class SitbChildTbScore6Controller extends Controller
     {
         // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
         // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
-        $query = $this->applySearch($query, $request);
+        $query = $this->applySearch(SitbChildTbScore6::query(), $request);
 
-        return SitbChildTbScore6::query()->orderBy('name')->paginate(15);
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

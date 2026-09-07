@@ -92,9 +92,10 @@ class ModifiedBarthelIndexAssessmentControllerTest extends TestCase
     public function test_total_score_is_recomputed_server_side(): void
     {
         $this->actingUser();
+        $visit = Visit::factory()->create();
 
         $response = $this->postJson('/api/v1/modified-barthel-index-assessments', [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
             'feeding' => 10,
             'bathing' => 5,
             'personal_hygiene' => 5,

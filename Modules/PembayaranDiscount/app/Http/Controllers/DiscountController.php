@@ -17,9 +17,9 @@ class DiscountController extends Controller
     {
         // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
         // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
-        $query = $this->applySearch($query, $request);
+        $query = $this->applySearch(Discount::query(), $request);
 
-        return Discount::query()->orderBy('code')->paginate(15);
+        return $query->orderBy('code')->paginate(15);
     }
 
     public function store(Request $request)
