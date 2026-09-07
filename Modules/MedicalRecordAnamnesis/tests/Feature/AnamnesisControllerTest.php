@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\GeneralEmployee\Models\Employee;
+use Modules\MedicalRecordEpisode\Models\MedicalRecordEpisode;
 use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordAnamnesis\Models\Anamnesis;
 use Tests\TestCase;
@@ -98,5 +99,46 @@ class AnamnesisControllerTest extends TestCase
         $this->actingUser();
 
         $this->getJson('/api/v1/anamneses?per_page=500')->assertStatus(422);
+    }
+
+    public function test_it_rejects_update_when_medical_record_is_finalized(): void
+    {
+        $this->actingUser();
+        $record = Anamnesis::factory()->create();
+        MedicalRecordEpisode::create([
+            'visit_id' => $record->visit_id,
+            'status' => MedicalRecordEpisode::STATUS_FINALIZED,
+        ]);
+
+        $this->putJson("/api/v1/anamneses/{$record->id}", [
+            'present_illness_history' => 'Diubah setelah final',
+        ])->assertStatus(422);
+    }
+
+    public function test_it_rejects_delete_when_medical_record_is_finalized(): void
+    {
+        $this->actingUser();
+        $record = Anamnesis::factory()->create();
+        MedicalRecordEpisode::create([
+            'visit_id' => $record->visit_id,
+            'status' => MedicalRecordEpisode::STATUS_FINALIZED,
+        ]);
+
+        $this->deleteJson("/api/v1/anamneses/{$record->id}")->assertStatus(422);
+        $this->assertDatabaseHas('anamneses', ['id' => $record->id]);
+    }
+
+    public function test_it_allows_update_during_amendment(): void
+    {
+        $this->actingUser();
+        $record = Anamnesis::factory()->create();
+        MedicalRecordEpisode::create([
+            'visit_id' => $record->visit_id,
+            'status' => MedicalRecordEpisode::STATUS_AMENDING,
+        ]);
+
+        $this->putJson("/api/v1/anamneses/{$record->id}", [
+            'present_illness_history' => 'Koreksi via amendment',
+        ])->assertOk();
     }
 }

@@ -68,6 +68,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->assertDatabasePasswordConfigured();
+
+        // Rollout guard rekam medis (Fase 3 legacy): satu titik penegakan untuk
+        // ±162 modul MR — update/delete pada episode final ditolak dari jalur
+        // mana pun. Controller guard (GuardsMedicalRecord) tetap ada sebagai
+        // lapis atribusi user; observer ini jaring pengaman terakhir.
+        \App\Observers\MedicalRecordMutationGuard::register();
     }
 
     /**

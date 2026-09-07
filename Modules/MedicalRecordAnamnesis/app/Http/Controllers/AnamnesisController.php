@@ -56,13 +56,21 @@ class AnamnesisController extends Controller
 
     public function update(UpdateAnamnesisRequest $request, Anamnesis $record): AnamnesisResource
     {
+        // Episode yang dimutasi adalah milik record, bukan payload: memindahkan
+        // catatan antar-kunjungan via PUT tidak diizinkan menyelinap lewat sini.
+        // Bila payload membawa visit_id berbeda, kedua episode wajib writable.
+        $this->guardMedicalRecord($request, ['visit_id' => $record->visit_id]);
+        $this->guardMedicalRecord($request, $request->validated());
         $record->update($request->validated());
 
         return new AnamnesisResource($record);
     }
 
-    public function destroy(Anamnesis $record)
+    public function destroy(Request $request, Anamnesis $record)
     {
+        // Hapus catatan final = mutasi histori legal (legacy mengizinkan PUT
+        // 159/177 + tanpa gerbang). Koreksi pasca-final hanya via amendment.
+        $this->guardMedicalRecord($request, ['visit_id' => $record->visit_id]);
         $record->delete();
 
         return response()->json(null, 204);

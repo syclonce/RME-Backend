@@ -71,4 +71,27 @@ class RegistrationControllerTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.is_emergency', true);
     }
+
+    public function test_it_rejects_duplicate_daily_registration(): void
+    {
+        $this->actingUser();
+        $patient = Patient::factory()->create();
+
+        $this->postJson('/api/v1/registrations', ['patient_id' => $patient->id])
+            ->assertCreated();
+
+        $this->postJson('/api/v1/registrations', ['patient_id' => $patient->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('patient_id');
+    }
+
+    public function test_cancelled_registration_does_not_block_reregistration(): void
+    {
+        $this->actingUser();
+        $patient = Patient::factory()->create();
+        Registration::factory()->create(['patient_id' => $patient->id, 'status' => 'cancelled']);
+
+        $this->postJson('/api/v1/registrations', ['patient_id' => $patient->id])
+            ->assertCreated();
+    }
 }
