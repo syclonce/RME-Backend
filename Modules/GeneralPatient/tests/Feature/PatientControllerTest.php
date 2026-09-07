@@ -96,4 +96,32 @@ class PatientControllerTest extends TestCase
     {
         $this->getJson('/api/v1/patients')->assertStatus(401);
     }
+
+    public function test_it_rejects_demographic_duplicate(): void
+    {
+        $this->actingUser();
+        Patient::factory()->create([
+            'name' => 'Agus Wijaya', 'birth_date' => '1985-03-10',
+            'birth_place' => 'Garut', 'gender_id' => null, 'address' => 'Jl. Cihanjuang 5',
+        ]);
+
+        $this->postJson('/api/v1/patients', [
+            'name' => 'Agus Wijaya', 'birth_date' => '1985-03-10',
+            'birth_place' => 'Garut', 'address' => 'Jl. Cihanjuang 5',
+        ])->assertUnprocessable()->assertJsonValidationErrors('birth_date');
+    }
+
+    public function test_unidentified_patient_needs_no_name_and_skips_dedup(): void
+    {
+        $this->actingUser();
+
+        $this->postJson('/api/v1/patients', [
+            'is_unidentified' => true, 'birth_date' => '2026-09-06', 'address' => 'Depan IGD',
+        ])->assertCreated()->assertJsonPath('data.name', 'Tanpa Identitas');
+
+        // Korban kedua dengan data sama tetap boleh (identitas belum ada).
+        $this->postJson('/api/v1/patients', [
+            'is_unidentified' => true, 'birth_date' => '2026-09-06', 'address' => 'Depan IGD',
+        ])->assertCreated();
+    }
 }

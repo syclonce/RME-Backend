@@ -1,0 +1,11 @@
+{
+    "name": "MedicalRecordCppt",
+    "alias": "medicalrecordcppt",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\MedicalRecordCppt\\Providers\\MedicalRecordCpptServiceProvider"
+    ],
+    "files": []
+}

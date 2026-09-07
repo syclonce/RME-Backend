@@ -31,7 +31,20 @@ class PatientIdentityCardController extends Controller
         $validated = $request->validate([
             'patient_id' => 'required|integer',
             'identity_card_type_id' => 'nullable|integer|exists:identity_card_types,id',
-            'identity_number' => 'required|string|max:255',
+            // Port PasienService:415-425 simgos2: tiap KARTUIDENTITAS dicari
+            // JENIS+NOMOR; bila milik pasien lain → 422 + NRM pemilik.
+            'identity_number' => ['required', 'string', 'max:255', function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                $owner = PatientIdentityCard::query()
+                    ->where('identity_card_type_id', $request->input('identity_card_type_id'))
+                    ->where('identity_number', $value)
+                    ->where('patient_id', '!=', $request->input('patient_id'))
+                    ->with('patient:id,medical_record_number')
+                    ->first();
+
+                if ($owner !== null) {
+                    $fail("Kartu identitas ini telah terdaftar untuk No.RM: {$owner->patient?->medical_record_number}.");
+                }
+            }],
             'address' => 'nullable|string|max:255',
             'rt' => 'nullable|string|max:5',
             'rw' => 'nullable|string|max:5',

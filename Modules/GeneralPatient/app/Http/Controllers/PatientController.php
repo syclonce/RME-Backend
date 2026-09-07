@@ -56,6 +56,8 @@ class PatientController extends Controller
     {
         $data = $request->validated();
         $data['registered_by'] = $request->user()->id;
+        // Mode tak-dikenal: nama boleh kosong di validasi, tetapi kolom NOT NULL.
+        $data['name'] ??= 'Tanpa Identitas';
 
         $patient = DB::transaction(function () use ($data) {
             $data['medical_record_number'] ??= Patient::generateMedicalRecordNumber();

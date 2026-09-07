@@ -84,6 +84,7 @@ class PasienTb extends Model
         'final',
         'oleh',
         'kirim',
+        'attempts',
         'error_message',
     ];
 

@@ -103,4 +103,21 @@ class PatientIdentityCardTest extends TestCase
         $response->assertStatus(204);
         $this->assertDatabaseMissing('patient_identity_cards', ['id' => $model->id]);
     }
+
+    public function test_rejects_identity_card_registered_to_another_patient()
+    {
+        $existing = PatientIdentityCard::factory()->create([
+            'identity_card_type_id' => IdentityCardType::factory()->create()->id,
+            'identity_number' => '3201010101900001',
+        ]);
+        $otherPatient = \Modules\GeneralPatient\Models\Patient::factory()->create();
+
+        $response = $this->postJson('/api/v1/patientidentitycards', [
+            'patient_id' => $otherPatient->id,
+            'identity_card_type_id' => $existing->identity_card_type_id,
+            'identity_number' => '3201010101900001',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('identity_number');
+    }
 }

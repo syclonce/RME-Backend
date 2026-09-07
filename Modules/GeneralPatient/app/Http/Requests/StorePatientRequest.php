@@ -3,6 +3,7 @@
 namespace Modules\GeneralPatient\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\GeneralPatient\Models\Patient;
 
 class StorePatientRequest extends FormRequest
 {
@@ -40,12 +41,33 @@ class StorePatientRequest extends FormRequest
             'medical_record_number' => ['nullable', 'string', 'max:255', 'unique:patients,medical_record_number'],
             'nik' => ['nullable', 'digits:16', 'unique:patients,nik'],
             'no_bpjs' => ['nullable', 'string', 'max:20'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required_unless:is_unidentified,true', 'nullable', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:255'],
             'title_prefix' => ['nullable', 'string', 'max:255'],
             'title_suffix' => ['nullable', 'string', 'max:255'],
             'birth_place' => ['nullable', 'string', 'max:255'],
-            'birth_date' => ['nullable', 'date'],
+            'birth_date' => ['nullable', 'date', function (string $attribute, mixed $value, \Closure $fail): void {
+                // Port PasienService:427-444 simgos2: demografis 5-field (nama +
+                // tgl lahir + tempat lahir + JK + alamat cocok semua → 422 + NRM
+                // eksisting). NIK/MRN sudah unique di DB; yang ditangkap di sini
+                // adalah pasien sama yang NIK-nya tidak diisi. Dilewati untuk
+                // tak-dikenal (identitas memang belum ada) dan tgl lahir kosong.
+                if ($value === null || $this->boolean('is_unidentified')) {
+                    return;
+                }
+
+                $existing = Patient::query()
+                    ->where('name', $this->input('name'))
+                    ->whereDate('birth_date', (string) $value)
+                    ->where('birth_place', $this->input('birth_place'))
+                    ->where('gender_id', $this->input('gender_id'))
+                    ->where('address', $this->input('address'))
+                    ->first(['id', 'name', 'medical_record_number']);
+
+                if ($existing !== null) {
+                    $fail("Pasien an. {$existing->name} telah terdaftar dengan No.RM: {$existing->medical_record_number}.");
+                }
+            }],
             'gender_id' => ['nullable', 'integer', 'exists:genders,id'],
             'religion_id' => ['nullable', 'integer', 'exists:religions,id'],
             'address' => ['nullable', 'string', 'max:255'],

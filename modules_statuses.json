@@ -604,5 +604,6 @@
     "PendaftaranVisitDestination": true,
     "MedicalRecordEpisode": true,
     "PembayaranCashierShift": true,
-    "GeneralPatientIdentityCard": true
+    "GeneralPatientIdentityCard": true,
+    "MedicalRecordCppt": true
 }
