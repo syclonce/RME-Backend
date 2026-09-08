@@ -2,6 +2,8 @@
 
 namespace Modules\SatuSehatRawatJalan\Services;
 
+use Modules\SatuSehat\Support\BuildsEncounterDiagnosis;
+
 /**
  * Builds the FHIR Encounter resource for a new outpatient (rawat jalan) visit.
  * Structure ported field-for-field from the observed "POST Encounter - Kunjungan
@@ -11,6 +13,8 @@ namespace Modules\SatuSehatRawatJalan\Services;
  */
 class RawatJalanEncounterBuilder
 {
+    use BuildsEncounterDiagnosis;
+
     public function build(array $data): array
     {
         $orgId = config('satusehat.organization_id');
@@ -114,9 +118,15 @@ class RawatJalanEncounterBuilder
                     ],
                 ],
             ],
+            // Rule 10457: diagnosis WAJIB (rank 1 = utama). Diisi saat encounter
+            // difinalkan — Condition harus sudah terbit dulu (rantai Condition
+            // menunjuk Encounter, jadi Condition dibuat setelah Encounter
+            // arrived lalu Encounter di-PUT dengan diagnosis ini).
+            ...$this->encounterDiagnosis($data),
             'serviceProvider' => [
                 'reference' => "Organization/{$orgId}",
             ],
         ];
     }
+
 }
