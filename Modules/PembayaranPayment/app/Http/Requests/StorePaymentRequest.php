@@ -15,7 +15,9 @@ class StorePaymentRequest extends FormRequest
     {
         return [
             'payment_number' => ['nullable', 'string', 'max:255', 'unique:payments,payment_number'],
+            'idempotency_key' => ['nullable', 'string', 'max:64'],
             'invoice_id' => ['required', 'integer', 'exists:invoices,id'],
+            'cashier_shift_id' => ['required', 'integer', 'exists:cashier_shifts,id'],
             'payment_method' => ['required', 'string', 'in:cash,debit,credit,transfer'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'admin_fee' => ['sometimes', 'numeric', 'min:0'],

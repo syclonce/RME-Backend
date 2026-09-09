@@ -3,6 +3,7 @@
 namespace Modules\LayananExaminationResultStatus\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananExaminationResultStatus\Http\Requests\StoreExaminationResultStatusRequest;
 use Modules\LayananExaminationResultStatus\Http\Requests\UpdateExaminationResultStatusRequest;
@@ -11,6 +12,8 @@ use Modules\LayananExaminationResultStatus\Models\ExaminationResultStatus;
 
 class ExaminationResultStatusController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ExaminationResultStatus::query();
@@ -21,6 +24,8 @@ class ExaminationResultStatusController extends Controller
     public function store(StoreExaminationResultStatusRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['status'] ??= 'pending';
 
         $record = ExaminationResultStatus::create($data);

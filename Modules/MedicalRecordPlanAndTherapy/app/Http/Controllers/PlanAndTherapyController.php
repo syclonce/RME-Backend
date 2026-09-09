@@ -5,11 +5,17 @@ namespace Modules\MedicalRecordPlanAndTherapy\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPlanAndTherapy\Http\Requests\StorePlanAndTherapyRequest;
+use Modules\MedicalRecordPlanAndTherapy\Http\Requests\UpdatePlanAndTherapyRequest;
 use Modules\MedicalRecordPlanAndTherapy\Http\Resources\PlanAndTherapyResource;
 use Modules\MedicalRecordPlanAndTherapy\Models\PlanAndTherapy;
+use Modules\MedicalRecordPlanAndTherapy\Services\PlanAndTherapyService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class PlanAndTherapyController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PlanAndTherapy::query();
@@ -21,14 +27,9 @@ class PlanAndTherapyController extends Controller
         return PlanAndTherapyResource::collection($query->latest('ordered_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StorePlanAndTherapyRequest $request)
+    public function store(StorePlanAndTherapyRequest $request, PlanAndTherapyService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'active';
-        $data['ordered_at'] ??= now();
-        $data['created_by'] = $request->user()->id;
-
-        $record = PlanAndTherapy::create($data);
+        $record = $service->create($request->validated(), $request->user());
 
         return (new PlanAndTherapyResource($record))->response()->setStatusCode(201);
     }
@@ -36,5 +37,14 @@ class PlanAndTherapyController extends Controller
     public function show(PlanAndTherapy $record): PlanAndTherapyResource
     {
         return new PlanAndTherapyResource($record);
+    }
+
+    public function update(UpdatePlanAndTherapyRequest $request, PlanAndTherapy $record, PlanAndTherapyService $service): PlanAndTherapyResource
+    {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
+        return new PlanAndTherapyResource(
+            $service->transition($record, $request->validated()['status'], $request->user())
+        );
     }
 }

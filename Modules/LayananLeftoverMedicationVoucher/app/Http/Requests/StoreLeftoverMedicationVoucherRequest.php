@@ -3,7 +3,6 @@
 namespace Modules\LayananLeftoverMedicationVoucher\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreLeftoverMedicationVoucherRequest extends FormRequest
 {
@@ -19,12 +18,11 @@ class StoreLeftoverMedicationVoucherRequest extends FormRequest
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'patient_id' => ['required', 'integer', 'exists:patients,id'],
             'prescription_id' => ['nullable', 'integer', 'exists:prescriptions,id'],
-            // Status tidak lagi wajib dari klien: store() memaksa 'pending'
-            // secara server-side (lihat controller).
-            'status' => ['sometimes', Rule::in(['pending', 'redeemed', 'expired'])],
             'issued_at' => ['required', 'date'],
-            'redeemed_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
+            // status dan redeemed_at TIDAK diterima dari klien saat create —
+            // voucher baru selalu mulai 'pending' (lihat
+            // LeftoverMedicationVoucherService::create()).
         ];
     }
 }

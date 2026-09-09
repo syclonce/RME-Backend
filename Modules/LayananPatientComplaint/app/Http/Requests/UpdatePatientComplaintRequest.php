@@ -12,6 +12,13 @@ class UpdatePatientComplaintRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: baru, diproses, selesai.',
+        ];
+    }
+
     public function rules(): array
     {
         return [

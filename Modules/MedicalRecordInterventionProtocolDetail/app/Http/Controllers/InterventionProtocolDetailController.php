@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordInterventionProtocolDetail\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordInterventionProtocolDetail\Http\Requests\StoreInterventionProtocolDetailRequest;
@@ -10,6 +12,8 @@ use Modules\MedicalRecordInterventionProtocolDetail\Models\InterventionProtocolD
 
 class InterventionProtocolDetailController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = InterventionProtocolDetail::query();
@@ -24,6 +28,7 @@ class InterventionProtocolDetailController extends Controller
     public function store(StoreInterventionProtocolDetailRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'performed_by');
         $data['performed_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

@@ -13,6 +13,7 @@ use Modules\Auth\Models\User;
 use Modules\LayananPharmacyDispense\Models\PharmacyDispense;
 use Modules\LayananPrescriptionInitialReview\Models\PrescriptionInitialReview;
 use Modules\LayananPrescription\Models\Prescription;
+use Modules\PendaftaranVisit\Support\DerivedVisitFactory;
 use Modules\PendaftaranGuarantor\Models\Guarantor;
 use Modules\GeneralWard\Models\Ward;
 
@@ -34,6 +35,7 @@ class DispenseService
         protected HospitalConfig $config,
         protected WardScope $wardScope,
         protected VisitGate $visitGate,
+        protected DerivedVisitFactory $derivedVisits,
     ) {}
 
     public function dispense(Prescription $prescription, User $user): PharmacyDispense
@@ -122,6 +124,9 @@ class DispenseService
                     'medicine',
                     $quantity,
                     $unitPrice,
+                    // Depo/ward yang benar-benar menyerahkan obat, bukan ward
+                    // kunjungan — pendapatan farmasi harus jatuh ke unit farmasi.
+                    $wardId,
                 );
             }
 
@@ -135,6 +140,12 @@ class DispenseService
             ]);
 
             $prescription->update(['status' => 'dispensed']);
+
+            // Penyerahan obat melahirkan kunjungan di unit farmasi (padanan
+            // `kunjungan.REF` prefix 14 legacy, dan alur `storeOrderResepDiFarmasi`
+            // yang menautkan order resep ke kunjungan farmasinya). Tanpa ini
+            // pendapatan farmasi tidak dapat dipisahkan dari poli pengirim.
+            $this->derivedVisits->create($record, '11', (int) $prescription->visit_id, $user);
 
             return $record;
         });

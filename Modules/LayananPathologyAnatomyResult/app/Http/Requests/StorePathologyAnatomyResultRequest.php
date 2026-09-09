@@ -3,7 +3,6 @@
 namespace Modules\LayananPathologyAnatomyResult\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StorePathologyAnatomyResultRequest extends FormRequest
 {
@@ -23,7 +22,6 @@ class StorePathologyAnatomyResultRequest extends FormRequest
             'diagnosis' => ['nullable', 'string'],
             'examined_by' => ['nullable', 'integer', 'exists:employees,id'],
             'examined_at' => ['required', 'date'],
-            'status' => ['required', Rule::in(['pending', 'final'])],
         ];
     }
 }

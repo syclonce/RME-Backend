@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPharynxExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPharynxExamination\Models\PharynxExamination;
 
 class PharynxExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class PharynxExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'mucosa_color' => 'Normal Pink',
             'exudate' => false,
             'post_nasal_drip' => false,

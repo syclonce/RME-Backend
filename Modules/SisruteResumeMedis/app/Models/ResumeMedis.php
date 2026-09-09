@@ -2,6 +2,8 @@
 
 namespace Modules\SisruteResumeMedis\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\SisruteResumeMedis\Database\Factories\ResumeMedisFactory;
@@ -15,7 +17,7 @@ use Modules\SisruteResumeMedis\Database\Factories\ResumeMedisFactory;
  */
 class ResumeMedis extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'payload',

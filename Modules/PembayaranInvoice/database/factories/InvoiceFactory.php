@@ -14,7 +14,7 @@ class InvoiceFactory extends Factory
     {
         return [
             'invoice_number' => fake()->unique()->numerify('INV-##########'),
-            'visit_id' => Visit::factory(),
+            'visit_id' => Visit::factory()->serviceFinalized(),
             'invoice_date' => now(),
             'subtotal' => 0,
             'rounding_adjustment' => 0,

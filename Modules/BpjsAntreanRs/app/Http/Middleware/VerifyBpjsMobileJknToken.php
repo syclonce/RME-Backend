@@ -19,14 +19,22 @@ class VerifyBpjsMobileJknToken
         $username = $request->header('x-username');
         $token = $request->header('x-token');
 
-        if (! $username || ! $token) {
-            return response()->json(['metadata' => ['message' => 'x-username/x-token required', 'code' => 401]], 401);
+        if (! $token) {
+            return response()->json(['metadata' => ['message' => 'x-token required', 'code' => 401]], 401);
         }
 
         // Stored tokens are sha256 digests; hash the presented token before lookup.
-        $record = MobileJknToken::where('username', $username)
-            ->where('token', hash('sha256', $token))
-            ->first();
+        // x-username OPSIONAL (paritas produksi RSUD Ciamis yang hanya memeriksa
+        // x-token): bila dikirim, harus cocok dengan pemilik token; bila tidak
+        // dikirim, token bearer saja cukup. Ini mencegah 401 palsu terhadap
+        // panggilan Mobile JKN asli yang tidak menyertakan username.
+        $query = MobileJknToken::where('token', hash('sha256', $token));
+
+        if ($username) {
+            $query->where('username', $username);
+        }
+
+        $record = $query->first();
 
         if (! $record || $record->isExpired()) {
             return response()->json(['metadata' => ['message' => 'Invalid or expired token', 'code' => 401]], 401);

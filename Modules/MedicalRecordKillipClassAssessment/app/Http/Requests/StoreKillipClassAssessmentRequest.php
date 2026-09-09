@@ -15,7 +15,7 @@ class StoreKillipClassAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'killip_class' => ['required','integer','between:1,4'],
             'heart_rate' => ['nullable','integer','min:0','max:300'],

@@ -16,6 +16,7 @@ class StoreCashierTransactionRequest extends FormRequest
     {
         return [
             'cashier_id' => ['required', 'integer', 'exists:cashiers,id'],
+            'cashier_shift_id' => ['required', 'integer', 'exists:cashier_shifts,id'],
             'invoice_id' => ['required', 'integer', 'exists:invoices,id'],
             'amount' => ['required', 'numeric', 'min:0'],
             'transaction_type' => ['required', 'string', 'in:' . implode(',', CashierTransaction::TRANSACTION_TYPES)],

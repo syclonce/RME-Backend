@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEkgExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordEkgExamination\Http\Requests\StoreEkgExaminationRequest;
 use Modules\MedicalRecordEkgExamination\Http\Requests\UpdateEkgExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordEkgExamination\Models\EkgExamination;
 
 class EkgExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = EkgExamination::query();
@@ -31,6 +34,8 @@ class EkgExaminationController extends Controller
     public function store(StoreEkgExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = EkgExamination::create($data);

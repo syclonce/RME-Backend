@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordMchatAssessmentExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMchatAssessmentExamination\Http\Requests\StoreMchatAssessmentExaminationRequest;
 use Modules\MedicalRecordMchatAssessmentExamination\Http\Requests\UpdateMchatAssessmentExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordMchatAssessmentExamination\Models\MchatAssessmentExamin
 
 class MchatAssessmentExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MchatAssessmentExamination::query();
@@ -31,6 +34,8 @@ class MchatAssessmentExaminationController extends Controller
     public function store(StoreMchatAssessmentExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['total_score'] ??= 0;
         $data['risk_level'] ??= 'Low Risk';
         $data['assessed_at'] ??= now();

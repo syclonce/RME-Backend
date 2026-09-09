@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralTreatmentCategory\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,9 +11,15 @@ use Modules\GeneralTreatmentCategory\Models\TreatmentCategory;
 
 class TreatmentCategoryController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
-        return TreatmentCategory::query()->orderBy('name')->paginate(15);
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch(TreatmentCategory::query(), $request);
+
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

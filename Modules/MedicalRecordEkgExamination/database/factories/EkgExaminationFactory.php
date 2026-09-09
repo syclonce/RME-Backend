@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEkgExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordEkgExamination\Models\EkgExamination;
 
 class EkgExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class EkgExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'heart_rate_bpm' => 75,
             'rhythm' => 'Sinus Rhythm',

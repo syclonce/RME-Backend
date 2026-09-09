@@ -2,18 +2,30 @@
 
 namespace Modules\MedicalRecordImageMarkerPoint\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImageMarkerPoint\Http\Requests\StoreImageMarkerPointRequest;
 use Modules\MedicalRecordImageMarkerPoint\Http\Requests\UpdateImageMarkerPointRequest;
 use Modules\MedicalRecordImageMarkerPoint\Http\Resources\ImageMarkerPointResource;
 use Modules\MedicalRecordImageMarkerPoint\Models\ImageMarkerPoint;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class ImageMarkerPointController extends Controller
 {
+    use GuardsMedicalRecord;
+
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ImageMarkerPoint::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
 
         if ($request->filled('image_marker_id')) {
@@ -41,13 +53,17 @@ class ImageMarkerPointController extends Controller
 
     public function update(UpdateImageMarkerPointRequest $request, ImageMarkerPoint $record): ImageMarkerPointResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new ImageMarkerPointResource($record);
     }
 
-    public function destroy(ImageMarkerPoint $record)
+    public function destroy(Request $request, ImageMarkerPoint $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

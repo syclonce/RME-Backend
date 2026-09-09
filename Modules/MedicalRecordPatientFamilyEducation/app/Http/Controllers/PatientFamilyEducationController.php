@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPatientFamilyEducation\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPatientFamilyEducation\Http\Requests\StorePatientFamilyEducationRequest;
 use Modules\MedicalRecordPatientFamilyEducation\Http\Requests\UpdatePatientFamilyEducationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordPatientFamilyEducation\Models\PatientFamilyEducation;
 
 class PatientFamilyEducationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PatientFamilyEducation::query();
@@ -21,6 +24,8 @@ class PatientFamilyEducationController extends Controller
     public function store(StorePatientFamilyEducationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['re_education_needed'] ??= false;
 
         $record = PatientFamilyEducation::create($data);

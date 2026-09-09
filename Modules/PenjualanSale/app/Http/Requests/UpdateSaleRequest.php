@@ -14,7 +14,7 @@ class UpdateSaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'string', 'in:completed,void,refunded'],
+            'status' => ['required', 'string', 'in:void,refunded'],
         ];
     }
 }

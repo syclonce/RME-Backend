@@ -13,6 +13,13 @@ class UpdatePatientEscortRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, inactive.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -22,7 +29,7 @@ class UpdatePatientEscortRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:255'],
             'arrival_mode' => ['sometimes', Rule::in(PatientEscort::ARRIVAL_MODES)],
             'notes' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
 }

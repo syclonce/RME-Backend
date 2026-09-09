@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralFacilityMaintenance\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +18,7 @@ use Modules\GeneralFacilityMaintenance\Database\Factories\MaintenanceWorkOrderFa
  */
 class MaintenanceWorkOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const PRIORITY_LOW = 'low';
 

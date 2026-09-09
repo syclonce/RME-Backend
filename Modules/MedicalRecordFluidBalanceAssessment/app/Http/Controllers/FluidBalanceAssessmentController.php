@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFluidBalanceAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFluidBalanceAssessment\Http\Requests\StoreFluidBalanceAssessmentRequest;
 use Modules\MedicalRecordFluidBalanceAssessment\Http\Requests\UpdateFluidBalanceAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordFluidBalanceAssessment\Models\FluidBalanceAssessment;
 
 class FluidBalanceAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FluidBalanceAssessment::query();
@@ -28,6 +31,8 @@ class FluidBalanceAssessmentController extends Controller
     public function store(StoreFluidBalanceAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
 

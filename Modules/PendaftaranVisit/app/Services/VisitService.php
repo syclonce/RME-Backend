@@ -18,6 +18,8 @@ use Modules\LayananPatientDischargeRecord\Models\PatientDischargeRecord;
 use Modules\GeneralWard\Models\Ward;
 use Modules\GeneralWardTariff\Models\WardTariff;
 use Modules\PendaftaranVisit\Models\Visit;
+use Modules\PendaftaranVisitDestination\Models\VisitDestination;
+use Modules\PendaftaranWardQueue\Services\WardQueueService;
 use Modules\PendaftaranVisit\Models\VisitTransfer;
 
 /**
@@ -70,6 +72,14 @@ class VisitService implements VisitGate
             ->exists();
     }
 
+    public function canFinalizeMedicalRecord(int $visitId): bool
+    {
+        return Visit::query()
+            ->whereKey($visitId)
+            ->where('status', '!=', 'cancelled')
+            ->exists();
+    }
+
     /**
      * @param  array<string, mixed>  $data  hasil validasi StoreVisitRequest
      *
@@ -108,12 +118,40 @@ class VisitService implements VisitGate
             // status=discharged/cancelled saat admit, seluruh gerbang state
             // machine (bed release, cek tagihan, event audit) di cancel()/
             // discharge() bisa dilewati sejak awal.
-            return Visit::create([
+            $visit = Visit::create([
                 ...Arr::except($data, 'status'),
                 'visit_number' => $data['visit_number'] ?? Visit::generateVisitNumber(),
                 'admitted_at' => $data['admitted_at'] ?? now(),
                 'received_by' => $user->id,
             ]);
+
+            // Port perilaku KunjunganResource::create simgos2 (b.99-103): saat
+            // pasien diterima, tujuan yang direncanakan berpindah dari 'pending'
+            // ke 'accepted'. Inilah yang mengeluarkan pasien dari antrean poli —
+            // tanpa langkah ini ia akan terus tampil sebagai menunggu meski
+            // sudah dilayani.
+            //
+            // Hanya menyentuh tujuan yang masih pending: tujuan yang sudah
+            // diterima atau dibatalkan tidak boleh dihidupkan ulang oleh
+            // kunjungan susulan (konsul/mutasi) pada pendaftaran yang sama.
+            $acceptedWardIds = VisitDestination::query()
+                ->where('registration_id', $visit->registration_id)
+                ->where('status', VisitDestination::STATUS_PENDING)
+                ->pluck('ward_id');
+
+            VisitDestination::query()
+                ->where('registration_id', $visit->registration_id)
+                ->where('status', VisitDestination::STATUS_PENDING)
+                ->update(['status' => VisitDestination::STATUS_ACCEPTED]);
+
+            // Antrean ruangan ikut ditutup, dan `visit_id`-nya diisi supaya antrean
+            // dapat ditelusuri ke kunjungan yang dihasilkannya.
+            $queueService = app(WardQueueService::class);
+            foreach ($acceptedWardIds as $wardId) {
+                $queueService->markServed($visit->registration_id, (int) $wardId, $visit->id);
+            }
+
+            return $visit;
         });
 
         // Event di luar transaksi: listener hanya boleh menyentuh data yang
@@ -304,6 +342,37 @@ class VisitService implements VisitGate
      * (riwayat VisitTransfer, #11), periode itu ditagih dengan tarif ward/
      * kelasnya sendiri, bukan disamaratakan dengan tarif ward terakhir.
      */
+    /**
+     * Lama dirawat satu segmen, mengikuti aturan yang dipilih faskes.
+     *
+     * Legacy tidak memakai satu rumus: `pendaftaran.getLamaDirawat` membaca
+     * `properti_config` ID 14 (`ATURAN_PERHITUNGAN_AKOMODASI`) lalu mendelegasikan
+     * ke salah satu dari tiga varian. Bedanya bukan sepele — satu hari tarif kamar
+     * per pasien rawat inap, dan tiap RS punya kebijakan sendiri soal ini.
+     *
+     * Padanan di sini memakai `HospitalConfig` supaya kebijakan itu tetap dapat
+     * dipilih per instalasi, bukan dipaku di kode:
+     *
+     * - `full_day` (bawaan) — hari penuh dibulatkan ke atas, minimal 1.
+     *   Setara `getLamaDirawatAturan1` + jaminan minimal 1 hari.
+     * - `calendar_day` — selisih tanggal kalender + 1, sehingga masuk dan pulang
+     *   di hari berbeda dihitung 2 hari meski hanya berjarak beberapa jam.
+     *   Setara `getLamaDirawatAturan2` untuk kunjungan tanpa REF.
+     *
+     * Nilai tak dikenal jatuh ke `full_day` — kebijakan tarif tidak boleh berhenti
+     * hanya karena konfigurasi salah ketik.
+     */
+    protected function countAccommodationDays($start, $end): int
+    {
+        $rule = (string) $this->config->get('billing.accommodation_day_rule', 'full_day');
+
+        if ($rule === 'calendar_day') {
+            return (int) $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
+        }
+
+        return max(1, (int) ceil($start->diffInHours($end) / 24));
+    }
+
     protected function postAccommodation(Visit $visit, $dischargedAt): void
     {
         foreach ($this->buildAccommodationSegments($visit, $dischargedAt) as $segment) {
@@ -321,9 +390,7 @@ class VisitService implements VisitGate
                 continue; // tanpa tarif terpasang untuk segmen ini, tidak ada yang bisa diposting.
             }
 
-            // Lama dirawat per segmen minimal 1 hari (ala getLamaDirawat), sama
-            // seperti perilaku lama untuk stay tanpa mutasi.
-            $nights = max(1, (int) ceil($segment['start']->diffInHours($segment['end']) / 24));
+            $nights = $this->countAccommodationDays($segment['start'], $segment['end']);
 
             $wardName = Ward::query()->whereKey($segment['ward_id'])->value('name');
 
@@ -339,6 +406,10 @@ class VisitService implements VisitGate
                 'accommodation',
                 $nights,
                 (float) $tariff->price,
+                // Unit pengerja = ward segmen ini. Karena akomodasi sudah
+                // disegmentasi per mutasi, tiap baris otomatis membawa ward yang
+                // benar — pendapatan bangsal terpisah tanpa memecah kunjungan.
+                $segment['ward_id'],
             );
         }
     }

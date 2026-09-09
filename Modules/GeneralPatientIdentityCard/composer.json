@@ -1,0 +1,30 @@
+{
+    "name": "asvuro/generalpatientidentitycard",
+    "description": "",
+    "authors": [
+        {
+            "name": "Deva Indrayana Rahmat",
+            "email": "asvuro@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\GeneralPatientIdentityCard\\": "app/",
+            "Modules\\GeneralPatientIdentityCard\\Database\\Factories\\": "database/factories/",
+            "Modules\\GeneralPatientIdentityCard\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\GeneralPatientIdentityCard\\Tests\\": "tests/"
+        }
+    }
+}

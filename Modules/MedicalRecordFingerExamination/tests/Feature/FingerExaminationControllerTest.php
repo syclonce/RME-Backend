@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordFingerExamination\Models\FingerExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class FingerExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class FingerExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 25,
+            'visit_id' => $visit->id,
             'hand_side' => 'right',
             'clubbing' => false,
             'cyanosis' => false,
@@ -43,10 +46,10 @@ class FingerExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/finger-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 25)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.hand_side', 'right');
 
-        $this->assertDatabaseHas('finger_examinations', ['visit_id' => 25, 'hand_side' => 'right']);
+        $this->assertDatabaseHas('finger_examinations', ['visit_id' => $visit->id, 'hand_side' => 'right']);
     }
 
     public function test_it_lists_finger_examinations(): void

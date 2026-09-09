@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordRavenTestExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordRavenTestExamination\Http\Requests\StoreRavenTestExaminationRequest;
 use Modules\MedicalRecordRavenTestExamination\Http\Requests\UpdateRavenTestExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordRavenTestExamination\Models\RavenTestExamination;
 
 class RavenTestExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RavenTestExamination::query();
@@ -28,6 +31,8 @@ class RavenTestExaminationController extends Controller
     public function store(StoreRavenTestExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['tested_at'] ??= now();
 

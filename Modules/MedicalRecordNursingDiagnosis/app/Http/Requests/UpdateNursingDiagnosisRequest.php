@@ -11,6 +11,13 @@ class UpdateNursingDiagnosisRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, resolved.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +28,7 @@ class UpdateNursingDiagnosisRequest extends FormRequest
             'priority' => ['nullable', 'string', 'max:20'],
             'recorded_by' => ['sometimes', 'integer', 'exists:employees,id'],
             'recorded_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,resolved'],
         ];
     }
 }

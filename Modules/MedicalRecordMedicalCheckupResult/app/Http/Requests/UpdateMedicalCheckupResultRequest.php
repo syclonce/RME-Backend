@@ -11,6 +11,13 @@ class UpdateMedicalCheckupResultRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +28,7 @@ class UpdateMedicalCheckupResultRequest extends FormRequest
             'summary' => ['nullable', 'string'],
             'recommendation' => ['nullable', 'string'],
             'examined_by' => ['sometimes', 'integer', 'exists:employees,id'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:completed,cancelled'],
         ];
     }
 }

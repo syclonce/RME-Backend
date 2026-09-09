@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordSurgeryPerformer\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordSurgeryPerformer\Models\SurgeryPerformer;
 
 class SurgeryPerformerFactory extends Factory
@@ -13,7 +14,7 @@ class SurgeryPerformerFactory extends Factory
     {
         return [
             'surgery_id' => 1,
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'doctor_id' => 1,
             'role' => 'Main Surgeon',
             'notes' => $this->faker->sentence(),

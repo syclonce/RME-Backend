@@ -24,7 +24,8 @@ class UpdateImmunizationVaccinationRequest extends FormRequest
             'site' => ['nullable', 'string', 'max:100'],
             'route' => ['nullable', 'string', 'max:50'],
             'adverse_reaction' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            // 'status' sengaja tidak dapat diubah - tidak ada transisi bermakna
+            // untuk imunisasi (lihat ImmunizationVaccinationService).
         ];
     }
 }

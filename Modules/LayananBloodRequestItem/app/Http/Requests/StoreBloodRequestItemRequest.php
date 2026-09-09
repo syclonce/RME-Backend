@@ -11,6 +11,13 @@ class StoreBloodRequestItemRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: pending, fulfilled, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,7 +26,7 @@ class StoreBloodRequestItemRequest extends FormRequest
             'blood_type' => ['nullable', 'string', 'max:10'],
             'bag_quantity' => ['required', 'integer'],
             'cross_match_result' => ['nullable', 'string', 'max:50'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:pending,fulfilled,cancelled'],
             'notes' => ['nullable', 'string'],
         ];
     }

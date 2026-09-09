@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEpfraAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordEpfraAssessment\Http\Requests\StoreEpfraAssessmentRequest;
 use Modules\MedicalRecordEpfraAssessment\Http\Requests\UpdateEpfraAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordEpfraAssessment\Models\EpfraAssessment;
 
 class EpfraAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = EpfraAssessment::query();
@@ -28,6 +31,8 @@ class EpfraAssessmentController extends Controller
     public function store(StoreEpfraAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
 

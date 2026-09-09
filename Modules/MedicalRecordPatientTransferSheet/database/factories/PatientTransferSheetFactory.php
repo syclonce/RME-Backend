@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPatientTransferSheet\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPatientTransferSheet\Models\PatientTransferSheet;
 
 class PatientTransferSheetFactory extends Factory
@@ -12,7 +13,7 @@ class PatientTransferSheetFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'from_ward_id' => 1,
             'to_ward_id' => 2,

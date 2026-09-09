@@ -2,6 +2,8 @@
 
 namespace Modules\BpjsPCare\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +11,7 @@ use Modules\BpjsPCare\Database\Factories\PendaftaranFactory;
 
 class Pendaftaran extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'nomor_urut',

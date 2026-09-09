@@ -8,6 +8,7 @@ use Modules\InventoryShipment\Http\Requests\StoreShipmentRequest;
 use Modules\InventoryShipment\Http\Requests\UpdateShipmentRequest;
 use Modules\InventoryShipment\Http\Resources\ShipmentResource;
 use Modules\InventoryShipment\Models\Shipment;
+use Modules\InventoryShipment\Services\ShipmentService;
 
 class ShipmentController extends Controller
 {
@@ -26,13 +27,9 @@ class ShipmentController extends Controller
         return ShipmentResource::collection($query->latest('shipped_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreShipmentRequest $request)
+    public function store(StoreShipmentRequest $request, ShipmentService $service)
     {
-        $data = $request->validated();
-        $data['shipped_at'] ??= now();
-        $data['status'] = 'pending';
-
-        $shipment = Shipment::create($data);
+        $shipment = $service->create($request->validated());
 
         return (new ShipmentResource($shipment))->response()->setStatusCode(201);
     }
@@ -42,14 +39,8 @@ class ShipmentController extends Controller
         return new ShipmentResource($shipment);
     }
 
-    public function update(UpdateShipmentRequest $request, Shipment $shipment): ShipmentResource
+    public function update(UpdateShipmentRequest $request, Shipment $shipment, ShipmentService $service): ShipmentResource
     {
-        if (in_array($shipment->status, ['delivered', 'cancelled'], true)) {
-            abort(422, 'Pengiriman sudah selesai diproses.');
-        }
-
-        $shipment->update($request->validated());
-
-        return new ShipmentResource($shipment->fresh());
+        return new ShipmentResource($service->transition($shipment, $request->validated('status')));
     }
 }

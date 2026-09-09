@@ -80,6 +80,24 @@ class TransferControllerTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $payment = Payment::factory()->create();
+
+        $response = $this->postJson('/api/v1/bank-transfers', [
+            'payment_id' => $payment->id,
+            'transfer_reference_number' => 'TRF-0000000003',
+            'source_bank_name' => 'BCA',
+            'destination_account_number' => '1234567890',
+            'destination_account_name' => 'RSU Simgos',
+            'amount' => 100000,
+            'status' => 'verified',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
     public function test_guest_cannot_access_bank_transfers(): void
     {
         $this->getJson('/api/v1/bank-transfers')->assertStatus(401);

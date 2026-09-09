@@ -15,7 +15,7 @@ class StoreRadiologyResultSummaryRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'summarized_by' => ['required', 'integer', 'exists:employees,id'],
+            'summarized_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'overall_impression' => ['nullable','string'],
             'summarized_at' => ['nullable','date'],

@@ -3,7 +3,6 @@
 namespace Modules\LayananMedicalSupplyUsage\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreMedicalSupplyUsageRequest extends FormRequest
 {
@@ -18,7 +17,6 @@ class StoreMedicalSupplyUsageRequest extends FormRequest
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
             'recorded_by' => ['nullable', 'integer', 'exists:users,id'],
             'used_at' => ['required', 'date'],
-            'status' => ['required', Rule::in(['draft', 'posted'])],
         ];
     }
 }

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordFoodAllergenExamination\Models\FoodAllergenExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class FoodAllergenExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class FoodAllergenExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 10,
+            'visit_id' => $visit->id,
             'patient_id' => 20,
             'food_item' => 'Peanut',
             'reaction_grade' => '4+',
@@ -47,7 +50,7 @@ class FoodAllergenExaminationControllerTest extends TestCase
             ->assertJsonPath('data.food_item', 'Peanut')
             ->assertJsonPath('data.reaction_grade', '4+');
 
-        $this->assertDatabaseHas('food_allergen_examinations', ['visit_id' => 10, 'food_item' => 'Peanut']);
+        $this->assertDatabaseHas('food_allergen_examinations', ['visit_id' => $visit->id, 'food_item' => 'Peanut']);
     }
 
     public function test_it_lists_food_allergen_examinations(): void

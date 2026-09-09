@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Modules\Bpjs\Services\BpjsClient;
+use Modules\BpjsAntreanRs\Http\Requests\StoreAntreanFromDestinationRequest;
 use Modules\BpjsAntreanRs\Http\Requests\StoreAntreanRequest;
 use Modules\BpjsAntreanRs\Http\Resources\AntreanResource;
 use Modules\BpjsAntreanRs\Models\Antrean;
+use Modules\BpjsAntreanRs\Services\AntreanDraftService;
+use Modules\PendaftaranVisitDestination\Models\VisitDestination;
 
 /**
  * Internal-facing (auth:sanctum) trigger: register a local visit as a BPJS
@@ -17,8 +20,10 @@ use Modules\BpjsAntreanRs\Models\Antrean;
  */
 class AntreanController extends Controller
 {
-    public function __construct(private readonly BpjsClient $client)
-    {
+    public function __construct(
+        private readonly BpjsClient $client,
+        private readonly AntreanDraftService $draftService,
+    ) {
     }
 
     public function index(Request $request)
@@ -83,6 +88,26 @@ class AntreanController extends Controller
     public function show(Antrean $antrean): AntreanResource
     {
         return new AntreanResource($antrean);
+    }
+
+    /**
+     * Susun draf antrean BPJS dari tujuan pasien (VisitDestination) yang sudah
+     * ada, alih-alih petugas mengetik ulang kodepoli/kodedokter/tanggalperiksa.
+     * TIDAK memanggil BPJS — hanya menyimpan draf lokal berstatus 'draft'/
+     * bpjs_sync_status 'pending', sinkron ke WS BPJS tetap lewat store()/POST
+     * antrean terpisah (atau alur sinkron yang akan dibangun kemudian).
+     */
+    public function storeFromDestination(StoreAntreanFromDestinationRequest $request)
+    {
+        $destination = VisitDestination::query()->findOrFail($request->integer('visit_destination_id'));
+
+        $antrean = $this->draftService->draftFromDestination(
+            $destination,
+            $request->filled('kodepoli') ? $request->string('kodepoli')->toString() : null,
+            $request->filled('kodedokter') ? $request->integer('kodedokter') : null,
+        );
+
+        return (new AntreanResource($antrean))->response()->setStatusCode(201);
     }
 
     public function batal(Request $request, Antrean $antrean)

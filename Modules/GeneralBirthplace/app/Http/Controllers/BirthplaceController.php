@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralBirthplace\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralBirthplace\Http\Requests\StoreBirthplaceRequest;
@@ -11,9 +13,15 @@ use Modules\GeneralBirthplace\Models\Birthplace;
 
 class BirthplaceController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = Birthplace::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return BirthplaceResource::collection($query->orderBy('id')->paginate($request->integer('per_page', 15)));
     }

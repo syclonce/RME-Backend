@@ -2,6 +2,8 @@
 
 namespace Modules\Sisrute\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Sisrute\Database\Factories\RujukanFactory;
@@ -17,7 +19,7 @@ use Modules\Sisrute\Database\Factories\RujukanFactory;
  */
 class Rujukan extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'direction',

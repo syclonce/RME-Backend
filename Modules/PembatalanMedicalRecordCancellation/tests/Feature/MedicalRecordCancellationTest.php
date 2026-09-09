@@ -37,9 +37,11 @@ class MedicalRecordCancellationTest extends TestCase {
         $this->assertEquals('New', $mc->fresh()->reason);
     }
     public function test_can_delete() {
+        // Pembatalan adalah catatan beralasan, bukan hard delete (peta induk
+        // Temuan 16): destroy() membalik status jadi 'reversed', baris tetap ada.
         $mc = MedicalRecordCancellation::factory()->create();
         $response = $this->deleteJson("/api/v1/medical-record-cancellations/{$mc->id}");
-        $response->assertStatus(204);
-        $this->assertDatabaseMissing('medical_record_cancellations', ['id' => $mc->id]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('medical_record_cancellations', ['id' => $mc->id, 'status' => 'reversed']);
     }
 }

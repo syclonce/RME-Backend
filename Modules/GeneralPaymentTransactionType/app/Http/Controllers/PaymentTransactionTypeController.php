@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralPaymentTransactionType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,9 +11,15 @@ use Modules\GeneralPaymentTransactionType\Models\PaymentTransactionType;
 
 class PaymentTransactionTypeController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
-        return PaymentTransactionType::query()->orderBy('name')->paginate(15);
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch(PaymentTransactionType::query(), $request);
+
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

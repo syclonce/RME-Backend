@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordLegJointExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordLegJointExamination\Models\LegJointExamination;
 
 class LegJointExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class LegJointExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'joint' => 'knee',
             'range_of_motion' => 'Full',
             'swelling' => false,

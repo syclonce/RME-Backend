@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPalateExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPalateExamination\Models\PalateExamination;
 
 class PalateExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class PalateExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'hard_palate' => 'Intact',
             'soft_palate' => 'Intact, symmetrical elevation',
             'uvula_position' => 'Midline',

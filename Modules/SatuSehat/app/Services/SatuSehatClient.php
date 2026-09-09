@@ -30,10 +30,11 @@ class SatuSehatClient
             return $cached;
         }
 
+        // grant_type WAJIB sebagai query string (bukan field body) — terbukti
+        // dari Postman pemilik repo (200 OK) vs 401 saat dikirim di body.
         $response = Http::asForm()->post(
-            rtrim(config('satusehat.auth_url'), '/').'/accesstoken',
+            rtrim(config('satusehat.auth_url'), '/').'/accesstoken?grant_type=client_credentials',
             [
-                'grant_type' => 'client_credentials',
                 'client_id' => config('satusehat.client_id'),
                 'client_secret' => config('satusehat.client_secret'),
             ]

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGeneralExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordGeneralExamination\Models\GeneralExamination;
 
 class GeneralExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class GeneralExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'general_appearance' => 'Well-appearing, no acute distress',
             'consciousness_level' => 'Alert',
             'nutritional_status' => 'Well-nourished',

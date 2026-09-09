@@ -4,6 +4,7 @@ namespace Modules\PendaftaranVisit\Tests\Feature;
 
 use App\Events\VisitDischarged;
 use Database\Seeders\RoleAndPermissionSeeder;
+use App\Modules\Contracts\HospitalConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Modules\Auth\Models\User;
@@ -235,5 +236,84 @@ class VisitDischargeApiTest extends TestCase
         $this->postJson("/api/v1/visits/{$visit->id}/discharge", [])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['final_outcome']);
+    }
+
+    /**
+     * Aturan lama dirawat dapat dipilih per faskes — padanan `properti_config` 14
+     * legacy (`ATURAN_PERHITUNGAN_AKOMODASI`) yang memilih di antara tiga varian
+     * `getLamaDirawat`. Bedanya satu hari tarif kamar per pasien, jadi harus
+     * benar-benar mengikuti kebijakan RS, bukan dipaku di kode.
+     *
+     * Kasus uji sengaja memakai menginap 20 jam yang melewati tengah malam:
+     * `full_day` membacanya 1 hari, `calendar_day` membacanya 2 hari.
+     */
+    public function test_aturan_calendar_day_menghitung_pergantian_tanggal(): void
+    {
+        // HospitalConfig membaca tabel `rs_settings`, bukan config() Laravel —
+        // menyetel lewat config() akan diabaikan diam-diam dan membuat tes ini
+        // lolos tanpa benar-benar menguji apa pun.
+        app(HospitalConfig::class)->set('billing.accommodation_day_rule', 'calendar_day');
+
+        WardTariff::factory()->create([
+            'ward_id' => $this->ward->id,
+            'room_class_id' => null,
+            'price' => '350000.00',
+        ]);
+
+        $bed = Bed::factory()->create([
+            'room_id' => Room::factory()->create(['ward_id' => $this->ward])->id,
+        ]);
+        $visit = Visit::factory()->create([
+            'registration_id' => Registration::factory(),
+            'ward_id' => $this->ward->id,
+            'bed_id' => $bed->id,
+            // Masuk pukul 20:00 kemarin, pulang pukul 16:00 hari ini = 20 jam,
+            // tetapi melewati satu pergantian tanggal.
+            'admitted_at' => now()->subDay()->setTime(20, 0),
+        ]);
+        $bed->update(['status' => Bed::STATUS_OCCUPIED]);
+
+        $this->travelTo(now()->setTime(16, 0));
+
+        $this->postJson("/api/v1/visits/{$visit->id}/discharge", [
+            'final_outcome' => 'sembuh',
+            'discharge_method' => 'pulang atas izin dokter',
+        ])->assertOk();
+
+        $invoice = Invoice::query()->where('visit_id', $visit->id)->firstOrFail();
+        $this->assertDatabaseHas('invoice_items', [
+            'invoice_id' => $invoice->id,
+            'category' => 'accommodation',
+            'quantity' => 2,
+        ]);
+    }
+
+    /**
+     * KEPUTUSAN 2026-09-04: tagihan harus dapat dipecah per unit TANPA menerbitkan
+     * kunjungan baru tiap mutasi. Penandanya ada di baris tagihan (`invoice_items.
+     * ward_id`), bukan di kunjungan — jadi satu kunjungan rawat inap yang berpindah
+     * bangsal tetap satu kunjungan, tetapi pendapatan tiap bangsal terpisah.
+     */
+    public function test_akomodasi_membawa_ward_pengerja_per_baris(): void
+    {
+        WardTariff::factory()->create([
+            'ward_id' => $this->ward->id,
+            'room_class_id' => null,
+            'price' => '350000.00',
+        ]);
+        $visit = $this->admittedInBed();
+
+        $this->postJson("/api/v1/visits/{$visit->id}/discharge", [
+            'final_outcome' => 'sembuh',
+            'discharge_method' => 'pulang atas izin dokter',
+        ])->assertOk();
+
+        $invoice = Invoice::query()->where('visit_id', $visit->id)->firstOrFail();
+
+        $this->assertDatabaseHas('invoice_items', [
+            'invoice_id' => $invoice->id,
+            'category' => 'accommodation',
+            'ward_id' => $this->ward->id,
+        ]);
     }
 }

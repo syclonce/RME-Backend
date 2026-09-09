@@ -8,6 +8,7 @@ use Modules\InventoryStockOpname\Http\Requests\StoreStockOpnameRequest;
 use Modules\InventoryStockOpname\Http\Requests\UpdateStockOpnameRequest;
 use Modules\InventoryStockOpname\Http\Resources\StockOpnameResource;
 use Modules\InventoryStockOpname\Models\StockOpname;
+use Modules\InventoryStockOpname\Services\StockOpnameService;
 
 class InventoryStockOpnameController extends Controller
 {
@@ -22,12 +23,9 @@ class InventoryStockOpnameController extends Controller
         return StockOpnameResource::collection($query->latest('opname_date')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreStockOpnameRequest $request)
+    public function store(StoreStockOpnameRequest $request, StockOpnameService $service)
     {
-        $data = $request->validated();
-        $data['status'] = 'in_progress';
-
-        $opname = StockOpname::create($data);
+        $opname = $service->create($request->validated());
 
         return (new StockOpnameResource($opname))->response()->setStatusCode(201);
     }
@@ -37,10 +35,14 @@ class InventoryStockOpnameController extends Controller
         return new StockOpnameResource($inventorystockopname);
     }
 
-    public function update(UpdateStockOpnameRequest $request, StockOpname $inventorystockopname): StockOpnameResource
+    public function update(UpdateStockOpnameRequest $request, StockOpname $inventorystockopname, StockOpnameService $service): StockOpnameResource
     {
-        $inventorystockopname->update($request->validated());
+        $opname = $service->transition($inventorystockopname, $request->validated('status'));
 
-        return new StockOpnameResource($inventorystockopname);
+        if ($request->filled('notes')) {
+            $opname->update(['notes' => $request->validated('notes')]);
+        }
+
+        return new StockOpnameResource($opname);
     }
 }

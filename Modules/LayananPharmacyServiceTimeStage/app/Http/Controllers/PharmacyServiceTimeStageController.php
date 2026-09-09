@@ -20,6 +20,7 @@ class PharmacyServiceTimeStageController extends Controller
     public function store(StorePharmacyServiceTimeStageRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
 
         $record = PharmacyServiceTimeStage::create($data);
 

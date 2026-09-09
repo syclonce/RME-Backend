@@ -2,6 +2,7 @@
 
 namespace Modules\PendaftaranReferralLetter\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PendaftaranReferralLetter\Http\Requests\StoreReferralLetterRequest;
@@ -10,6 +11,8 @@ use Modules\PendaftaranReferralLetter\Models\ReferralLetter;
 
 class ReferralLetterController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ReferralLetter::query();
@@ -25,6 +28,7 @@ class ReferralLetterController extends Controller
     {
         $data = $request->validated();
         $data['issued_at'] ??= now();
+        $this->guardMedicalRecord($request, $data);
 
         $referral = ReferralLetter::create($data);
 

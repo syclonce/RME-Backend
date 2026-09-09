@@ -29,6 +29,8 @@ class MaintenanceAssetControllerTest extends TestCase
     public function test_it_creates_maintenance_asset(): void
     {
         $this->actingUser();
+        $userId = \Modules\Auth\Models\User::query()->latest('id')->value('id');
+        \Modules\GeneralEmployee\Models\Employee::factory()->create(['user_id' => $userId]);
 
         $this->postJson('/api/v1/maintenance-assets', [
             'asset_code' => 'AST-001',

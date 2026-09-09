@@ -52,14 +52,39 @@ class CorporateReceivableControllerTest extends TestCase
         $this->assertDatabaseHas('corporate_receivables', ['invoice_id' => $invoice->id, 'guarantor_id' => $guarantor->id]);
     }
 
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $invoice = Invoice::factory()->create();
+        $guarantor = Guarantor::factory()->create();
+
+        $this->postJson('/api/v1/corporate-receivables', [
+            'invoice_id' => $invoice->id,
+            'guarantor_id' => $guarantor->id,
+            'amount' => 1500000,
+            'due_date' => now()->addDays(30)->toDateString(),
+            'status' => 'settled',
+        ])->assertCreated()->assertJsonPath('data.status', 'outstanding');
+    }
+
     public function test_it_updates_status_to_settled(): void
     {
         $this->actingUser();
         $receivable = CorporateReceivable::factory()->create(['status' => 'outstanding']);
 
-        $this->putJson("/api/v1/corporate-receivables/{$receivable->id}", ['status' => 'settled'])
+        $this->patchJson("/api/v1/corporate-receivables/{$receivable->id}/transition", ['status' => 'settled'])
             ->assertOk()
             ->assertJsonPath('data.status', 'settled');
+    }
+
+    public function test_it_writes_off_an_outstanding_receivable(): void
+    {
+        $this->actingUser();
+        $receivable = CorporateReceivable::factory()->create(['status' => 'outstanding']);
+
+        $this->patchJson("/api/v1/corporate-receivables/{$receivable->id}/transition", ['status' => 'written_off'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'written_off');
     }
 
     public function test_it_rejects_invalid_status(): void
@@ -67,8 +92,57 @@ class CorporateReceivableControllerTest extends TestCase
         $this->actingUser();
         $receivable = CorporateReceivable::factory()->create();
 
-        $this->putJson("/api/v1/corporate-receivables/{$receivable->id}", ['status' => 'invalid'])
+        $this->patchJson("/api/v1/corporate-receivables/{$receivable->id}/transition", ['status' => 'invalid'])
             ->assertStatus(422);
+    }
+
+    public function test_it_rejects_transitioning_an_already_settled_receivable(): void
+    {
+        $this->actingUser();
+        $receivable = CorporateReceivable::factory()->create(['status' => 'settled']);
+
+        $this->patchJson("/api/v1/corporate-receivables/{$receivable->id}/transition", ['status' => 'written_off'])
+            ->assertStatus(422);
+    }
+
+    public function test_it_rejects_creating_a_second_outstanding_receivable_for_the_same_invoice(): void
+    {
+        $this->actingUser();
+        $invoice = Invoice::factory()->create();
+        $guarantor = Guarantor::factory()->create();
+
+        CorporateReceivable::factory()->create([
+            'invoice_id' => $invoice->id,
+            'guarantor_id' => $guarantor->id,
+            'status' => 'outstanding',
+        ]);
+
+        $this->postJson('/api/v1/corporate-receivables', [
+            'invoice_id' => $invoice->id,
+            'guarantor_id' => $guarantor->id,
+            'amount' => 500000,
+            'due_date' => now()->addDays(30)->toDateString(),
+        ])->assertStatus(422);
+    }
+
+    public function test_it_allows_creating_a_new_receivable_after_previous_one_is_settled(): void
+    {
+        $this->actingUser();
+        $invoice = Invoice::factory()->create();
+        $guarantor = Guarantor::factory()->create();
+
+        CorporateReceivable::factory()->create([
+            'invoice_id' => $invoice->id,
+            'guarantor_id' => $guarantor->id,
+            'status' => 'settled',
+        ]);
+
+        $this->postJson('/api/v1/corporate-receivables', [
+            'invoice_id' => $invoice->id,
+            'guarantor_id' => $guarantor->id,
+            'amount' => 500000,
+            'due_date' => now()->addDays(30)->toDateString(),
+        ])->assertCreated()->assertJsonPath('data.status', 'outstanding');
     }
 
     public function test_guest_cannot_access_corporate_receivables(): void

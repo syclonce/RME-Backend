@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEyeExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordEyeExamination\Models\EyeExamination;
 
 class EyeExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class EyeExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'side' => 'bilateral',
             'visual_acuity' => '20/20',
             'pupil_size_mm' => 3.0,

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Modules\Auth\Models\User;
 use Modules\GeneralWard\Models\Ward;
+use Modules\GeneralWardVisitType\Models\WardVisitType;
 use Modules\InventoryItem\Models\Item;
 use Modules\LayananPharmacyDispense\Models\PharmacyDispense;
 use Modules\LayananPrescriptionInitialReview\Database\Factories\PrescriptionInitialReviewFactory;
@@ -187,5 +188,28 @@ class DispenseFlowApiTest extends TestCase
         $this->postJson("/api/v1/prescriptions/{$prescription->id}/dispense")->assertStatus(422);
 
         $this->assertSame(1, PharmacyDispense::count());
+    }
+
+    /**
+     * Penyerahan obat melahirkan kunjungan di unit farmasi (padanan
+     * `kunjungan.REF` prefix 14 legacy). Tanpa ini pendapatan farmasi tidak
+     * terpisah dari poli pengirim.
+     */
+    public function test_dispense_creates_pharmacy_visit(): void
+    {
+        $this->actingUser();
+        WardVisitType::query()->where('code', '11')->exists()
+            ?: WardVisitType::create(['name' => 'Farmasi', 'code' => '11']);
+        $pharmacyWard = Ward::factory()->create([
+            'visit_type_id' => WardVisitType::query()->where('code', '11')->value('id'),
+        ]);
+        $prescription = $this->readyToDispense();
+
+        $this->postJson("/api/v1/prescriptions/{$prescription->id}/dispense")->assertCreated();
+
+        $this->assertSame(1, Visit::query()
+            ->where('ward_id', $pharmacyWard->id)
+            ->where('origin_type', PharmacyDispense::class)
+            ->count());
     }
 }

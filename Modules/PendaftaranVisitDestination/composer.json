@@ -1,0 +1,30 @@
+{
+    "name": "asvuro/pendaftaranvisitdestination",
+    "description": "",
+    "authors": [
+        {
+            "name": "Deva Indrayana Rahmat",
+            "email": "asvuro@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\PendaftaranVisitDestination\\": "app/",
+            "Modules\\PendaftaranVisitDestination\\Database\\Factories\\": "database/factories/",
+            "Modules\\PendaftaranVisitDestination\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\PendaftaranVisitDestination\\Tests\\": "tests/"
+        }
+    }
+}

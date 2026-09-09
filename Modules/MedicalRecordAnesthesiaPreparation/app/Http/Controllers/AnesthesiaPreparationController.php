@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordAnesthesiaPreparation\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAnesthesiaPreparation\Http\Requests\StoreAnesthesiaPreparationRequest;
 use Modules\MedicalRecordAnesthesiaPreparation\Http\Resources\AnesthesiaPreparationResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordAnesthesiaPreparation\Models\AnesthesiaPreparation;
 
 class AnesthesiaPreparationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AnesthesiaPreparation::query();
@@ -24,6 +27,8 @@ class AnesthesiaPreparationController extends Controller
     public function store(StoreAnesthesiaPreparationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['allergy_checked'] ??= false;
         $data['consent_confirmed'] ??= false;
         $data['prepared_at'] ??= now();

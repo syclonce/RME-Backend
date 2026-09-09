@@ -83,4 +83,64 @@ class RecordFileLoanControllerTest extends TestCase
 
         $response->assertNoContent();
     }
+
+    public function test_status_cannot_be_injected_on_create(): void
+    {
+        $this->actingUser();
+
+        $response = $this->postJson('/api/v1/record-file-loans', [
+            'patient_id' => 1,
+            'borrower_name' => 'Dr. Ahmad Setiawan',
+            'loaned_at' => now()->toDateTimeString(),
+            'status' => 'returned',
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('borrowed', $response->json('data.status'));
+    }
+
+    public function test_it_transitions_borrowed_to_returned(): void
+    {
+        $this->actingUser();
+        $record = RecordFileLoan::factory()->create(['status' => 'borrowed']);
+
+        $this->patchJson("/api/v1/record-file-loans/{$record->id}/status", ['status' => 'returned'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'returned');
+
+        $this->assertNotNull($record->fresh()->returned_at);
+    }
+
+    public function test_it_transitions_overdue_to_returned(): void
+    {
+        $this->actingUser();
+        $record = RecordFileLoan::factory()->create(['status' => 'overdue']);
+
+        $this->patchJson("/api/v1/record-file-loans/{$record->id}/status", ['status' => 'returned'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'returned');
+    }
+
+    public function test_it_rejects_transition_from_returned(): void
+    {
+        $this->actingUser();
+        $record = RecordFileLoan::factory()->create(['status' => 'returned']);
+
+        $this->patchJson("/api/v1/record-file-loans/{$record->id}/status", ['status' => 'overdue'])
+            ->assertStatus(422);
+    }
+
+    public function test_update_cannot_change_status(): void
+    {
+        $this->actingUser();
+        $record = RecordFileLoan::factory()->create(['status' => 'borrowed']);
+
+        $this->putJson("/api/v1/record-file-loans/{$record->id}", [
+            'borrower_name' => 'Dr. Baru',
+            'status' => 'returned',
+        ])->assertOk();
+
+        $this->assertSame('borrowed', $record->fresh()->status);
+        $this->assertSame('Dr. Baru', $record->fresh()->borrower_name);
+    }
 }

@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordAnalExamination\Models\AnalExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class AnalExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class AnalExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 11,
+            'visit_id' => $visit->id,
             'inspection' => 'No fissure or hemorrhoid',
             'palpation' => 'Normal tone',
             'sphincter_tone' => 'Normal',
@@ -42,10 +45,10 @@ class AnalExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/anal-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 11)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.sphincter_tone', 'Normal');
 
-        $this->assertDatabaseHas('anal_examinations', ['visit_id' => 11, 'sphincter_tone' => 'Normal']);
+        $this->assertDatabaseHas('anal_examinations', ['visit_id' => $visit->id, 'sphincter_tone' => 'Normal']);
     }
 
     public function test_it_lists_anal_examinations(): void

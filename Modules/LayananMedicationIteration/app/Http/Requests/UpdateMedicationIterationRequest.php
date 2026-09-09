@@ -15,11 +15,7 @@ class UpdateMedicationIterationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'prescription_id' => ['sometimes', 'integer', 'exists:prescriptions,id'],
-            'iteration_number' => ['sometimes', 'integer'],
-            'quantity' => ['sometimes', 'integer'],
-            'dispensed_at' => ['sometimes', 'date'],
-            'status' => ['sometimes', Rule::in(['pending', 'dispensed'])],
+            'status' => ['required', Rule::in(['pending', 'dispensed'])],
         ];
     }
 }

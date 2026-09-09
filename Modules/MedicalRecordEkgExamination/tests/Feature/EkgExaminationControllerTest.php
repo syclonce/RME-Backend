@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordEkgExamination\Models\EkgExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class EkgExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class EkgExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 17,
+            'visit_id' => $visit->id,
             'patient_id' => 34,
             'heart_rate_bpm' => 80,
             'rhythm' => 'Sinus Rhythm',
@@ -46,7 +49,7 @@ class EkgExaminationControllerTest extends TestCase
             ->assertJsonPath('data.heart_rate_bpm', 80)
             ->assertJsonPath('data.rhythm', 'Sinus Rhythm');
 
-        $this->assertDatabaseHas('ekg_examinations', ['visit_id' => 17, 'heart_rate_bpm' => 80]);
+        $this->assertDatabaseHas('ekg_examinations', ['visit_id' => $visit->id, 'heart_rate_bpm' => 80]);
     }
 
     public function test_it_lists_ekg_examinations(): void

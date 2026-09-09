@@ -48,4 +48,38 @@ class VisitCancellationControllerTest extends TestCase
         $this->assertDatabaseCount('pembatalan_visit_cancellations', 1);
     }
 
+    /** Satu kunjungan satu catatan pembatalan — laporan tidak boleh menghitung ganda. */
+    public function test_duplicate_cancellation_is_rejected(): void
+    {
+        $this->actingUser();
+        $visit = \Modules\PendaftaranVisit\Models\Visit::factory()->create();
+        $payload = [
+            'visit_id' => $visit->id,
+            'cancelled_by' => \Modules\Auth\Models\User::factory()->create()->id,
+            'reason' => 'Pasien pulang paksa',
+            'cancelled_at' => '2026-01-01 08:00:00',
+        ];
+
+        $this->postJson('/api/v1/pembatalan-visit-cancellations', $payload)->assertCreated();
+        $this->postJson('/api/v1/pembatalan-visit-cancellations', $payload)->assertStatus(422);
+
+        $this->assertDatabaseCount('pembatalan_visit_cancellations', 1);
+    }
+
+    /**
+     * Port precondition simgos2: kunjungan yang sudah final tidak dibatalkan
+     * lewat jalur ini — tagihannya mungkin sudah dikunci.
+     */
+    public function test_finalized_visit_cannot_be_cancelled(): void
+    {
+        $this->actingUser();
+        $visit = \Modules\PendaftaranVisit\Models\Visit::factory()->create(['status' => 'finalized']);
+
+        $this->postJson('/api/v1/pembatalan-visit-cancellations', [
+            'visit_id' => $visit->id,
+            'cancelled_by' => \Modules\Auth\Models\User::factory()->create()->id,
+            'reason' => 'Terlambat',
+            'cancelled_at' => '2026-01-01 08:00:00',
+        ])->assertStatus(422);
+    }
 }

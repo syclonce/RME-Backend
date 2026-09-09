@@ -2,6 +2,10 @@
 
 namespace Modules\PembayaranClaimInvoice\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +16,7 @@ use Modules\PendaftaranGuarantor\Models\Guarantor;
 
 class ClaimInvoice extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     public const STATUSES = ['draft', 'submitted', 'verified', 'paid', 'rejected'];
 
@@ -47,15 +51,13 @@ class ClaimInvoice extends Model
     }
 
     /**
-     * Format: CLM-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateClaimNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('claim_number', 'like', "CLM-{$year}-%")->count();
-
-        return sprintf('CLM-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('CLM', 'claim_invoice', now()->format('Y'));
     }
 
     protected static function newFactory(): ClaimInvoiceFactory

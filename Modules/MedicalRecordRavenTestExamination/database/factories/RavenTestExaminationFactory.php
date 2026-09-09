@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordRavenTestExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordRavenTestExamination\Models\RavenTestExamination;
 
 class RavenTestExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class RavenTestExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'test_form' => 'SPM',
             'raw_score' => 42,
             'percentile' => 75,

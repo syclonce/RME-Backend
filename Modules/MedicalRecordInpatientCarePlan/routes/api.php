@@ -6,5 +6,5 @@ use Modules\MedicalRecordInpatientCarePlan\Http\Controllers\InpatientCarePlanCon
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::apiResource('inpatient-care-plans', InpatientCarePlanController::class)->only(['index', 'show'])->parameters(['inpatient-care-plans' => 'record']);
 
-    Route::apiResource('inpatient-care-plans', InpatientCarePlanController::class)->only(['store'])->parameters(['inpatient-care-plans' => 'record']);
+    Route::apiResource('inpatient-care-plans', InpatientCarePlanController::class)->only(['store', 'update'])->parameters(['inpatient-care-plans' => 'record']);
 });

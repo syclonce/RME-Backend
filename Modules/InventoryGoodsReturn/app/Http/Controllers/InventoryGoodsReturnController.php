@@ -8,6 +8,7 @@ use Modules\InventoryGoodsReturn\Http\Requests\StoreGoodsReturnRequest;
 use Modules\InventoryGoodsReturn\Http\Requests\UpdateGoodsReturnRequest;
 use Modules\InventoryGoodsReturn\Http\Resources\GoodsReturnResource;
 use Modules\InventoryGoodsReturn\Models\GoodsReturn;
+use Modules\InventoryGoodsReturn\Services\GoodsReturnService;
 
 class InventoryGoodsReturnController extends Controller
 {
@@ -26,15 +27,9 @@ class InventoryGoodsReturnController extends Controller
         return GoodsReturnResource::collection($query->latest('returned_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreGoodsReturnRequest $request)
+    public function store(StoreGoodsReturnRequest $request, GoodsReturnService $service)
     {
-        $data = $request->validated();
-        $data['return_number'] = GoodsReturn::generateReturnNumber();
-        $data['returned_at'] ??= now();
-        $data['returned_by'] = $request->user()->id;
-        $data['status'] = 'pending';
-
-        $return = GoodsReturn::create($data);
+        $return = $service->create($request->validated(), $request->user());
 
         return (new GoodsReturnResource($return))->response()->setStatusCode(201);
     }
@@ -44,11 +39,9 @@ class InventoryGoodsReturnController extends Controller
         return new GoodsReturnResource($goods_return);
     }
 
-    public function update(UpdateGoodsReturnRequest $request, GoodsReturn $goods_return): GoodsReturnResource
+    public function update(UpdateGoodsReturnRequest $request, GoodsReturn $goods_return, GoodsReturnService $service): GoodsReturnResource
     {
-        $goods_return->update($request->validated());
-
-        return new GoodsReturnResource($goods_return);
+        return new GoodsReturnResource($service->transition($goods_return, $request->validated('status')));
     }
 
     public function destroy(GoodsReturn $goods_return)

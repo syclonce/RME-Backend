@@ -27,6 +27,8 @@ class VisitFactory extends Factory
             'final_outcome' => null,
             'final_outcome_by' => null,
             'final_outcome_at' => null,
+            'service_finalized_at' => null,
+            'service_finalized_by' => null,
             'status' => 'active',
         ];
     }
@@ -37,6 +39,14 @@ class VisitFactory extends Factory
             'discharged_at' => now(),
             'final_outcome' => 'sembuh',
             'status' => 'discharged',
+        ]);
+    }
+
+    public function serviceFinalized(): static
+    {
+        return $this->state(fn () => [
+            'service_finalized_at' => now(),
+            'service_finalized_by' => null,
         ]);
     }
 }

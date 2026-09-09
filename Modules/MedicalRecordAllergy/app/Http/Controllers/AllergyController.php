@@ -2,15 +2,23 @@
 
 namespace Modules\MedicalRecordAllergy\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAllergy\Http\Requests\StoreAllergyRequest;
 use Modules\MedicalRecordAllergy\Http\Requests\UpdateAllergyRequest;
 use Modules\MedicalRecordAllergy\Http\Resources\AllergyResource;
 use Modules\MedicalRecordAllergy\Models\Allergy;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class AllergyController extends Controller
 {
+    use GuardsMedicalRecord;
+
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = Allergy::query();
@@ -29,6 +37,7 @@ class AllergyController extends Controller
     public function store(StoreAllergyRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
         $data['created_by'] = $request->user()->id;
 
         $allergy = Allergy::create($data);
@@ -43,6 +52,8 @@ class AllergyController extends Controller
 
     public function update(UpdateAllergyRequest $request, Allergy $allergy): AllergyResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($allergy)]);
+
         $allergy->update($request->validated());
 
         return new AllergyResource($allergy);

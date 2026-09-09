@@ -21,7 +21,7 @@ class StoreDietOrderRequest extends FormRequest
             'calorie_target' => ['nullable', 'integer', 'min:0'],
             'allergy_notes' => ['nullable', 'string'],
             'meal_schedule' => ['required', 'string', Rule::in(DietOrder::MEAL_SCHEDULES)],
-            'ordered_by' => ['required', 'integer', 'exists:employees,id'],
+            'ordered_by' => ['nullable', 'integer', 'exists:employees,id'],
             'order_date' => ['required', 'date'],
         ];
     }

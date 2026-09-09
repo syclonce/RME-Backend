@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordThighExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordThighExamination\Http\Requests\StoreThighExaminationRequest;
 use Modules\MedicalRecordThighExamination\Http\Requests\UpdateThighExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordThighExamination\Models\ThighExamination;
 
 class ThighExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ThighExamination::query();
@@ -28,6 +31,8 @@ class ThighExaminationController extends Controller
     public function store(StoreThighExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

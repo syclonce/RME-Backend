@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHandJointExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordHandJointExamination\Models\HandJointExamination;
 
 class HandJointExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class HandJointExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'joint' => 'wrist',
             'range_of_motion' => 'Full',
             'swelling' => false,

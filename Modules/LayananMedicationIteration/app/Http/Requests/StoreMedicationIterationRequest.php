@@ -3,7 +3,6 @@
 namespace Modules\LayananMedicationIteration\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreMedicationIterationRequest extends FormRequest
 {
@@ -12,14 +11,21 @@ class StoreMedicationIterationRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'quantity.min' => 'Jumlah minimal 1.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
             'prescription_id' => ['required', 'integer', 'exists:prescriptions,id'],
             'iteration_number' => ['required', 'integer'],
-            'quantity' => ['required', 'integer'],
-            'dispensed_at' => ['nullable', 'date'],
-            'status' => ['required', Rule::in(['pending', 'dispensed'])],
+            'quantity' => ['required', 'integer', 'min:1'],
+            // status TIDAK diterima saat create — iterasi baru selalu mulai
+            // 'pending' (lihat MedicationIterationService::create()).
         ];
     }
 }

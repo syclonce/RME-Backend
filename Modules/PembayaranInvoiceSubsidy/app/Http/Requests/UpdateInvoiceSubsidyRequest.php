@@ -16,9 +16,11 @@ class UpdateInvoiceSubsidyRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // 'status' sengaja TIDAK ada di sini - transisi status lewat
+            // endpoint PATCH /invoice-subsidies/{id}/transition
+            // (InvoiceSubsidyService), bukan PUT generik.
             'subsidy_source' => ['sometimes', Rule::in(InvoiceSubsidy::SUBSIDY_SOURCES)],
             'subsidy_amount' => ['sometimes', 'numeric', 'min:0'],
-            'status' => ['sometimes', Rule::in(InvoiceSubsidy::STATUSES)],
             'notes' => ['nullable', 'string'],
         ];
     }

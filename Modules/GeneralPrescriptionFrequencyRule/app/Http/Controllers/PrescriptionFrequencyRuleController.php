@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralPrescriptionFrequencyRule\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralPrescriptionFrequencyRule\Http\Requests\StorePrescriptionFrequencyRuleRequest;
@@ -11,6 +13,8 @@ use Modules\GeneralPrescriptionFrequencyRule\Models\PrescriptionFrequencyRule;
 
 class PrescriptionFrequencyRuleController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = PrescriptionFrequencyRule::query();
@@ -18,6 +22,10 @@ class PrescriptionFrequencyRuleController extends Controller
         if ($request->filled('code')) {
             $query->where('code', $request->string('code'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return PrescriptionFrequencyRuleResource::collection($query->orderBy('code')->paginate($request->integer('per_page', 15)));
     }

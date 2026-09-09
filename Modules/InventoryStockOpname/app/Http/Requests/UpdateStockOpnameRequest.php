@@ -15,7 +15,7 @@ class UpdateStockOpnameRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['sometimes', Rule::in(['in_progress', 'completed', 'cancelled'])],
+            'status' => ['required', Rule::in(['completed', 'cancelled'])],
             'notes' => ['nullable', 'string'],
         ];
     }

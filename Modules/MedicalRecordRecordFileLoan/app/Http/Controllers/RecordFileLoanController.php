@@ -5,12 +5,18 @@ namespace Modules\MedicalRecordRecordFileLoan\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordRecordFileLoan\Http\Requests\StoreRecordFileLoanRequest;
+use Modules\MedicalRecordRecordFileLoan\Http\Requests\TransitionRecordFileLoanRequest;
 use Modules\MedicalRecordRecordFileLoan\Http\Requests\UpdateRecordFileLoanRequest;
 use Modules\MedicalRecordRecordFileLoan\Http\Resources\RecordFileLoanResource;
 use Modules\MedicalRecordRecordFileLoan\Models\RecordFileLoan;
+use Modules\MedicalRecordRecordFileLoan\Services\RecordFileLoanService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class RecordFileLoanController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RecordFileLoan::query();
@@ -25,11 +31,9 @@ class RecordFileLoanController extends Controller
         );
     }
 
-    public function store(StoreRecordFileLoanRequest $request)
+    public function store(StoreRecordFileLoanRequest $request, RecordFileLoanService $service)
     {
-        $data = $request->validated();
-
-        $record = RecordFileLoan::create($data);
+        $record = $service->create($request->validated());
 
         return (new RecordFileLoanResource($record))->response()->setStatusCode(201);
     }
@@ -39,15 +43,29 @@ class RecordFileLoanController extends Controller
         return new RecordFileLoanResource($record);
     }
 
+    /**
+     * Hanya field non-status yang bisa diedit di sini (nama peminjam, unit,
+     * tujuan, tanggal jatuh tempo). Perubahan status lewat endpoint transisi
+     * terpisah, lihat transition().
+     */
     public function update(UpdateRecordFileLoanRequest $request, RecordFileLoan $record): RecordFileLoanResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new RecordFileLoanResource($record);
     }
 
-    public function destroy(RecordFileLoan $record)
+    public function transition(TransitionRecordFileLoanRequest $request, RecordFileLoan $record, RecordFileLoanService $service): RecordFileLoanResource
     {
+        return new RecordFileLoanResource($service->transition($record, $request->validated('status')));
+    }
+
+    public function destroy(Request $request, RecordFileLoan $record)
+    {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

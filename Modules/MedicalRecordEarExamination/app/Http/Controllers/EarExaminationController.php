@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEarExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordEarExamination\Http\Requests\StoreEarExaminationRequest;
 use Modules\MedicalRecordEarExamination\Http\Requests\UpdateEarExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordEarExamination\Models\EarExamination;
 
 class EarExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = EarExamination::query();
@@ -28,6 +31,8 @@ class EarExaminationController extends Controller
     public function store(StoreEarExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

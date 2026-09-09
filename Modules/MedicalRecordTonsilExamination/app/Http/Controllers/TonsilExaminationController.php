@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordTonsilExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordTonsilExamination\Http\Requests\StoreTonsilExaminationRequest;
 use Modules\MedicalRecordTonsilExamination\Http\Requests\UpdateTonsilExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordTonsilExamination\Models\TonsilExamination;
 
 class TonsilExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TonsilExamination::query();
@@ -28,6 +31,8 @@ class TonsilExaminationController extends Controller
     public function store(StoreTonsilExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

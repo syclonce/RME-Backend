@@ -2,15 +2,23 @@
 
 namespace Modules\MedicalRecordNursingImplementation\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingImplementation\Http\Requests\StoreNursingImplementationRequest;
 use Modules\MedicalRecordNursingImplementation\Http\Requests\UpdateNursingImplementationRequest;
 use Modules\MedicalRecordNursingImplementation\Http\Resources\NursingImplementationResource;
 use Modules\MedicalRecordNursingImplementation\Models\NursingImplementation;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class NursingImplementationController extends Controller
 {
+    use GuardsMedicalRecord;
+
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = NursingImplementation::query();
@@ -21,6 +29,7 @@ class NursingImplementationController extends Controller
     public function store(StoreNursingImplementationRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'performed_by');
 
         $record = NursingImplementation::create($data);
 
@@ -34,13 +43,17 @@ class NursingImplementationController extends Controller
 
     public function update(UpdateNursingImplementationRequest $request, NursingImplementation $record): NursingImplementationResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new NursingImplementationResource($record);
     }
 
-    public function destroy(NursingImplementation $record)
+    public function destroy(Request $request, NursingImplementation $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

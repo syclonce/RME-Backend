@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGetUpAndGoTestAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordGetUpAndGoTestAssessment\Models\GetUpAndGoTestAssessment;
 
 class GetUpAndGoTestAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class GetUpAndGoTestAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'time_seconds' => 11.5,
             'assistive_device' => 'None',
             'fall_risk' => 'low',

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGetUpAndGoTestAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordGetUpAndGoTestAssessment\Http\Requests\StoreGetUpAndGoTestAssessmentRequest;
 use Modules\MedicalRecordGetUpAndGoTestAssessment\Http\Requests\UpdateGetUpAndGoTestAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordGetUpAndGoTestAssessment\Models\GetUpAndGoTestAssessmen
 
 class GetUpAndGoTestAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = GetUpAndGoTestAssessment::query();
@@ -28,6 +31,8 @@ class GetUpAndGoTestAssessmentController extends Controller
     public function store(StoreGetUpAndGoTestAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
 

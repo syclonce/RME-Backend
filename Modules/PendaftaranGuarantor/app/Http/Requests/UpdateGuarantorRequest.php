@@ -13,6 +13,13 @@ class UpdateGuarantorRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, inactive.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -21,7 +28,7 @@ class UpdateGuarantorRequest extends FormRequest
             'room_class_id' => ['nullable', 'integer', 'exists:room_classes,id'],
             'reference_letter_number' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
 }

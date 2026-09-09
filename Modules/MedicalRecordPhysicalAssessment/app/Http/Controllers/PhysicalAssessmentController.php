@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPhysicalAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPhysicalAssessment\Http\Requests\StorePhysicalAssessmentRequest;
 use Modules\MedicalRecordPhysicalAssessment\Http\Requests\UpdatePhysicalAssessmentRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordPhysicalAssessment\Models\PhysicalAssessment;
 
 class PhysicalAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PhysicalAssessment::query();
@@ -28,6 +31,8 @@ class PhysicalAssessmentController extends Controller
     public function store(StorePhysicalAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['assessed_at'] ??= now();
 

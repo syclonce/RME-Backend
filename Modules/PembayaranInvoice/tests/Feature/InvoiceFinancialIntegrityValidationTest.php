@@ -5,6 +5,9 @@ namespace Modules\PembayaranInvoice\Tests\Feature;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
+use Modules\GeneralEmployee\Models\Employee;
+use Modules\PembayaranCashier\Models\Cashier;
+use Modules\PembayaranCashierShift\Models\CashierShift;
 use Modules\PembayaranInvoice\Models\Invoice;
 use Modules\PembayaranPayment\Models\Payment;
 use Tests\TestCase;
@@ -25,22 +28,25 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
     }
 
-    private function actingUser(): User
+    private function actingUser(): int
     {
         $user = User::factory()->create();
         $user->assignRole('petugas');
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+        $cashier = Cashier::factory()->create(['employee_id' => $employee->id]);
+        $shift = CashierShift::factory()->create(['cashier_id' => $cashier->id, 'opened_by' => $user->id]);
         $this->actingAs($user, 'sanctum');
 
-        return $user;
+        return $shift->id;
     }
 
     public function test_val_1_delete_partially_paid_invoice_destroys_payment_records(): void
     {
-        $this->actingUser();
+        $shiftId = $this->actingUser();
 
         // 1. Buka invoice untuk kunjungan baru lewat HTTP resmi.
         $created = $this->postJson('/api/v1/invoices', [
-            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->create()->id,
+            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->serviceFinalized()->create()->id,
         ])->assertCreated()->json('data.id');
 
         // 2. Posting satu item layanan 100000 lewat HTTP resmi.
@@ -58,6 +64,7 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
         // 3. Kasir menerima uang tunai sebagian: 60000 dari 100000.
         $this->postJson('/api/v1/payments', [
             'invoice_id' => $invoice->id,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 60000,
         ])->assertCreated();
@@ -83,14 +90,15 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
 
     public function test_val_2_rounding_adjustment_pushes_total_below_collected_payments(): void
     {
-        $this->actingUser();
+        $shiftId = $this->actingUser();
 
         $created = $this->postJson('/api/v1/invoices', [
-            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->create()->id,
+            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->serviceFinalized()->create()->id,
         ])->assertCreated()->json('data.id');
 
         \Modules\PembayaranInvoiceItem\Models\InvoiceItem::create([
             'invoice_id' => $created,
+            'cashier_shift_id' => $shiftId,
             'description' => 'Tindakan validasi',
             'quantity' => 1,
             'unit_price' => 100000,
@@ -99,6 +107,7 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
 
         $this->postJson('/api/v1/payments', [
             'invoice_id' => $created,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 99500,
         ])->assertCreated();
@@ -126,6 +135,7 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
         // status masih terbuka -- sisa tagihan jadi negatif (-499).
         $second = $this->postJson('/api/v1/payments', [
             'invoice_id' => $invoice->id,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 0.01,
         ]);
@@ -138,10 +148,10 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
 
     public function test_val_3_invoice_number_editable_on_financially_active_open_invoice(): void
     {
-        $this->actingUser();
+        $shiftId = $this->actingUser();
 
         $created = $this->postJson('/api/v1/invoices', [
-            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->create()->id,
+            'visit_id' => \Modules\PendaftaranVisit\Models\Visit::factory()->serviceFinalized()->create()->id,
         ])->assertCreated()->json('data.id');
 
         $originalNumber = Invoice::findOrFail($created)->invoice_number;
@@ -150,6 +160,7 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
         // untuk harga satuan kini dibatasi admin oleh perbaikan terpisah).
         \Modules\PembayaranInvoiceItem\Models\InvoiceItem::create([
             'invoice_id' => $created,
+            'cashier_shift_id' => $shiftId,
             'description' => 'Tindakan validasi',
             'quantity' => 1,
             'unit_price' => 100000,
@@ -159,6 +170,7 @@ class InvoiceFinancialIntegrityValidationTest extends TestCase
         // Tagihan dengan uang terkumpul (aktif secara finansial).
         $this->postJson('/api/v1/payments', [
             'invoice_id' => $created,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 1,
         ])->assertCreated();

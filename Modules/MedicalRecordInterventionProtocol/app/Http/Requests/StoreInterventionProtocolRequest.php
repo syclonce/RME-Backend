@@ -15,11 +15,10 @@ class StoreInterventionProtocolRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'started_by' => ['required', 'integer', 'exists:employees,id'],
+            'started_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'protocol_name' => ['required','string','max:255'],
             'indication' => ['nullable','string'],
-            'status' => ['nullable','in:active,completed,discontinued'],
             'started_at' => ['nullable','date'],
         ];
     }

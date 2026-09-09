@@ -28,29 +28,36 @@ class DocumentNumberGeneratorTest extends TestCase
     {
         $stamp = now()->format('ymd');
 
+        // Nomor diterbitkan lewat generator, BUKAN dengan menyisipkan baris
+        // ke tabel dokumen. Deretnya berdiri sendiri di number_sequences --
+        // itulah yang membuatnya tidak bisa dimundurkan oleh penghapusan
+        // baris dokumen, dan tidak perlu membaca tabel yang sedang ditulis.
+        $this->assertSame("RCPT-{$stamp}-0001", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT));
+        $this->assertSame("RCPT-{$stamp}-0002", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT));
+        $this->assertSame("RCPT-{$stamp}-0003", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT));
+
+        // Jenis lain punya deret sendiri, tak terpengaruh urutan RCPT.
+        $this->assertSame("KRCS-{$stamp}-0001", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_KARCIS));
+    }
+
+    /**
+     * Menghapus dokumen tidak memundurkan deret. Pada generator lama yang
+     * membaca max() dari tabel dokumen, menghapus baris terakhir membuat nomor
+     * berikutnya mengulang nomor yang sudah pernah tercetak -- dan nomor kuitansi
+     * yang terbit dua kali adalah masalah keuangan, bukan sekadar kerapian.
+     */
+    public function test_menghapus_dokumen_tidak_memundurkan_deret(): void
+    {
+        $stamp = now()->format('ymd');
+
         PrintDocument::query()->create([
             'document_type' => PrintDocument::TYPE_RECEIPT,
             'ref_type' => 'payments',
             'ref_id' => 1,
-            'document_number' => "RCPT-{$stamp}-0001",
+            'document_number' => PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT),
             'issued_at' => now(),
-        ]);
+        ])->delete();
 
         $this->assertSame("RCPT-{$stamp}-0002", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT));
-
-        // Jenis lain tak terpengaruh urutan RCPT.
-        $this->assertSame("KRCS-{$stamp}-0001", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_KARCIS));
-
-        // Generator murni membaca nomor terbesar — setelah 0002 benar-benar terbit,
-        // urutan berikutnya lanjut dari situ.
-        PrintDocument::query()->create([
-            'document_type' => PrintDocument::TYPE_RECEIPT,
-            'ref_type' => 'payments',
-            'ref_id' => 2,
-            'document_number' => "RCPT-{$stamp}-0002",
-            'issued_at' => now(),
-        ]);
-
-        $this->assertSame("RCPT-{$stamp}-0003", PrintDocument::generateDocumentNumber(PrintDocument::TYPE_RECEIPT));
     }
 }

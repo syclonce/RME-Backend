@@ -2,6 +2,8 @@
 
 namespace Modules\SatuSehatRawatInap\Services;
 
+use Modules\SatuSehat\Support\BuildsEncounterDiagnosis;
+
 /**
  * Builds the FHIR Encounter resource for admission into inpatient care (rawat
  * inap). Structure ported field-for-field from the observed "POST Encounter -
@@ -13,6 +15,8 @@ namespace Modules\SatuSehatRawatInap\Services;
  */
 class RawatInapEncounterBuilder
 {
+    use BuildsEncounterDiagnosis;
+
     public function build(array $data): array
     {
         $orgId = config('satusehat.organization_id');
@@ -113,6 +117,7 @@ class RawatInapEncounterBuilder
                     ],
                 ],
             ],
+            ...$this->encounterDiagnosis($data),
             'serviceProvider' => [
                 'reference' => "Organization/{$orgId}",
             ],

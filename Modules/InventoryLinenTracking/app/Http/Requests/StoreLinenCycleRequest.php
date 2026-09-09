@@ -11,6 +11,13 @@ class StoreLinenCycleRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: dikirim_londri, dicuci, kembali_bersih, rusak_hilang.',
+        ];
+    }
+
     public function rules(): array
     {
         return [

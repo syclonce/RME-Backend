@@ -5,6 +5,9 @@ namespace Modules\PembayaranInvoice\Tests\Feature;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
+use Modules\GeneralEmployee\Models\Employee;
+use Modules\PembayaranCashier\Models\Cashier;
+use Modules\PembayaranCashierShift\Models\CashierShift;
 use Modules\PembayaranInvoice\Models\Invoice;
 use Modules\PembayaranPayment\Models\Payment;
 use Tests\TestCase;
@@ -27,13 +30,16 @@ class InvoiceBizlogicInvariantPocTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
     }
 
-    private function actingUser(): User
+    private function actingUser(): int
     {
         $user = User::factory()->create();
         $user->assignRole('petugas');
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+        $cashier = Cashier::factory()->create(['employee_id' => $employee->id]);
+        $shift = CashierShift::factory()->create(['cashier_id' => $cashier->id, 'opened_by' => $user->id]);
         $this->actingAs($user, 'sanctum');
 
-        return $user;
+        return $shift->id;
     }
 
     /**
@@ -42,12 +48,13 @@ class InvoiceBizlogicInvariantPocTest extends TestCase
      */
     public function test_p1_delete_partially_paid_invoice_is_rejected_and_payments_survive(): void
     {
-        $this->actingUser();
+        $shiftId = $this->actingUser();
 
         $invoice = Invoice::factory()->create(['total_amount' => 100000]);
 
         $this->postJson('/api/v1/payments', [
             'invoice_id' => $invoice->id,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 60000,
         ])->assertCreated();
@@ -68,7 +75,7 @@ class InvoiceBizlogicInvariantPocTest extends TestCase
      */
     public function test_p4_rounding_adjustment_dropping_total_below_collected_is_rejected(): void
     {
-        $this->actingUser();
+        $shiftId = $this->actingUser();
 
         $invoice = Invoice::factory()->create([
             'total_amount' => 100000,
@@ -79,6 +86,7 @@ class InvoiceBizlogicInvariantPocTest extends TestCase
 
         $this->postJson('/api/v1/payments', [
             'invoice_id' => $invoice->id,
+            'cashier_shift_id' => $shiftId,
             'payment_method' => 'cash',
             'amount' => 99500,
         ])->assertCreated();

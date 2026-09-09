@@ -25,7 +25,10 @@ class StoreBarthelIndexAssessmentRequest extends FormRequest
             'transfers' => 'nullable|integer|min:0|max:15',
             'mobility' => 'nullable|integer|min:0|max:15',
             'stairs' => 'nullable|integer|min:0|max:10',
-            'total_score' => 'nullable|integer|min:0|max:100',
+            // total_score DITIMPA server: dihitung ulang dari sepuluh sub-item
+            // (lihat BarthelIndexAssessment::calculateTotalScore). Tetap divalidasi
+            // bentuknya untuk klien lama yang masih mengirimnya.
+            'total_score' => 'sometimes|integer|min:0|max:100',
             'interpretation' => 'nullable|string|max:30',
             'assessed_at' => 'nullable|date',
         ];

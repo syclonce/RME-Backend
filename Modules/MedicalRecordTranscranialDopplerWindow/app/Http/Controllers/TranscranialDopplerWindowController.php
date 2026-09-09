@@ -8,9 +8,13 @@ use Modules\MedicalRecordTranscranialDopplerWindow\Http\Requests\StoreTranscrani
 use Modules\MedicalRecordTranscranialDopplerWindow\Http\Requests\UpdateTranscranialDopplerWindowRequest;
 use Modules\MedicalRecordTranscranialDopplerWindow\Http\Resources\TranscranialDopplerWindowResource;
 use Modules\MedicalRecordTranscranialDopplerWindow\Models\TranscranialDopplerWindow;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class TranscranialDopplerWindowController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TranscranialDopplerWindow::query();
@@ -41,13 +45,17 @@ class TranscranialDopplerWindowController extends Controller
 
     public function update(UpdateTranscranialDopplerWindowRequest $request, TranscranialDopplerWindow $record): TranscranialDopplerWindowResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new TranscranialDopplerWindowResource($record);
     }
 
-    public function destroy(TranscranialDopplerWindow $record)
+    public function destroy(Request $request, TranscranialDopplerWindow $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

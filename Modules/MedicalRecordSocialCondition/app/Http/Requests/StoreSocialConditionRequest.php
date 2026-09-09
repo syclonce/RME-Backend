@@ -11,6 +11,13 @@ class StoreSocialConditionRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,8 +26,8 @@ class StoreSocialConditionRequest extends FormRequest
             'occupation_status' => ['nullable', 'string', 'max:100'],
             'financial_status' => ['nullable', 'string', 'max:100'],
             'support_system' => ['nullable', 'string'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
         ];
     }
 }

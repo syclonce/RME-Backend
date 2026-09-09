@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEyeExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordEyeExamination\Http\Requests\StoreEyeExaminationRequest;
 use Modules\MedicalRecordEyeExamination\Http\Requests\UpdateEyeExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordEyeExamination\Models\EyeExamination;
 
 class EyeExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = EyeExamination::query();
@@ -28,6 +31,8 @@ class EyeExaminationController extends Controller
     public function store(StoreEyeExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

@@ -2,18 +2,30 @@
 
 namespace Modules\MedicalRecordNursingIndicator\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingIndicator\Http\Requests\StoreNursingIndicatorRequest;
 use Modules\MedicalRecordNursingIndicator\Http\Requests\UpdateNursingIndicatorRequest;
 use Modules\MedicalRecordNursingIndicator\Http\Resources\NursingIndicatorResource;
 use Modules\MedicalRecordNursingIndicator\Models\NursingIndicator;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class NursingIndicatorController extends Controller
 {
+    use GuardsMedicalRecord;
+
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = NursingIndicator::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return NursingIndicatorResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
@@ -35,13 +47,17 @@ class NursingIndicatorController extends Controller
 
     public function update(UpdateNursingIndicatorRequest $request, NursingIndicator $record): NursingIndicatorResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new NursingIndicatorResource($record);
     }
 
-    public function destroy(NursingIndicator $record)
+    public function destroy(Request $request, NursingIndicator $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

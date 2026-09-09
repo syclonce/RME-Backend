@@ -2,12 +2,16 @@
 
 namespace Modules\BerkasKlaimClaimFile\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ClaimFile extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const STATUS_DRAFT = 'draft';
     public const STATUS_SUBMITTED = 'submitted';
@@ -46,9 +50,7 @@ class ClaimFile extends Model
 
     public static function generateClaimNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('claim_number', 'like', "CLM-{$year}-%")->count();
-        return sprintf('CLM-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('CLM', 'claim_file', now()->format('Y'));
     }
 
     protected static function newFactory()

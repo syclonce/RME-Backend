@@ -11,6 +11,14 @@ class StoreNursingCarePlanRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: active, completed, cancelled.',
+            'recorded_at.before_or_equal' => 'Waktu pencatatan tidak boleh di masa depan.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -19,9 +27,9 @@ class StoreNursingCarePlanRequest extends FormRequest
             'goal' => ['nullable', 'string'],
             'intervention_plan' => ['nullable', 'string'],
             'target_date' => ['nullable', 'date'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
-            'recorded_at' => ['required', 'date'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
+            'recorded_at' => ['nullable', 'date', 'before_or_equal:now'],
+            'status' => ['sometimes', 'string', 'in:active,completed,cancelled'],
         ];
     }
 }

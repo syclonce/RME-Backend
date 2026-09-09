@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordPharynxExamination\Models\PharynxExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class PharynxExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class PharynxExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 19,
+            'visit_id' => $visit->id,
             'mucosa_color' => 'Hyperemic',
             'exudate' => true,
             'post_nasal_drip' => false,
@@ -46,7 +49,7 @@ class PharynxExaminationControllerTest extends TestCase
             ->assertJsonPath('data.mucosa_color', 'Hyperemic')
             ->assertJsonPath('data.exudate', true);
 
-        $this->assertDatabaseHas('pharynx_examinations', ['visit_id' => 19, 'mucosa_color' => 'Hyperemic']);
+        $this->assertDatabaseHas('pharynx_examinations', ['visit_id' => $visit->id, 'mucosa_color' => 'Hyperemic']);
     }
 
     public function test_it_lists_pharynx_examinations(): void

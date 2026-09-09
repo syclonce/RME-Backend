@@ -3,11 +3,13 @@
 namespace Modules\LayananPharmacyServiceTime\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\LayananPharmacyServiceTime\Http\Requests\StorePharmacyServiceTimeRequest;
 use Modules\LayananPharmacyServiceTime\Http\Requests\UpdatePharmacyServiceTimeRequest;
 use Modules\LayananPharmacyServiceTime\Http\Resources\PharmacyServiceTimeResource;
 use Modules\LayananPharmacyServiceTime\Models\PharmacyServiceTime;
+use Modules\LayananPrescription\Models\Prescription;
 
 class PharmacyServiceTimeController extends Controller
 {
@@ -21,6 +23,11 @@ class PharmacyServiceTimeController extends Controller
     public function store(StorePharmacyServiceTimeRequest $request)
     {
         $data = $request->validated();
+
+        // Menempel ke episode lewat prescription_id, bukan visit_id langsung.
+        $prescription = Prescription::query()->findOrFail($data['prescription_id']);
+        app(MedicalRecordGate::class)->assertWritable((int) $prescription->visit_id, $request->user());
+
         $data['status'] ??= 'pending';
 
         $record = PharmacyServiceTime::create($data);

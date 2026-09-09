@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBreastExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBreastExamination\Http\Requests\StoreBreastExaminationRequest;
 use Modules\MedicalRecordBreastExamination\Http\Requests\UpdateBreastExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordBreastExamination\Models\BreastExamination;
 
 class BreastExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BreastExamination::query();
@@ -28,6 +31,8 @@ class BreastExaminationController extends Controller
     public function store(StoreBreastExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

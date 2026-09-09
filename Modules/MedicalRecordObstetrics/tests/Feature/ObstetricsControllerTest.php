@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordObstetrics\Models\Obstetrics;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class ObstetricsControllerTest extends TestCase
@@ -32,8 +33,10 @@ class ObstetricsControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 5,
+            'visit_id' => $visit->id,
             'patient_id' => 12,
             'gravida' => 2,
             'para' => 1,
@@ -47,10 +50,10 @@ class ObstetricsControllerTest extends TestCase
         $response = $this->postJson('/api/v1/obstetrics-records', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 5)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.fetal_heart_rate', 144);
 
-        $this->assertDatabaseHas('obstetrics_records', ['visit_id' => 5, 'patient_id' => 12]);
+        $this->assertDatabaseHas('obstetrics_records', ['visit_id' => $visit->id, 'patient_id' => 12]);
     }
 
     public function test_it_lists_obstetrics_records(): void

@@ -20,8 +20,8 @@ class UpdateRecordFileLoanRequest extends FormRequest
             'purpose' => 'nullable|string|max:200',
             'loaned_at' => 'sometimes|required|date',
             'due_at' => 'nullable|date',
-            'returned_at' => 'nullable|date',
-            'status' => 'nullable|string|in:borrowed,returned,overdue',
+            // status dan returned_at hanya boleh berubah lewat endpoint
+            // transisi terpisah (lihat RecordFileLoanController::transition()).
         ];
     }
 }

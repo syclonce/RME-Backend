@@ -15,7 +15,7 @@ class StoreInterventionProtocolDetailRequest extends FormRequest
     {
         return [
             'protocol_id' => ['required', 'integer', 'exists:intervention_protocols,id'],
-            'performed_by' => ['required', 'integer', 'exists:employees,id'],
+            'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'step_number' => ['required','integer','min:1'],
             'step_description' => ['required','string'],
             'result_notes' => ['nullable','string'],

@@ -11,6 +11,13 @@ class StorePrescriptionInitialReviewRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: reviewed, revised.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class StorePrescriptionInitialReviewRequest extends FormRequest
             'is_appropriate' => ['sometimes', 'boolean'],
             'issues_found' => ['nullable', 'string'],
             'recommendation' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:reviewed,revised'],
         ];
     }
 }

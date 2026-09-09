@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordNoseExamination\Models\NoseExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class NoseExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class NoseExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 23,
+            'visit_id' => $visit->id,
             'deformity' => 'None',
             'septum_deviation' => true,
             'nasal_discharge' => 'Mucopurulent',
@@ -42,10 +45,10 @@ class NoseExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/nose-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 23)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.septum_deviation', true);
 
-        $this->assertDatabaseHas('nose_examinations', ['visit_id' => 23, 'nasal_discharge' => 'Mucopurulent']);
+        $this->assertDatabaseHas('nose_examinations', ['visit_id' => $visit->id, 'nasal_discharge' => 'Mucopurulent']);
     }
 
     public function test_it_lists_nose_examinations(): void

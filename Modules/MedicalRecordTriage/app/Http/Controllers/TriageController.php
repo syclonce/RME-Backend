@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordTriage\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordTriage\Http\Requests\StoreTriageRequest;
 use Modules\MedicalRecordTriage\Http\Resources\TriageResource;
@@ -10,6 +13,10 @@ use Modules\MedicalRecordTriage\Models\Triage;
 
 class TriageController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = Triage::query();
@@ -28,6 +35,9 @@ class TriageController extends Controller
     public function store(StoreTriageRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'assessed_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['assessed_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

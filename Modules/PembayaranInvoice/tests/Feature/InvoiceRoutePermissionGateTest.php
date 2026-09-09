@@ -56,8 +56,21 @@ class InvoiceRoutePermissionGateTest extends TestCase
         $user->assignRole('admin');
         $this->actingAs($user, 'sanctum');
 
-        $invoice = Invoice::factory()->locked()->create();
+        $invoice = Invoice::factory()->create(['is_locked' => true]);
 
         $this->postJson("/api/v1/invoices/{$invoice->id}/unlock")->assertOk();
+    }
+
+    public function test_admin_tidak_bisa_unlock_invoice_lunas(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+        $this->actingAs($user, 'sanctum');
+
+        $invoice = Invoice::factory()->locked()->create();
+
+        // Lolos gerbang RBAC (admin) tapi ditolak gerbang domain 422 —
+        // invoice lunas hanya lewat reversal/refund (legacy TagihanResource:157).
+        $this->postJson("/api/v1/invoices/{$invoice->id}/unlock")->assertStatus(422);
     }
 }

@@ -11,6 +11,13 @@ class UpdateControlScheduleRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: scheduled, completed, cancelled.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -20,7 +27,7 @@ class UpdateControlScheduleRequest extends FormRequest
             'scheduled_date' => ['sometimes', 'date'],
             'purpose' => ['nullable', 'string'],
             'scheduled_by' => ['sometimes', 'integer', 'exists:employees,id'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:scheduled,completed,cancelled'],
             'notes' => ['nullable', 'string'],
         ];
     }

@@ -2,6 +2,10 @@
 
 namespace Modules\LayananLabOrder\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +17,7 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class LabOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'order_number',
@@ -51,15 +55,13 @@ class LabOrder extends Model
     }
 
     /**
-     * Format: LAB-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateOrderNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('order_number', 'like', "LAB-{$year}-%")->count();
-
-        return sprintf('LAB-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('LAB', 'lab_order', now()->format('Y'));
     }
 
     protected static function newFactory(): LabOrderFactory

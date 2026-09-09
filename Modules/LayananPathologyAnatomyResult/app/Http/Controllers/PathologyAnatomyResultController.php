@@ -8,6 +8,7 @@ use Modules\LayananPathologyAnatomyResult\Http\Requests\StorePathologyAnatomyRes
 use Modules\LayananPathologyAnatomyResult\Http\Requests\UpdatePathologyAnatomyResultRequest;
 use Modules\LayananPathologyAnatomyResult\Http\Resources\PathologyAnatomyResultResource;
 use Modules\LayananPathologyAnatomyResult\Models\PathologyAnatomyResult;
+use Modules\LayananPathologyAnatomyResult\Services\PathologyAnatomyResultService;
 
 class PathologyAnatomyResultController extends Controller
 {
@@ -18,11 +19,9 @@ class PathologyAnatomyResultController extends Controller
         return PathologyAnatomyResultResource::collection($query->orderBy('id', 'desc')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StorePathologyAnatomyResultRequest $request)
+    public function store(StorePathologyAnatomyResultRequest $request, PathologyAnatomyResultService $service)
     {
-        $data = $request->validated();
-        $data['status'] = $data['status'] ?? 'pending';
-        $pa_result = PathologyAnatomyResult::create($data);
+        $pa_result = $service->create($request->validated(), $request->user());
 
         return (new PathologyAnatomyResultResource($pa_result))->response()->setStatusCode(201);
     }
@@ -32,10 +31,16 @@ class PathologyAnatomyResultController extends Controller
         return new PathologyAnatomyResultResource($pa_result);
     }
 
-    public function update(UpdatePathologyAnatomyResultRequest $request, PathologyAnatomyResult $pa_result): PathologyAnatomyResultResource
+    /**
+     * Hanya status yang bisa diubah lewat endpoint ini (transisi workflow) -
+     * field klinis lain tidak diedit setelah dibuat, sama seperti LabOrder.
+     */
+    public function update(UpdatePathologyAnatomyResultRequest $request, PathologyAnatomyResult $pa_result, PathologyAnatomyResultService $service): PathologyAnatomyResultResource
     {
-        $pa_result->update($request->validated());
-
-        return new PathologyAnatomyResultResource($pa_result);
+        return new PathologyAnatomyResultResource($service->transition(
+            $pa_result,
+            $request->validated('status'),
+            $request->user(),
+        ));
     }
 }

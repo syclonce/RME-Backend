@@ -3,6 +3,7 @@
 namespace Modules\PembayaranCashierTransaction\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\CashierShiftGate;
 use Illuminate\Http\Request;
 use Modules\PembayaranCashierTransaction\Http\Requests\StoreCashierTransactionRequest;
 use Modules\PembayaranCashierTransaction\Http\Resources\CashierTransactionResource;
@@ -24,9 +25,11 @@ class CashierTransactionController extends Controller
     /**
      * Cashier transactions are a financial ledger entry - append-only, no update/delete.
      */
-    public function store(StoreCashierTransactionRequest $request)
+    public function store(StoreCashierTransactionRequest $request, CashierShiftGate $shiftGate)
     {
         $data = $request->validated();
+        $cashierId = $shiftGate->assertOpen((int) $data['cashier_shift_id'], $request->user());
+        abort_unless($cashierId === (int) $data['cashier_id'], 422, 'Shift bukan milik kasir yang dipilih.');
         $data['transacted_at'] ??= now();
 
         $transaction = CashierTransaction::create($data);

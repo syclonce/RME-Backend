@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFoodAllergenExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordFoodAllergenExamination\Models\FoodAllergenExamination;
 
 class FoodAllergenExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class FoodAllergenExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'food_item' => $this->faker->randomElement(['Egg White', 'Cow Milk', 'Peanut', 'Shrimp', 'Soybean']),
             'reaction_grade' => '1+',

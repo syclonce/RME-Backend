@@ -3,11 +3,13 @@
 namespace Modules\PendaftaranPatientGuardian\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\PendaftaranPatientGuardian\Http\Requests\StorePatientGuardianRequest;
 use Modules\PendaftaranPatientGuardian\Http\Requests\UpdatePatientGuardianRequest;
 use Modules\PendaftaranPatientGuardian\Http\Resources\PatientGuardianResource;
 use Modules\PendaftaranPatientGuardian\Models\PatientGuardian;
+use Modules\PendaftaranVisit\Models\Visit;
 
 class PatientGuardianController extends Controller
 {
@@ -25,6 +27,15 @@ class PatientGuardianController extends Controller
     public function store(StorePatientGuardianRequest $request)
     {
         $data = $request->validated();
+        // Data pendukung pendaftaran ikut tunduk pada gerbang RME: bila episode
+        // kunjungannya sudah final, penambahan penjamin/pengantar/penanggung jawab
+        // mengubah berkas yang sudah ditutup.
+        $visitId = Visit::query()->where('registration_id', $data['registration_id'])->value('id');
+
+        if ($visitId !== null) {
+            app(MedicalRecordGate::class)->assertWritable((int) $visitId, $request->user());
+        }
+
         $data['created_by'] = $request->user()->id;
 
         $guardian = PatientGuardian::create($data);

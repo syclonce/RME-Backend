@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordInhalantAllergenExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordInhalantAllergenExamination\Models\InhalantAllergenExamination;
 
 class InhalantAllergenExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class InhalantAllergenExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'allergen_name' => $this->faker->randomElement(['Dust Mites', 'Pollen', 'Cat Dander', 'Mold']),
             'reaction_grade' => '2+',

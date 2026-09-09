@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBirthCertificateLetter\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordBirthCertificateLetter\Http\Requests\BirthCertificateLetterRequest;
 use Modules\MedicalRecordBirthCertificateLetter\Http\Resources\BirthCertificateLetterResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordBirthCertificateLetter\Models\BirthCertificateLetter;
 
 class BirthCertificateLetterController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = BirthCertificateLetter::query();
@@ -34,6 +37,8 @@ class BirthCertificateLetterController extends Controller
     public function store(BirthCertificateLetterRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $letter = BirthCertificateLetter::create($data);

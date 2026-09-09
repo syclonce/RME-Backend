@@ -15,13 +15,12 @@ class StorePlanAndTherapyRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'ordered_by' => ['required', 'integer', 'exists:doctors,id'],
+            'ordered_by' => ['nullable', 'integer', 'exists:doctors,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'assessment_summary' => ['nullable','string'],
             'plan_description' => ['required','string'],
             'therapy_type' => ['nullable','string','max:255'],
             'target_date' => ['nullable','date'],
-            'status' => ['nullable','in:active,completed,revised'],
             'ordered_at' => ['nullable','date'],
         ];
     }

@@ -19,7 +19,7 @@ class StoreFunctionalAssessmentRequest extends FormRequest
             'mobility_status' => ['nullable', 'string', 'max:100'],
             'adl_score' => ['nullable', 'integer'],
             'assistive_device' => ['nullable', 'string', 'max:100'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'notes' => ['nullable', 'string'],
         ];
     }

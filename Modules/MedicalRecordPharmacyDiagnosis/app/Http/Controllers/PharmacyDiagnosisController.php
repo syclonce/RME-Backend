@@ -2,7 +2,12 @@
 
 namespace Modules\MedicalRecordPharmacyDiagnosis\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPharmacyDiagnosis\Http\Requests\StorePharmacyDiagnosisRequest;
 use Modules\MedicalRecordPharmacyDiagnosis\Http\Requests\UpdatePharmacyDiagnosisRequest;
@@ -11,9 +16,19 @@ use Modules\MedicalRecordPharmacyDiagnosis\Models\PharmacyDiagnosis;
 
 class PharmacyDiagnosisController extends Controller
 {
+    use SearchesListing;
+
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PharmacyDiagnosis::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return PharmacyDiagnosisResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
@@ -21,6 +36,9 @@ class PharmacyDiagnosisController extends Controller
     public function store(StorePharmacyDiagnosisRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'assessed_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'active';
 
         $record = PharmacyDiagnosis::create($data);

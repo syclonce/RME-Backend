@@ -3,7 +3,6 @@
 namespace Modules\LayananPharmacyOutpatientQueue\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StorePharmacyOutpatientQueueRequest extends FormRequest
 {
@@ -17,9 +16,9 @@ class StorePharmacyOutpatientQueueRequest extends FormRequest
         return [
             'prescription_id' => ['required', 'integer', 'exists:prescriptions,id'],
             'queue_number' => ['required', 'string', 'max:255'],
-            'status' => ['required', Rule::in(['waiting', 'called', 'done'])],
-            'called_at' => ['nullable', 'date'],
-            'completed_at' => ['nullable', 'date'],
+            // status, called_at, completed_at TIDAK diterima saat create —
+            // antrean baru selalu mulai 'waiting' (lihat
+            // PharmacyOutpatientQueueService::create()).
         ];
     }
 }

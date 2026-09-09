@@ -2,6 +2,8 @@
 
 namespace Modules\PembayaranTransfer\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\PembayaranTransfer\Database\Factories\TransferFactory;
 
 class Transfer extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'bank_transfers';
 

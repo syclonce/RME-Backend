@@ -19,7 +19,7 @@ class StoreAllergyRequest extends FormRequest
             'allergen' => ['required', 'string', 'max:255'],
             'reaction' => ['nullable', 'string'],
             'severity' => ['nullable', 'string', 'in:mild,moderate,severe'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
         ];
     }
 }

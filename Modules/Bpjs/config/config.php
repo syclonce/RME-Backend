@@ -88,4 +88,9 @@ return [
 
     // signature timestamp offset dari waktu lokal, format ISO 8601 duration
     'signature_add_time' => 'PT0S',
+
+    // Umur token inbound Mobile JKN (menit). Samakan perilaku produksi RSUD
+    // Ciamis (token_active INTERVAL 10 MINUTE + prune saat terbit): token
+    // berumur pendek agar bocor tidak lama berlaku. Dulu 12 jam hardcoded.
+    'mobile_jkn_token_ttl_minutes' => (int) env('BPJS_MOBILE_JKN_TOKEN_TTL_MINUTES', 10),
 ];

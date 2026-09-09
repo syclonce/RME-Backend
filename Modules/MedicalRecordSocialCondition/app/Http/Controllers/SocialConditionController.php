@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordSocialCondition\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordSocialCondition\Http\Requests\StoreSocialConditionRequest;
 use Modules\MedicalRecordSocialCondition\Http\Requests\UpdateSocialConditionRequest;
@@ -11,6 +14,10 @@ use Modules\MedicalRecordSocialCondition\Models\SocialCondition;
 
 class SocialConditionController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = SocialCondition::query();
@@ -21,6 +28,10 @@ class SocialConditionController extends Controller
     public function store(StoreSocialConditionRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = SocialCondition::create($data);
 

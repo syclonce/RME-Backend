@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordImmunizationVaccination\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\MedicalRecordImmunizationVaccination\Database\Factories\Immunization
 
 class ImmunizationVaccination extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'patient_id',

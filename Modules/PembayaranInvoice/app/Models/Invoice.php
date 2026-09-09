@@ -2,6 +2,10 @@
 
 namespace Modules\PembayaranInvoice\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +20,7 @@ use Modules\PendaftaranVisit\Models\Visit;
 
 class Invoice extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'invoice_number',
@@ -106,7 +110,8 @@ class Invoice extends Model
         // sehingga sisa tagihan negatif, pelunasan tak terjadi, dan catatan
         // kas tidak konsisten dengan nilai tagihan.
         abort_if(
-            $this->status !== 'cancelled' && (float) $this->payments()->sum('amount') > $total,
+            $this->status !== 'cancelled'
+                && (float) $this->payments()->where('status', 'completed')->sum('amount') > $total,
             422,
             'Total tagihan baru lebih kecil dari pembayaran yang sudah diterima.',
         );
@@ -118,15 +123,13 @@ class Invoice extends Model
     }
 
     /**
-     * Format: INV-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateInvoiceNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('invoice_number', 'like', "INV-{$year}-%")->count();
-
-        return sprintf('INV-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('INV', 'invoice', now()->format('Y'));
     }
 
     protected static function newFactory(): InvoiceFactory

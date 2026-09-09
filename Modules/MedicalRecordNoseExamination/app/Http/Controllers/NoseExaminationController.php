@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordNoseExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNoseExamination\Http\Requests\StoreNoseExaminationRequest;
 use Modules\MedicalRecordNoseExamination\Http\Requests\UpdateNoseExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordNoseExamination\Models\NoseExamination;
 
 class NoseExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = NoseExamination::query();
@@ -27,6 +30,8 @@ class NoseExaminationController extends Controller
     public function store(StoreNoseExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['septum_deviation'] ??= false;
         $data['turbinate_hypertrophy'] ??= false;
         $data['polyp_present'] ??= false;

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordObstetricHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordObstetricHistory\Http\Requests\StoreObstetricHistoryRequest;
 use Modules\MedicalRecordObstetricHistory\Http\Resources\ObstetricHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordObstetricHistory\Models\ObstetricHistory;
 
 class ObstetricHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ObstetricHistory::query();
@@ -24,6 +27,8 @@ class ObstetricHistoryController extends Controller
     public function store(StoreObstetricHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = ObstetricHistory::create($data);

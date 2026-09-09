@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEyeExamDocumentUpload\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordEyeExamDocumentUpload\Http\Requests\EyeExamDocumentUploadRequest;
 use Modules\MedicalRecordEyeExamDocumentUpload\Http\Resources\EyeExamDocumentUploadResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordEyeExamDocumentUpload\Models\EyeExamDocumentUpload;
 
 class EyeExamDocumentUploadController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = EyeExamDocumentUpload::query();
@@ -34,6 +37,8 @@ class EyeExamDocumentUploadController extends Controller
     public function store(EyeExamDocumentUploadRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $upload = EyeExamDocumentUpload::create($data);

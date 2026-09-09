@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordLipExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordLipExamination\Http\Requests\StoreLipExaminationRequest;
 use Modules\MedicalRecordLipExamination\Http\Requests\UpdateLipExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordLipExamination\Models\LipExamination;
 
 class LipExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = LipExamination::query();
@@ -27,6 +30,8 @@ class LipExaminationController extends Controller
     public function store(StoreLipExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = LipExamination::create($data);

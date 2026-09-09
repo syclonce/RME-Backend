@@ -5,12 +5,15 @@ namespace Modules\BerkasKlaimPathologyClaim\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\BerkasKlaimPathologyClaim\Http\Requests\StorePathologyClaimRequest;
-use Modules\BerkasKlaimPathologyClaim\Http\Requests\UpdatePathologyClaimRequest;
+use Modules\BerkasKlaimPathologyClaim\Http\Requests\TransitionPathologyClaimRequest;
 use Modules\BerkasKlaimPathologyClaim\Http\Resources\PathologyClaimResource;
 use Modules\BerkasKlaimPathologyClaim\Models\PathologyClaim;
+use Modules\BerkasKlaimPathologyClaim\Services\PathologyClaimService;
 
 class PathologyClaimController extends Controller
 {
+    public function __construct(protected PathologyClaimService $service) {}
+
     public function index(Request $request)
     {
         $query = PathologyClaim::query();
@@ -24,10 +27,7 @@ class PathologyClaimController extends Controller
 
     public function store(StorePathologyClaimRequest $request)
     {
-        $data = $request->validated();
-        $data['status'] = 'draft';
-
-        $claim = PathologyClaim::create($data);
+        $claim = $this->service->create($request->validated());
 
         return (new PathologyClaimResource($claim))->response()->setStatusCode(201);
     }
@@ -37,14 +37,10 @@ class PathologyClaimController extends Controller
         return new PathologyClaimResource($pathology_claim);
     }
 
-    public function update(UpdatePathologyClaimRequest $request, PathologyClaim $pathology_claim): PathologyClaimResource
+    public function transition(TransitionPathologyClaimRequest $request, PathologyClaim $pathology_claim): PathologyClaimResource
     {
-        if ($pathology_claim->status !== 'draft' && $pathology_claim->status !== 'submitted') {
-            abort(422, 'Klaim sudah final.');
-        }
+        $claim = $this->service->transition($pathology_claim, $request->validated('status'));
 
-        $pathology_claim->update($request->validated());
-
-        return new PathologyClaimResource($pathology_claim->fresh());
+        return new PathologyClaimResource($claim);
     }
 }

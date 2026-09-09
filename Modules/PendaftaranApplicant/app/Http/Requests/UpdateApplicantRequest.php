@@ -13,6 +13,13 @@ class UpdateApplicantRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status harus salah satu dari: submitted, approved, rejected.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -24,7 +31,7 @@ class UpdateApplicantRequest extends FormRequest
             'application_type' => ['sometimes', Rule::in(Applicant::APPLICATION_TYPES)],
             'application_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
-            'status' => ['sometimes', 'string', 'max:255'],
+            'status' => ['sometimes', 'string', 'in:submitted,approved,rejected'],
         ];
     }
 }

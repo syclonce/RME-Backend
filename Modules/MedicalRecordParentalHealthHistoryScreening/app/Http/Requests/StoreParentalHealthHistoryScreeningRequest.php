@@ -15,7 +15,7 @@ class StoreParentalHealthHistoryScreeningRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'screened_by' => ['required', 'integer', 'exists:employees,id'],
+            'screened_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'father_health_conditions' => ['nullable','string'],
             'mother_health_conditions' => ['nullable','string'],

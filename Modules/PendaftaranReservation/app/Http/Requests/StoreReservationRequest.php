@@ -18,7 +18,8 @@ class StoreReservationRequest extends FormRequest
             'ward_id' => ['required', 'integer', 'exists:wards,id'],
             'reserved_at' => ['required', 'date'],
             'scheduled_at' => ['required', 'date', 'after_or_equal:reserved_at'],
-            'status' => ['nullable', 'string', 'in:pending,confirmed,cancelled,completed'],
+            // status TIDAK diterima saat create — reservasi baru selalu mulai
+            // 'pending' (lihat ReservationService::create()).
         ];
     }
 }

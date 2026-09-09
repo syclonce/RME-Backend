@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHairExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordHairExamination\Models\HairExamination;
 
 class HairExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class HairExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'distribution' => 'Evenly distributed',
             'texture' => 'Normal',
             'color' => 'Black',

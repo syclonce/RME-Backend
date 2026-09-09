@@ -15,16 +15,11 @@ class UpdateLeftoverMedicationVoucherRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'voucher_number' => ['sometimes', 'string', 'max:255', 'unique:leftover_medication_vouchers,voucher_number'],
-            'visit_id' => ['sometimes', 'integer', 'exists:visits,id'],
-            'patient_id' => ['sometimes', 'integer', 'exists:patients,id'],
-            'prescription_id' => ['sometimes', 'integer', 'exists:prescriptions,id'],
-            'status' => ['sometimes', Rule::in(['pending', 'redeemed', 'expired'])],
-            'issued_at' => ['sometimes', 'date'],
+            'status' => ['required', Rule::in(['redeemed', 'expired'])],
             // redeemed_at SENGAJA tidak divalidasi di sini -- server yang
-            // menstempel waktu redeem saat transisi terjadi (lihat controller),
-            // bukan nilai kiriman klien.
-            'notes' => ['sometimes', 'string'],
+            // menstempel waktu redeem saat transisi terjadi (lihat
+            // LeftoverMedicationVoucherService::transition()), bukan nilai
+            // kiriman klien.
         ];
     }
 }

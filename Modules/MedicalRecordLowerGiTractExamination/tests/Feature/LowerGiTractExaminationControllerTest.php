@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordLowerGiTractExamination\Models\LowerGiTractExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class LowerGiTractExaminationControllerTest extends TestCase
@@ -32,14 +33,16 @@ class LowerGiTractExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 1,
+            'visit_id' => $visit->id,
         ];
 
         $response = $this->postJson('/api/v1/lower-gi-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 1);
+            ->assertJsonPath('data.visit_id', $visit->id);
     }
 
     public function test_it_lists_records(): void

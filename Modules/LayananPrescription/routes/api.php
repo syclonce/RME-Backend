@@ -7,4 +7,6 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::apiResource('prescriptions', PrescriptionController::class)->only(['index', 'show']);
 
     Route::apiResource('prescriptions', PrescriptionController::class)->only(['store']);
+
+    Route::post('prescriptions/{prescription}/cancel', [PrescriptionController::class, 'cancel']);
 });

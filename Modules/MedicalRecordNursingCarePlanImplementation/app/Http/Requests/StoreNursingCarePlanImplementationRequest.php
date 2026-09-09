@@ -16,7 +16,7 @@ class StoreNursingCarePlanImplementationRequest extends FormRequest
         return [
             'nursing_care_plan_id' => ['required', 'integer', 'exists:nursing_care_plans,id'],
             'action_taken' => ['nullable', 'string'],
-            'performed_by' => ['required', 'integer', 'exists:employees,id'],
+            'performed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'performed_at' => ['required', 'date'],
             'evaluation' => ['nullable', 'string'],
         ];

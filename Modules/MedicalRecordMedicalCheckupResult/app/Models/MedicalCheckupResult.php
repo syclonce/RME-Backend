@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordMedicalCheckupResult\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\MedicalRecordMedicalCheckupResult\Database\Factories\MedicalCheckupR
 
 class MedicalCheckupResult extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'patient_id',

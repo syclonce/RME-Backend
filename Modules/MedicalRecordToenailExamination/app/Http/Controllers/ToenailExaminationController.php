@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordToenailExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordToenailExamination\Http\Requests\StoreToenailExaminationRequest;
 use Modules\MedicalRecordToenailExamination\Http\Requests\UpdateToenailExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordToenailExamination\Models\ToenailExamination;
 
 class ToenailExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = ToenailExamination::query();
@@ -28,6 +31,8 @@ class ToenailExaminationController extends Controller
     public function store(StoreToenailExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

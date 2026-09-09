@@ -1,0 +1,30 @@
+{
+    "name": "asvuro/medicalrecordcppt",
+    "description": "",
+    "authors": [
+        {
+            "name": "Deva Indrayana Rahmat",
+            "email": "asvuro@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\MedicalRecordCppt\\": "app/",
+            "Modules\\MedicalRecordCppt\\Database\\Factories\\": "database/factories/",
+            "Modules\\MedicalRecordCppt\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\MedicalRecordCppt\\Tests\\": "tests/"
+        }
+    }
+}

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordTreatmentHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordTreatmentHistory\Http\Requests\StoreTreatmentHistoryRequest;
 use Modules\MedicalRecordTreatmentHistory\Http\Resources\TreatmentHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordTreatmentHistory\Models\TreatmentHistory;
 
 class TreatmentHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TreatmentHistory::query();
@@ -24,6 +27,8 @@ class TreatmentHistoryController extends Controller
     public function store(StoreTreatmentHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = TreatmentHistory::create($data);

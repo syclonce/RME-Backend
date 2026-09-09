@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralAnesthesiaType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,9 +11,15 @@ use Modules\GeneralAnesthesiaType\Models\AnesthesiaType;
 
 class AnesthesiaTypeController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
-        return AnesthesiaType::query()->orderBy('name')->paginate(15);
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch(AnesthesiaType::query(), $request);
+
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)

@@ -2,7 +2,12 @@
 
 namespace Modules\MedicalRecordImplementation\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordImplementation\Http\Requests\StoreImplementationRequest;
 use Modules\MedicalRecordImplementation\Http\Requests\UpdateImplementationRequest;
@@ -11,9 +16,19 @@ use Modules\MedicalRecordImplementation\Models\Implementation;
 
 class ImplementationController extends Controller
 {
+    use SearchesListing;
+
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = Implementation::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return ImplementationResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
@@ -21,6 +36,9 @@ class ImplementationController extends Controller
     public function store(StoreImplementationRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'performed_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'completed';
 
         $record = Implementation::create($data);

@@ -15,7 +15,7 @@ class StoreOtherHistoryRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'recorded_by' => ['required', 'integer', 'exists:employees,id'],
+            'recorded_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'category' => ['nullable','string','max:255'],
             'description' => ['required','string'],

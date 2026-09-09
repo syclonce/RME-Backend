@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordMorseFallScaleAssessment\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMorseFallScaleAssessment\Http\Requests\StoreMorseFallScaleAssessmentRequest;
 use Modules\MedicalRecordMorseFallScaleAssessment\Http\Resources\MorseFallScaleAssessmentResource;
@@ -10,6 +13,10 @@ use Modules\MedicalRecordMorseFallScaleAssessment\Models\MorseFallScaleAssessmen
 
 class MorseFallScaleAssessmentController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MorseFallScaleAssessment::query();
@@ -24,8 +31,17 @@ class MorseFallScaleAssessmentController extends Controller
     public function store(StoreMorseFallScaleAssessmentRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'assessed_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['assessed_at'] ??= now();
         $data['created_by'] = $request->user()->id;
+
+        // Total dan tingkat risiko dihitung ulang di server, menimpa apa pun yang
+        // dikirim klien. Skor risiko jatuh yang salah ketik akan menghilangkan
+        // kewaspadaan perawat tanpa tanda apa pun di layar.
+        $data['total_score'] = MorseFallScaleAssessment::calculateTotalScore($data);
+        $data['risk_level'] = MorseFallScaleAssessment::riskLevelFor($data['total_score']);
 
         $record = MorseFallScaleAssessment::create($data);
 

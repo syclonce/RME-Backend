@@ -5,6 +5,8 @@ namespace Modules\PembayaranCashierTransaction\Tests\Feature;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
+use Modules\GeneralEmployee\Models\Employee;
+use Modules\PembayaranCashierShift\Models\CashierShift;
 use Modules\PembayaranCashier\Models\Cashier;
 use Modules\PembayaranCashierTransaction\Models\CashierTransaction;
 use Modules\PembayaranInvoice\Models\Invoice;
@@ -21,11 +23,16 @@ class CashierTransactionControllerTest extends TestCase
 
         $this->seed(RoleAndPermissionSeeder::class);
     }
-    private function actingUser(): void
+    private function actingUser(): array
     {
         $user = User::factory()->create();
         $user->assignRole('petugas');
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+        $cashier = Cashier::factory()->create(['employee_id' => $employee->id]);
+        $shift = CashierShift::factory()->create(['cashier_id' => $cashier->id, 'opened_by' => $user->id]);
         $this->actingAs($user, 'sanctum');
+
+        return [$cashier, $shift];
     }
 
     public function test_it_lists_cashier_transactions(): void
@@ -38,12 +45,12 @@ class CashierTransactionControllerTest extends TestCase
 
     public function test_it_creates_cashier_transaction(): void
     {
-        $this->actingUser();
-        $cashier = Cashier::factory()->create();
+        [$cashier, $shift] = $this->actingUser();
         $invoice = Invoice::factory()->create();
 
         $this->postJson('/api/v1/cashier-transactions', [
             'cashier_id' => $cashier->id,
+            'cashier_shift_id' => $shift->id,
             'invoice_id' => $invoice->id,
             'amount' => 150000,
             'transaction_type' => 'in',
@@ -54,12 +61,12 @@ class CashierTransactionControllerTest extends TestCase
 
     public function test_it_rejects_invalid_transaction_type(): void
     {
-        $this->actingUser();
-        $cashier = Cashier::factory()->create();
+        [$cashier, $shift] = $this->actingUser();
         $invoice = Invoice::factory()->create();
 
         $this->postJson('/api/v1/cashier-transactions', [
             'cashier_id' => $cashier->id,
+            'cashier_shift_id' => $shift->id,
             'invoice_id' => $invoice->id,
             'amount' => 150000,
             'transaction_type' => 'transfer',

@@ -3,6 +3,7 @@
 namespace Modules\GeneralAdmissionDiagnosis\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\GeneralAdmissionDiagnosis\Http\Requests\StoreAdmissionDiagnosisRequest;
 use Modules\GeneralAdmissionDiagnosis\Http\Requests\UpdateAdmissionDiagnosisRequest;
@@ -11,6 +12,8 @@ use Modules\GeneralAdmissionDiagnosis\Models\AdmissionDiagnosis;
 
 class AdmissionDiagnosisController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AdmissionDiagnosis::query();
@@ -25,6 +28,8 @@ class AdmissionDiagnosisController extends Controller
     public function store(StoreAdmissionDiagnosisRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['diagnosed_at'] ??= now();
 
         $diagnosis = AdmissionDiagnosis::create($data);

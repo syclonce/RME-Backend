@@ -184,3 +184,4 @@ Sistem ini memiliki domain besar dan banyak modul. Saat menambah fitur baru:
 Analisis statis awal tersedia di:
 
 - `ANALISIS_RME_BACKEND.md`
+- `docs/rme-workflow-architecture.md`

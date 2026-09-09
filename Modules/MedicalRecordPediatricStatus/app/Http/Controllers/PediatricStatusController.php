@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPediatricStatus\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPediatricStatus\Http\Requests\PediatricStatusRequest;
 use Modules\MedicalRecordPediatricStatus\Http\Resources\PediatricStatusResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordPediatricStatus\Models\PediatricStatus;
 
 class PediatricStatusController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PediatricStatus::query();
@@ -30,6 +33,8 @@ class PediatricStatusController extends Controller
     public function store(PediatricStatusRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['recorded_at'] ??= now();
         $data['created_by'] = $request->user()?->id;
 

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPreAnesthesiaSedationAssessment\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPreAnesthesiaSedationAssessment\Http\Requests\StorePreAnesthesiaSedationAssessmentRequest;
 use Modules\MedicalRecordPreAnesthesiaSedationAssessment\Http\Resources\PreAnesthesiaSedationAssessmentResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordPreAnesthesiaSedationAssessment\Models\PreAnesthesiaSed
 
 class PreAnesthesiaSedationAssessmentController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PreAnesthesiaSedationAssessment::query();
@@ -24,6 +27,8 @@ class PreAnesthesiaSedationAssessmentController extends Controller
     public function store(StorePreAnesthesiaSedationAssessmentRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['assessed_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

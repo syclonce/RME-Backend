@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGenitalExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordGenitalExamination\Http\Requests\StoreGenitalExaminationRequest;
 use Modules\MedicalRecordGenitalExamination\Http\Requests\UpdateGenitalExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordGenitalExamination\Models\GenitalExamination;
 
 class GenitalExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = GenitalExamination::query();
@@ -27,6 +30,8 @@ class GenitalExaminationController extends Controller
     public function store(StoreGenitalExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['examined_at'] ??= now();
 
         $record = GenitalExamination::create($data);

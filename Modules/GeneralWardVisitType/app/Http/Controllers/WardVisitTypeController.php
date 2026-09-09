@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralWardVisitType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -9,9 +11,15 @@ use Modules\GeneralWardVisitType\Models\WardVisitType;
 
 class WardVisitTypeController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
-        return WardVisitType::query()->orderBy('name')->paginate(15);
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch(WardVisitType::query(), $request);
+
+        return $query->orderBy('name')->paginate(15);
     }
 
     public function store(Request $request)
@@ -20,6 +28,7 @@ class WardVisitTypeController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:ward_visit_types,name'],
             'code' => ['nullable', 'string', 'max:10', 'unique:ward_visit_types,code'],
             'is_active' => ['sometimes', 'boolean'],
+            'triggers_emergency_flag' => ['sometimes', 'boolean'],
         ]);
 
         return response()->json(WardVisitType::create($data)->refresh(), 201);
@@ -36,6 +45,7 @@ class WardVisitTypeController extends Controller
             'name' => ['sometimes', 'string', 'max:255', Rule::unique('ward_visit_types', 'name')->ignore($ward_visit_type->id)],
             'code' => ['nullable', 'string', 'max:10', Rule::unique('ward_visit_types', 'code')->ignore($ward_visit_type->id)],
             'is_active' => ['sometimes', 'boolean'],
+            'triggers_emergency_flag' => ['sometimes', 'boolean'],
         ]);
 
         $ward_visit_type->update($data);

@@ -37,9 +37,11 @@ class ReturnCancellationTest extends TestCase {
         $this->assertEquals('New', $rc->fresh()->reason);
     }
     public function test_can_delete() {
+        // Pembatalan adalah catatan beralasan, bukan hard delete (peta induk
+        // Temuan 16): destroy() membalik status jadi 'reversed', baris tetap ada.
         $rc = ReturnCancellation::factory()->create();
         $response = $this->deleteJson("/api/v1/return-cancellations/{$rc->id}");
-        $response->assertStatus(204);
-        $this->assertDatabaseMissing('return_cancellations', ['id' => $rc->id]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('return_cancellations', ['id' => $rc->id, 'status' => 'reversed']);
     }
 }

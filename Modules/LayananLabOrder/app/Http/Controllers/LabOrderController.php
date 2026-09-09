@@ -8,6 +8,7 @@ use Modules\LayananLabOrder\Http\Requests\StoreLabOrderRequest;
 use Modules\LayananLabOrder\Http\Requests\UpdateLabOrderRequest;
 use Modules\LayananLabOrder\Http\Resources\LabOrderResource;
 use Modules\LayananLabOrder\Models\LabOrder;
+use Modules\LayananLabOrder\Services\LabOrderService;
 
 class LabOrderController extends Controller
 {
@@ -22,13 +23,9 @@ class LabOrderController extends Controller
         return LabOrderResource::collection($query->latest('ordered_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreLabOrderRequest $request)
+    public function store(StoreLabOrderRequest $request, LabOrderService $service)
     {
-        $data = $request->validated();
-        $data['order_number'] ??= LabOrder::generateOrderNumber();
-        $data['ordered_at'] ??= now();
-
-        $order = LabOrder::create($data);
+        $order = $service->create($request->validated(), $request->user());
 
         return (new LabOrderResource($order))->response()->setStatusCode(201);
     }
@@ -42,10 +39,12 @@ class LabOrderController extends Controller
      * Only the status field is editable here (workflow transition) - the clinical
      * order details themselves are not, same append-only reasoning as ClinicalNote.
      */
-    public function update(UpdateLabOrderRequest $request, LabOrder $lab_order): LabOrderResource
+    public function update(UpdateLabOrderRequest $request, LabOrder $lab_order, LabOrderService $service): LabOrderResource
     {
-        $lab_order->update($request->validated());
-
-        return new LabOrderResource($lab_order);
+        return new LabOrderResource($service->transition(
+            $lab_order,
+            $request->validated('status'),
+            $request->user(),
+        ));
     }
 }

@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordNursingCarePlan\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingCarePlan\Http\Requests\StoreNursingCarePlanRequest;
 use Modules\MedicalRecordNursingCarePlan\Http\Requests\UpdateNursingCarePlanRequest;
@@ -11,6 +14,10 @@ use Modules\MedicalRecordNursingCarePlan\Models\NursingCarePlan;
 
 class NursingCarePlanController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = NursingCarePlan::query();
@@ -21,6 +28,10 @@ class NursingCarePlanController extends Controller
     public function store(StoreNursingCarePlanRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['status'] ??= 'active';
 
         $record = NursingCarePlan::create($data);

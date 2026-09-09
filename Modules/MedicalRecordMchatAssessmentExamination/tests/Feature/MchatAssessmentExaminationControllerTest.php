@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordMchatAssessmentExamination\Models\MchatAssessmentExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class MchatAssessmentExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class MchatAssessmentExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 12,
+            'visit_id' => $visit->id,
             'patient_id' => 24,
             'total_score' => 4,
             'risk_level' => 'Medium Risk',
@@ -46,7 +49,7 @@ class MchatAssessmentExaminationControllerTest extends TestCase
             ->assertJsonPath('data.total_score', 4)
             ->assertJsonPath('data.risk_level', 'Medium Risk');
 
-        $this->assertDatabaseHas('mchat_assessment_examinations', ['visit_id' => 12, 'total_score' => 4]);
+        $this->assertDatabaseHas('mchat_assessment_examinations', ['visit_id' => $visit->id, 'total_score' => 4]);
     }
 
     public function test_it_lists_mchat_assessment_examinations(): void

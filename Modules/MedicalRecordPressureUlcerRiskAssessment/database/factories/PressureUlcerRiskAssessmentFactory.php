@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPressureUlcerRiskAssessment\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordPressureUlcerRiskAssessment\Models\PressureUlcerRiskAssessment;
 
 class PressureUlcerRiskAssessmentFactory extends Factory
@@ -12,7 +13,7 @@ class PressureUlcerRiskAssessmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'sensory_perception' => 3,
             'moisture' => 3,
             'activity' => 3,

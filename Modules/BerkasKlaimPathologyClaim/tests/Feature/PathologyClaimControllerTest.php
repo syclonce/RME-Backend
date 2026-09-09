@@ -45,6 +45,19 @@ class PathologyClaimControllerTest extends TestCase
         $this->assertDatabaseHas('pathology_claims', ['claim_file_id' => $claimFile->id, 'order_id' => $order->id]);
     }
 
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $claimFile = ClaimFile::factory()->create();
+
+        $response = $this->postJson('/api/v1/pathology-claims', [
+            'claim_file_id' => $claimFile->id,
+            'status' => 'approved',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'draft');
+    }
+
     public function test_it_lists_claims_filtered_by_claim_file(): void
     {
         $this->actingUser();
@@ -62,9 +75,21 @@ class PathologyClaimControllerTest extends TestCase
         $this->actingUser();
         $claim = PathologyClaim::factory()->create(['status' => 'draft']);
 
-        $this->putJson("/api/v1/pathology-claims/{$claim->id}", ['status' => 'submitted'])
+        $this->patchJson("/api/v1/pathology-claims/{$claim->id}/transition", ['status' => 'submitted'])
             ->assertOk()
             ->assertJsonPath('data.status', 'submitted');
+
+        $this->assertNotNull($claim->fresh()->submitted_at);
+    }
+
+    public function test_it_approves_a_submitted_claim(): void
+    {
+        $this->actingUser();
+        $claim = PathologyClaim::factory()->create(['status' => 'submitted']);
+
+        $this->patchJson("/api/v1/pathology-claims/{$claim->id}/transition", ['status' => 'approved'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'approved');
     }
 
     public function test_it_rejects_updating_an_approved_claim(): void
@@ -72,7 +97,16 @@ class PathologyClaimControllerTest extends TestCase
         $this->actingUser();
         $claim = PathologyClaim::factory()->create(['status' => 'approved']);
 
-        $this->putJson("/api/v1/pathology-claims/{$claim->id}", ['status' => 'submitted'])
+        $this->patchJson("/api/v1/pathology-claims/{$claim->id}/transition", ['status' => 'submitted'])
+            ->assertStatus(422);
+    }
+
+    public function test_it_rejects_skipping_submitted_straight_to_approved(): void
+    {
+        $this->actingUser();
+        $claim = PathologyClaim::factory()->create(['status' => 'draft']);
+
+        $this->patchJson("/api/v1/pathology-claims/{$claim->id}/transition", ['status' => 'approved'])
             ->assertStatus(422);
     }
 

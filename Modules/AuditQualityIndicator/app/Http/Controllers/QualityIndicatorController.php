@@ -2,6 +2,8 @@
 
 namespace Modules\AuditQualityIndicator\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +15,8 @@ use Modules\AuditQualityIndicator\Services\QualityIndicatorService;
 
 class QualityIndicatorController extends Controller
 {
+    use SearchesListing;
+
     public function __construct(protected QualityIndicatorService $service) {}
 
     public function index(Request $request)
@@ -22,6 +26,10 @@ class QualityIndicatorController extends Controller
         if ($request->filled('category')) {
             $query->where('category', $request->query('category'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return $query->orderBy('code')->paginate($request->integer('per_page', 15));
     }

@@ -25,6 +25,8 @@ class VisitResource extends JsonResource
             'final_outcome' => $this->final_outcome,
             'final_outcome_by' => $this->final_outcome_by,
             'final_outcome_at' => $this->final_outcome_at?->toIso8601String(),
+            'service_finalized_at' => $this->service_finalized_at?->toIso8601String(),
+            'service_finalized_by' => $this->service_finalized_by,
             'status' => $this->status,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

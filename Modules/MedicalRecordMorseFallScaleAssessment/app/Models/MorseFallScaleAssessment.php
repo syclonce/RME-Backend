@@ -16,6 +16,41 @@ class MorseFallScaleAssessment extends Model
 
     protected $table = 'morse_fall_scale_assessments';
 
+    /**
+     * Hitung total skor Morse dari keenam sub-itemnya.
+     *
+     * Skor DIHITUNG di sini, tidak diterima dari klien. Morse Fall Scale menentukan
+     * apakah pasien dipasangi penanda risiko jatuh, gelang kuning, dan pengawasan
+     * tambahan — total yang salah ketik (mis. 25 padahal 75) menghilangkan
+     * kewaspadaan itu tanpa satu pun tanda di layar.
+     *
+     * Keenam sub-item sudah dibatasi nilai sahnya oleh FormRequest
+     * (0/25, 0/15, 0/15/30, 0/20, 0/10/20, 0/15), jadi rentang total 0-125.
+     */
+    public static function calculateTotalScore(array $items): int
+    {
+        return (int) $items['history_of_falling']
+            + (int) $items['secondary_diagnosis']
+            + (int) $items['ambulatory_aid']
+            + (int) $items['iv_therapy']
+            + (int) $items['gait']
+            + (int) $items['mental_status'];
+    }
+
+    /**
+     * Tingkat risiko menurut ambang baku Morse: 0-24 rendah, 25-44 sedang,
+     * >=45 tinggi. Diturunkan dari skor, bukan dipilih terpisah, supaya keduanya
+     * tidak pernah bertentangan.
+     */
+    public static function riskLevelFor(int $totalScore): string
+    {
+        return match (true) {
+            $totalScore >= 45 => 'HIGH',
+            $totalScore >= 25 => 'MODERATE',
+            default => 'LOW',
+        };
+    }
+
     protected $fillable = [
         'visit_id',
         'assessed_by',

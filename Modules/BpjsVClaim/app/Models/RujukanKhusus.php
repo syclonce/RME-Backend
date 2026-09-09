@@ -2,13 +2,15 @@
 
 namespace Modules\BpjsVClaim\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Modules\BpjsVClaim\Database\Factories\RujukanKhususFactory;
 
 class RujukanKhusus extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'rujukan_khusus';
 

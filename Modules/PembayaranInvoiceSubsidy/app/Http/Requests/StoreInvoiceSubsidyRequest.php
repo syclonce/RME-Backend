@@ -19,7 +19,8 @@ class StoreInvoiceSubsidyRequest extends FormRequest
             'invoice_id' => ['required', 'integer', 'exists:invoices,id'],
             'subsidy_source' => ['required', Rule::in(InvoiceSubsidy::SUBSIDY_SOURCES)],
             'subsidy_amount' => ['required', 'numeric', 'min:0'],
-            'status' => ['sometimes', Rule::in(InvoiceSubsidy::STATUSES)],
+            // 'status' sengaja tidak diterima - selalu 'pending' saat create,
+            // lihat InvoiceSubsidyService::create().
             'notes' => ['nullable', 'string'],
         ];
     }

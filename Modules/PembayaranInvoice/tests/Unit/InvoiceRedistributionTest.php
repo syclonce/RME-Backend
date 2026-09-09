@@ -167,7 +167,9 @@ class InvoiceRedistributionTest extends TestCase
     {
         Event::fake([InvoiceLocked::class]);
 
-        $invoice = Invoice::factory()->locked()->create();
+        // Unlock hanya untuk invoice terbuka (paid/cancelled ditolak 422
+        // ala legacy TagihanResource:157) — unlock tetap tanpa event.
+        $invoice = Invoice::factory()->create(['is_locked' => true]);
         $this->service->unlock($invoice->id);
 
         Event::assertNotDispatched(InvoiceLocked::class);

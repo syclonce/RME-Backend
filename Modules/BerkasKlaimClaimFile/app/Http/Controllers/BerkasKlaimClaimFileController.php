@@ -3,12 +3,15 @@
 namespace Modules\BerkasKlaimClaimFile\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\BillingGate;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\BerkasKlaimClaimFile\Models\ClaimFile;
 
 class BerkasKlaimClaimFileController extends Controller
 {
+    public function __construct(protected BillingGate $billingGate) {}
+
     public function index()
     {
         return ClaimFile::query()->latest()->paginate(15);
@@ -21,6 +24,16 @@ class BerkasKlaimClaimFileController extends Controller
             'invoice_id' => ['nullable', 'exists:invoices,id'],
             'status' => ['sometimes', Rule::in(ClaimFile::STATUSES)],
         ]);
+
+        // Klaim BPJS hanya boleh dibentuk dari tagihan yang sudah dikunci
+        // kasir (lock() itu sendiri sudah mensyaratkan pelayanan final via
+        // ServiceEpisodeGate) -- tanpa ini, klaim bisa dibuat untuk kunjungan
+        // yang layanannya belum selesai atau tagihannya masih terbuka.
+        abort_unless(
+            $this->billingGate->isVisitLocked((int) $data['visit_id']),
+            422,
+            'Tagihan kunjungan belum dikunci; klaim tidak dapat dibuat.',
+        );
 
         $data['claim_number'] = ClaimFile::generateClaimNumber();
 

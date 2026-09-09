@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHemodialysisLetter\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordHemodialysisLetter\Http\Requests\HemodialysisLetterRequest;
 use Modules\MedicalRecordHemodialysisLetter\Http\Resources\HemodialysisLetterResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordHemodialysisLetter\Models\HemodialysisLetter;
 
 class HemodialysisLetterController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = HemodialysisLetter::query();
@@ -34,6 +37,8 @@ class HemodialysisLetterController extends Controller
     public function store(HemodialysisLetterRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['hd_frequency_per_week'] ??= 2;
         $data['created_by'] = $request->user()?->id;
 

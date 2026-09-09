@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordClinicalNote\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordClinicalNote\Http\Requests\StoreClinicalNoteRequest;
 use Modules\MedicalRecordClinicalNote\Http\Resources\ClinicalNoteResource;
@@ -10,6 +13,8 @@ use Modules\MedicalRecordClinicalNote\Models\ClinicalNote;
 
 class ClinicalNoteController extends Controller
 {
+    use ResolvesActingEmployee;
+
     public function index(Request $request)
     {
         $query = ClinicalNote::query();
@@ -25,9 +30,11 @@ class ClinicalNoteController extends Controller
      * Clinical notes are a legal medical record - append-only, no update/delete.
      * Corrections belong in a new note, not an edit of history.
      */
-    public function store(StoreClinicalNoteRequest $request)
+    public function store(StoreClinicalNoteRequest $request, MedicalRecordGate $medicalRecordGate)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'author_id');
+        $medicalRecordGate->assertWritable((int) $data['visit_id'], $request->user());
         $data['recorded_at'] ??= now();
         $data['created_by'] = $request->user()->id;
 

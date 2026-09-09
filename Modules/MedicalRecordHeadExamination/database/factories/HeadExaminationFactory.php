@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordHeadExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordHeadExamination\Models\HeadExamination;
 
 class HeadExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class HeadExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'skull_shape' => 'Normocephalic',
             'hair_distribution' => 'Evenly distributed',
             'facial_symmetry' => 'Symmetrical',

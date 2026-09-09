@@ -1,9 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use App\Providers\CachedLaravelModulesServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    CachedLaravelModulesServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\CachedLaravelModulesServiceProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
 ];

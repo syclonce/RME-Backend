@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordFamilyMedicalHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFamilyMedicalHistory\Http\Requests\StoreFamilyMedicalHistoryRequest;
 use Modules\MedicalRecordFamilyMedicalHistory\Http\Resources\FamilyMedicalHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordFamilyMedicalHistory\Models\FamilyMedicalHistory;
 
 class FamilyMedicalHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FamilyMedicalHistory::query();
@@ -24,6 +27,8 @@ class FamilyMedicalHistoryController extends Controller
     public function store(StoreFamilyMedicalHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = FamilyMedicalHistory::create($data);

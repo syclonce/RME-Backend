@@ -14,12 +14,22 @@ use Modules\BpjsVClaim\Http\Controllers\SepPengajuanController;
 use Modules\BpjsVClaim\Http\Controllers\SpriController;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+    // Draf SEP diturunkan dari pendaftaran, bukan diketik ulang petugas —
+    // pengetikan ulang adalah sumber selisih data yang baru ketahuan saat klaim ditolak.
+    Route::post('seps/from-registration', [SepController::class, 'draftFromRegistration']);
+
     // SEP - all 4 creation flows share one endpoint, StoreSepRequest branches on visit_type.
     Route::get('seps', [SepController::class, 'index']);
     Route::post('seps', [SepController::class, 'store']);
     Route::get('seps/{sep}', [SepController::class, 'show']);
     Route::put('seps/{sep}', [SepController::class, 'update']);
     Route::delete('seps/{sep}', [SepController::class, 'destroy']);
+
+    // Cek peserta dulu (kelas hak) sebelum terbit — port BaseService:419.
+    Route::post('seps/{sep}/verify-peserta', [SepController::class, 'verifyPeserta']);
+
+    // Terbitkan draf terverifikasi ke VClaim (idempoten per draf).
+    Route::post('seps/{sep}/publish', [SepController::class, 'publish']);
 
     // SEP backdate/fingerprint exception submission + approval.
     Route::post('sep-pengajuans', [SepPengajuanController::class, 'store']);

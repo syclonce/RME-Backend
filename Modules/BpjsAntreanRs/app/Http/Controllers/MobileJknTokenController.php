@@ -33,11 +33,15 @@ class MobileJknTokenController extends Controller
 
         $plainTextToken = Str::random(40);
 
+        // Prune ala produksi (DELETE token_active kedaluwarsa tiap terbit):
+        // tabel token tidak tumbuh tanpa batas.
+        MobileJknToken::where('expires_at', '<', now())->delete();
+
         $token = MobileJknToken::create([
             'username' => $username,
             // Only the sha256 digest is persisted; the plaintext token is shown once.
             'token' => hash('sha256', $plainTextToken),
-            'expires_at' => now()->addHours(12),
+            'expires_at' => now()->addMinutes((int) config('bpjs.mobile_jkn_token_ttl_minutes', 10)),
         ]);
 
         return response()->json([

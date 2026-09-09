@@ -11,12 +11,19 @@ class StorePharmacyServiceFeeRequest extends FormRequest
         return true;
     }
 
+    public function messages(): array
+    {
+        return [
+            'amount.min' => 'Nominal tidak boleh negatif.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
             'item_id' => ['nullable', 'integer', 'exists:items,id'],
             'fee_name' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric'],
+            'amount' => ['required', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

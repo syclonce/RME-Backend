@@ -71,6 +71,31 @@ class InventoryStockOpnameControllerTest extends TestCase
             ->assertJsonPath('data.status', 'completed');
     }
 
+    public function test_it_rejects_reopening_a_completed_opname(): void
+    {
+        $this->actingUser();
+        $opname = StockOpname::factory()->create(['status' => 'completed']);
+
+        $this->putJson("/api/v1/inventorystockopnames/{$opname->id}", ['status' => 'cancelled'])
+            ->assertStatus(422);
+    }
+
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $ward = Ward::factory()->create();
+        $employee = Employee::factory()->create();
+
+        $response = $this->postJson('/api/v1/inventorystockopnames', [
+            'ward_id' => $ward->id,
+            'opname_date' => now()->toDateString(),
+            'conducted_by' => $employee->id,
+            'status' => 'completed',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'in_progress');
+    }
+
     public function test_guest_cannot_access_stock_opnames(): void
     {
         $this->getJson('/api/v1/inventorystockopnames')->assertStatus(401);

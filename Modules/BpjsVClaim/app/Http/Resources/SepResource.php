@@ -19,6 +19,8 @@ class SepResource extends JsonResource
             'tgl_sep' => $this->tgl_sep?->toDateString(),
             'poli_tujuan' => $this->poli_tujuan,
             'kelas_rawat' => $this->kelas_rawat,
+            'participant_class' => $this->participant_class,
+            'peserta_verified_at' => $this->peserta_verified_at?->toIso8601String(),
             'dpjp_doctor_id' => $this->dpjp_doctor_id,
             'diagnosa_awal' => $this->diagnosa_awal,
             'catatan' => $this->catatan,

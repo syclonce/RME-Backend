@@ -2,15 +2,23 @@
 
 namespace Modules\GeneralProcedure\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralProcedure\Models\Procedure;
 
 class ProcedureController extends Controller
 {
-    public function index()
+    use SearchesListing;
+
+    public function index(Request $request)
     {
-        return Procedure::query()->paginate(15);
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch(Procedure::query(), $request);
+
+        return $query->paginate(15);
     }
 
     public function store(Request $request)

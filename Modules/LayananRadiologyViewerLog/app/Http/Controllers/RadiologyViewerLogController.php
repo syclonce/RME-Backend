@@ -2,7 +2,10 @@
 
 namespace Modules\LayananRadiologyViewerLog\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananRadiologyViewerLog\Http\Requests\StoreRadiologyViewerLogRequest;
 use Modules\LayananRadiologyViewerLog\Http\Resources\RadiologyViewerLogResource;
@@ -10,6 +13,10 @@ use Modules\LayananRadiologyViewerLog\Models\RadiologyViewerLog;
 
 class RadiologyViewerLogController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RadiologyViewerLog::query();
@@ -20,6 +27,8 @@ class RadiologyViewerLogController extends Controller
     public function store(StoreRadiologyViewerLogRequest $request)
     {
         $data = $request->validated();
+        $data = $this->fillActingEmployee($request, $data, 'viewed_by');
+        $this->guardMedicalRecord($request, $data);
 
         $record = RadiologyViewerLog::create($data);
 

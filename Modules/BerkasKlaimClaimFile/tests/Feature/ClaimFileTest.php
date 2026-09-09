@@ -6,6 +6,9 @@ use Tests\TestCase;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\BerkasKlaimClaimFile\Models\ClaimFile;
+use Modules\MedicalRecordClinicalNote\Models\ClinicalNote;
+use Modules\MedicalRecordDiagnosis\Models\Diagnosis;
+use Modules\PembayaranInvoice\Services\InvoiceService;
 use Modules\PendaftaranVisit\Models\Visit;
 use Modules\Auth\Models\User;
 
@@ -23,6 +26,22 @@ class ClaimFileTest extends TestCase
         $this->actingAs($user, 'sanctum');
     }
 
+    /** Selesaikan RME -> finalisasi pelayanan -> kunci tagihan, prasyarat klaim. */
+    private function createVisitWithLockedBilling(): Visit
+    {
+        $visit = Visit::factory()->create();
+        ClinicalNote::factory()->create(['visit_id' => $visit->id]);
+        Diagnosis::factory()->primary()->create(['visit_id' => $visit->id]);
+        $this->postJson("/api/v1/visits/{$visit->id}/medical-record/start")->assertCreated();
+        $this->postJson("/api/v1/visits/{$visit->id}/medical-record/finalize")->assertOk();
+        $this->postJson("/api/v1/visits/{$visit->id}/finalize-service")->assertOk();
+
+        $invoice = app(InvoiceService::class)->ensureForVisit($visit->id);
+        app(InvoiceService::class)->lock($invoice->id);
+
+        return $visit;
+    }
+
     public function test_can_list_claim_files()
     {
         ClaimFile::factory()->count(3)->create();
@@ -34,7 +53,7 @@ class ClaimFileTest extends TestCase
 
     public function test_can_create_claim_file()
     {
-        $visit = Visit::factory()->create();
+        $visit = $this->createVisitWithLockedBilling();
 
         $response = $this->postJson('/api/v1/claim-files', [
             'visit_id' => $visit->id,
@@ -43,6 +62,16 @@ class ClaimFileTest extends TestCase
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('claim_files', ['visit_id' => $visit->id]);
+    }
+
+    public function test_cannot_create_claim_file_when_billing_is_not_locked()
+    {
+        $visit = Visit::factory()->create();
+
+        $response = $this->postJson('/api/v1/claim-files', ['visit_id' => $visit->id]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('claim_files', ['visit_id' => $visit->id]);
     }
 
     public function test_can_update_claim_file()

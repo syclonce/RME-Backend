@@ -3,6 +3,7 @@
 namespace Modules\Sitb\Services;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Modules\Sitb\Models\PasienTb;
 
 /**
@@ -24,13 +25,53 @@ class SitbService
     {
     }
 
+    public const MAX_ATTEMPTS = 10;
+
     /**
      * Send all rows queued for send (kirim = 1), mirroring kirimAction()'s
      * bulk mode. Used by the scheduled retry command.
+     *
+     * Dikeraskan ala worker SATUSEHAT: batas per jalan, backoff eksponensial
+     * dari updated_at (tanpa kolom baru), dead-letter kirim=2 setelah 10x.
      */
-    public function kirimSemuaAntrian(): void
+    public function kirimSemuaAntrian(int $limit = 50): array
     {
-        PasienTb::where('kirim', 1)->oldest('updated_at')->each(fn (PasienTb $row) => $this->kirim($row));
+        $processed = 0;
+        $sent = 0;
+        $dead = 0;
+
+        $ids = PasienTb::where('kirim', 1)->oldest('updated_at')->limit(max(1, $limit))->pluck('id');
+
+        foreach ($ids as $id) {
+            $row = DB::transaction(fn () => PasienTb::whereKey($id)->where('kirim', 1)->lockForUpdate()->first());
+
+            if ($row === null) {
+                continue;
+            }
+
+            if ($row->attempts > 0 && $row->updated_at !== null) {
+                $delay = min(300 * (2 ** ($row->attempts - 1)), 7200);
+
+                if ($row->updated_at->gt(now()->subSeconds($delay))) {
+                    continue;
+                }
+            }
+
+            if ($row->attempts >= self::MAX_ATTEMPTS) {
+                $row->update(['kirim' => 2]);
+                $dead++;
+                continue;
+            }
+
+            $this->kirim($row);
+            $processed++;
+
+            if ($row->fresh()->kirim === 0) {
+                $sent++;
+            }
+        }
+
+        return ['processed' => $processed, 'sent' => $sent, 'dead' => $dead];
     }
 
     public function kirim(PasienTb $row): PasienTb
@@ -46,14 +87,16 @@ class SitbService
                     'kirim' => 0,
                     'id_tb_03' => $response->id_tb_03 ?? $row->id_tb_03,
                     'error_message' => null,
+                    'attempts' => $row->attempts + 1,
                 ]);
             } else {
                 $row->update([
                     'error_message' => $response->keterangan ?? ($response->status ?? 'SITB rejected the row'),
+                    'attempts' => $row->attempts + 1,
                 ]);
             }
         } catch (\Throwable $e) {
-            $row->update(['error_message' => $e->getMessage()]);
+            $row->update(['error_message' => $e->getMessage(), 'attempts' => $row->attempts + 1]);
         }
 
         return $row->fresh();

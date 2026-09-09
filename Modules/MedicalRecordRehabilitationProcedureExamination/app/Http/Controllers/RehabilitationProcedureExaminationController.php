@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordRehabilitationProcedureExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordRehabilitationProcedureExamination\Http\Requests\StoreRehabilitationProcedureExaminationRequest;
 use Modules\MedicalRecordRehabilitationProcedureExamination\Http\Requests\UpdateRehabilitationProcedureExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordRehabilitationProcedureExamination\Models\Rehabilitatio
 
 class RehabilitationProcedureExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = RehabilitationProcedureExamination::query();
@@ -28,6 +31,8 @@ class RehabilitationProcedureExaminationController extends Controller
     public function store(StoreRehabilitationProcedureExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $data['examined_at'] ??= now();
 

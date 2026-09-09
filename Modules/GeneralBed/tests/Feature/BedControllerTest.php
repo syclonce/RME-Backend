@@ -65,6 +65,24 @@ class BedControllerTest extends TestCase
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_it_lists_only_available_beds_in_selected_ward(): void
+    {
+        $this->actingUser();
+        $ward = \Modules\GeneralWard\Models\Ward::factory()->create();
+        $otherWard = \Modules\GeneralWard\Models\Ward::factory()->create();
+        $room = Room::factory()->create(['ward_id' => $ward->id]);
+        $otherRoom = Room::factory()->create(['ward_id' => $otherWard->id]);
+        $available = Bed::factory()->create(['room_id' => $room->id, 'status' => Bed::STATUS_AVAILABLE, 'is_active' => true]);
+        Bed::factory()->create(['room_id' => $room->id, 'status' => Bed::STATUS_OCCUPIED]);
+        Bed::factory()->create(['room_id' => $otherRoom->id, 'status' => Bed::STATUS_AVAILABLE]);
+
+        $response = $this->getJson("/api/v1/beds?ward_id={$ward->id}&available_only=1&per_page=100");
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $available->id);
+        $response->assertJsonPath('data.0.room.ward_id', $ward->id);
+    }
+
     public function test_ward_staff_cannot_create_bed_in_another_ward(): void
     {
         $ownWard = \Modules\GeneralWard\Models\Ward::factory()->create();

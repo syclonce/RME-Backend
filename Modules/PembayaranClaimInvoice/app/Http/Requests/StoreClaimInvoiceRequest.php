@@ -18,6 +18,8 @@ class StoreClaimInvoiceRequest extends FormRequest
             'invoice_id' => ['required', 'integer', 'exists:invoices,id'],
             'guarantor_id' => ['nullable', 'integer', 'exists:guarantors,id'],
             'claim_amount' => ['required', 'numeric', 'min:0'],
+            // 'status' sengaja tidak diterima - selalu 'draft' saat create,
+            // lihat ClaimInvoiceService::create().
         ];
     }
 }

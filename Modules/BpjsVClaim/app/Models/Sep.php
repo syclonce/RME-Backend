@@ -2,6 +2,8 @@
 
 namespace Modules\BpjsVClaim\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,17 +14,21 @@ use Modules\GeneralPatient\Models\Patient;
 
 class Sep extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'visit_type',
         'patient_id',
+        'registration_id',
+        'visit_id',
         'no_kartu',
         'no_rujukan',
         'no_sep',
         'tgl_sep',
         'poli_tujuan',
         'kelas_rawat',
+        'participant_class',
+        'peserta_verified_at',
         'dpjp_doctor_id',
         'diagnosa_awal',
         'catatan',
@@ -45,6 +51,7 @@ class Sep extends Model
             'suplesi_jasa_raharja' => 'boolean',
             'bpjs_response' => 'array',
             'submitted_at' => 'datetime',
+            'peserta_verified_at' => 'datetime',
         ];
     }
 

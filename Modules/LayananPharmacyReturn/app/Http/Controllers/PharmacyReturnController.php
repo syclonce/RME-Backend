@@ -3,11 +3,13 @@
 namespace Modules\LayananPharmacyReturn\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Contracts\MedicalRecordGate;
 use Illuminate\Http\Request;
 use Modules\LayananPharmacyReturn\Http\Requests\StorePharmacyReturnRequest;
 use Modules\LayananPharmacyReturn\Http\Requests\UpdatePharmacyReturnRequest;
 use Modules\LayananPharmacyReturn\Http\Resources\PharmacyReturnResource;
 use Modules\LayananPharmacyReturn\Models\PharmacyReturn;
+use Modules\LayananPrescriptionItem\Models\PrescriptionItem;
 
 class PharmacyReturnController extends Controller
 {
@@ -21,6 +23,13 @@ class PharmacyReturnController extends Controller
     public function store(StorePharmacyReturnRequest $request)
     {
         $data = $request->validated();
+
+        // Retur farmasi menempel ke episode lewat prescription_item -> prescription
+        // -> visit_id (dua hop) — resolusi manual karena payload tidak membawa
+        // visit_id langsung.
+        $item = PrescriptionItem::query()->with('prescription')->findOrFail($data['prescription_item_id']);
+        app(MedicalRecordGate::class)->assertWritable((int) $item->prescription->visit_id, $request->user());
+
         $data['status'] ??= 'pending';
 
         $record = PharmacyReturn::create($data);

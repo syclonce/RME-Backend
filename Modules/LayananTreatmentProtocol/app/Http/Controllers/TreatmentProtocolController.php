@@ -3,6 +3,7 @@
 namespace Modules\LayananTreatmentProtocol\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\LayananTreatmentProtocol\Http\Requests\StoreTreatmentProtocolRequest;
 use Modules\LayananTreatmentProtocol\Http\Requests\UpdateTreatmentProtocolRequest;
@@ -11,6 +12,8 @@ use Modules\LayananTreatmentProtocol\Models\TreatmentProtocol;
 
 class TreatmentProtocolController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = TreatmentProtocol::query();
@@ -21,6 +24,8 @@ class TreatmentProtocolController extends Controller
     public function store(StoreTreatmentProtocolRequest $request)
     {
         $data = $request->validated();
+        $this->guardMedicalRecord($request, $data);
+
         $data['status'] ??= 'active';
 
         $record = TreatmentProtocol::create($data);

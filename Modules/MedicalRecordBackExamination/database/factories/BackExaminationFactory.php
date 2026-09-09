@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordBackExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordBackExamination\Models\BackExamination;
 
 class BackExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class BackExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'spine_alignment' => 'Straight, midline',
             'scoliosis' => false,
             'kyphosis' => false,

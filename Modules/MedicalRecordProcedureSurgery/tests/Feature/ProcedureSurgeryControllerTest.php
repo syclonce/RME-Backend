@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordProcedureSurgery\Models\ProcedureSurgery;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class ProcedureSurgeryControllerTest extends TestCase
@@ -32,8 +33,10 @@ class ProcedureSurgeryControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 3,
+            'visit_id' => $visit->id,
             'procedure_id' => 101,
             'surgery_name' => 'Excision of Lesion',
             'surgery_type' => 'Minor',
@@ -45,7 +48,7 @@ class ProcedureSurgeryControllerTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.surgery_name', 'Excision of Lesion');
 
-        $this->assertDatabaseHas('procedure_surgeries', ['visit_id' => 3, 'surgery_name' => 'Excision of Lesion']);
+        $this->assertDatabaseHas('procedure_surgeries', ['visit_id' => $visit->id, 'surgery_name' => 'Excision of Lesion']);
     }
 
     public function test_it_lists_procedure_surgeries(): void

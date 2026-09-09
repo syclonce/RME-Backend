@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordEegExamination\Models\EegExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class EegExaminationControllerTest extends TestCase
@@ -32,9 +33,13 @@ class EegExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        // Gerbang RME menuntut kunjungan yang benar-benar ada dan aktif —
+        // `visit_id => 1` hardcoded lolos hanya selama gerbang itu belum ada.
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 16,
-            'patient_id' => 32,
+            'visit_id' => $visit->id,
+            'patient_id' => $visit->registration->patient_id,
             'background_rhythm' => 'Alpha 9 Hz',
             'epileptiform_discharges' => false,
             'conclusion' => 'Normal adult EEG',
@@ -46,7 +51,7 @@ class EegExaminationControllerTest extends TestCase
             ->assertJsonPath('data.background_rhythm', 'Alpha 9 Hz')
             ->assertJsonPath('data.epileptiform_discharges', false);
 
-        $this->assertDatabaseHas('eeg_examinations', ['visit_id' => 16, 'patient_id' => 32]);
+        $this->assertDatabaseHas('eeg_examinations', ['visit_id' => $visit->id]);
     }
 
     public function test_it_lists_eeg_examinations(): void

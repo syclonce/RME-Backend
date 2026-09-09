@@ -22,4 +22,7 @@ interface VisitGate
      * Apakah kunjungan sedang aktif (belum pulang dan tidak batal)?
      */
     public function isActive(int $visitId): bool;
+
+    /** Kunjungan ada dan tidak batal; boleh difinalkan walau sudah pulang. */
+    public function canFinalizeMedicalRecord(int $visitId): bool;
 }

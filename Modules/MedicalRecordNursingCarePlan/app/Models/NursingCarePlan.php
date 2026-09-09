@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordNursingCarePlan\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\MedicalRecordNursingCarePlan\Database\Factories\NursingCarePlanFacto
 
 class NursingCarePlan extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'visit_id',

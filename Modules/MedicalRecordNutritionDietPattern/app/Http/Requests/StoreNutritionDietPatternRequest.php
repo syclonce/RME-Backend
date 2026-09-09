@@ -15,7 +15,7 @@ class StoreNutritionDietPatternRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'diet_type' => ['required','string','max:255'],
             'appetite' => ['nullable','in:good,fair,poor'],

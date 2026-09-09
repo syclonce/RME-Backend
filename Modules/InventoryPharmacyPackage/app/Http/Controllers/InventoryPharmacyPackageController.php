@@ -2,6 +2,8 @@
 
 namespace Modules\InventoryPharmacyPackage\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\InventoryPharmacyPackage\Http\Requests\StorePharmacyPackageRequest;
@@ -11,6 +13,8 @@ use Modules\InventoryPharmacyPackage\Models\PharmacyPackage;
 
 class InventoryPharmacyPackageController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = PharmacyPackage::query();
@@ -18,6 +22,10 @@ class InventoryPharmacyPackageController extends Controller
         if ($request->filled('category')) {
             $query->where('category', $request->string('category'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return PharmacyPackageResource::collection($query->orderBy('name')->paginate($request->integer('per_page', 15)));
     }

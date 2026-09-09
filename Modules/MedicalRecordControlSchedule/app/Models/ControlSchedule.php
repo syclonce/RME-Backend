@@ -2,6 +2,8 @@
 
 namespace Modules\MedicalRecordControlSchedule\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +15,7 @@ use Modules\MedicalRecordControlSchedule\Database\Factories\ControlScheduleFacto
 
 class ControlSchedule extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'patient_id',

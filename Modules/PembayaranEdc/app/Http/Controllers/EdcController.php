@@ -8,6 +8,7 @@ use Modules\PembayaranEdc\Http\Requests\StoreEdcRequest;
 use Modules\PembayaranEdc\Http\Requests\UpdateEdcRequest;
 use Modules\PembayaranEdc\Http\Resources\EdcResource;
 use Modules\PembayaranEdc\Models\Edc;
+use Modules\PembayaranEdc\Services\EdcService;
 
 class EdcController extends Controller
 {
@@ -22,13 +23,9 @@ class EdcController extends Controller
         return EdcResource::collection($query->latest('transaction_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreEdcRequest $request)
+    public function store(StoreEdcRequest $request, EdcService $service)
     {
-        $data = $request->validated();
-        $data['transaction_at'] ??= now();
-        $data['status'] = 'pending';
-
-        $edc = Edc::create($data);
+        $edc = $service->create($request->validated());
 
         return (new EdcResource($edc))->response()->setStatusCode(201);
     }
@@ -38,14 +35,10 @@ class EdcController extends Controller
         return new EdcResource($edc_transaction);
     }
 
-    public function update(UpdateEdcRequest $request, Edc $edc_transaction): EdcResource
+    public function update(UpdateEdcRequest $request, Edc $edc_transaction, EdcService $service): EdcResource
     {
-        if ($edc_transaction->status !== 'pending') {
-            abort(422, 'Transaksi EDC ini sudah diproses.');
-        }
+        $data = $request->validated();
 
-        $edc_transaction->update($request->validated());
-
-        return new EdcResource($edc_transaction->fresh());
+        return new EdcResource($service->transition($edc_transaction, $data['status'], $data));
     }
 }

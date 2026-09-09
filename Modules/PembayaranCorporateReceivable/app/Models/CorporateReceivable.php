@@ -2,6 +2,8 @@
 
 namespace Modules\PembayaranCorporateReceivable\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +14,7 @@ use Modules\PendaftaranGuarantor\Models\Guarantor;
 
 class CorporateReceivable extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, HydratesDatabaseDefaults;
 
     public const STATUSES = ['outstanding', 'settled', 'written_off'];
 

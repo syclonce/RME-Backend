@@ -20,8 +20,9 @@ class StoreRecordFileLoanRequest extends FormRequest
             'purpose' => 'nullable|string|max:200',
             'loaned_at' => 'required|date',
             'due_at' => 'nullable|date',
-            'returned_at' => 'nullable|date',
-            'status' => 'nullable|string|in:borrowed,returned,overdue',
+            // status dan returned_at TIDAK diterima dari klien saat create —
+            // peminjaman baru selalu mulai 'borrowed' (lihat
+            // RecordFileLoanService::create()).
         ];
     }
 }

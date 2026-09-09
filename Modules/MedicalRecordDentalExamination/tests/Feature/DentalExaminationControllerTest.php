@@ -6,6 +6,7 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\MedicalRecordDentalExamination\Models\DentalExamination;
+use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
 
 class DentalExaminationControllerTest extends TestCase
@@ -32,8 +33,10 @@ class DentalExaminationControllerTest extends TestCase
     {
         $this->actingUser();
 
+        $visit = Visit::factory()->create();
+
         $payload = [
-            'visit_id' => 22,
+            'visit_id' => $visit->id,
             'decayed_teeth_count' => 3,
             'missing_teeth_count' => 1,
             'filled_teeth_count' => 2,
@@ -43,10 +46,10 @@ class DentalExaminationControllerTest extends TestCase
         $response = $this->postJson('/api/v1/dental-examinations', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.visit_id', 22)
+            ->assertJsonPath('data.visit_id', $visit->id)
             ->assertJsonPath('data.decayed_teeth_count', 3);
 
-        $this->assertDatabaseHas('dental_examinations', ['visit_id' => 22, 'decayed_teeth_count' => 3]);
+        $this->assertDatabaseHas('dental_examinations', ['visit_id' => $visit->id, 'decayed_teeth_count' => 3]);
     }
 
     public function test_it_lists_dental_examinations(): void

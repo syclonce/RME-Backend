@@ -83,6 +83,29 @@ class SaleControllerTest extends TestCase
         $response->assertOk()->assertJsonPath('data.status', 'void');
     }
 
+    public function test_it_rejects_transition_from_a_terminal_status(): void
+    {
+        $this->actingUser();
+        $sale = Sale::factory()->create(['status' => 'void']);
+
+        $this->putJson("/api/v1/sales/{$sale->id}", ['status' => 'refunded'])
+            ->assertStatus(422);
+    }
+
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $employee = Employee::factory()->create();
+
+        $response = $this->postJson('/api/v1/sales', [
+            'sold_by' => $employee->id,
+            'total_amount' => 150000,
+            'status' => 'void',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'completed');
+    }
+
     public function test_guest_cannot_access_sales(): void
     {
         $this->getJson('/api/v1/sales')->assertStatus(401);

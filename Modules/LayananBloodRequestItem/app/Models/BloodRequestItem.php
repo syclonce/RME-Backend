@@ -2,6 +2,8 @@
 
 namespace Modules\LayananBloodRequestItem\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Modules\LayananBloodRequestItem\Database\Factories\BloodRequestItemFactory;
 
 class BloodRequestItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'blood_transfusion_id',

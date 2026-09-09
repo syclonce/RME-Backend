@@ -2,6 +2,8 @@
 
 namespace Modules\SatuSehatIgd\Services;
 
+use Modules\SatuSehat\Support\BuildsEncounterDiagnosis;
+
 /**
  * Builds the FHIR Encounter resource for an IGD (emergency) visit.
  *
@@ -21,6 +23,8 @@ namespace Modules\SatuSehatIgd\Services;
  */
 class IgdEncounterBuilder
 {
+    use BuildsEncounterDiagnosis;
+
     public function build(array $data): array
     {
         $orgId = config('satusehat.organization_id');
@@ -93,6 +97,7 @@ class IgdEncounterBuilder
                     ],
                 ],
             ],
+            ...$this->encounterDiagnosis($data),
             'serviceProvider' => [
                 'reference' => "Organization/{$orgId}",
             ],

@@ -8,6 +8,7 @@ use Modules\LayananAntimicrobialStewardshipForm\Http\Requests\StoreAntimicrobial
 use Modules\LayananAntimicrobialStewardshipForm\Http\Requests\UpdateAntimicrobialStewardshipFormRequest;
 use Modules\LayananAntimicrobialStewardshipForm\Http\Resources\AntimicrobialStewardshipFormResource;
 use Modules\LayananAntimicrobialStewardshipForm\Models\AntimicrobialStewardshipForm;
+use Modules\LayananAntimicrobialStewardshipForm\Services\AntimicrobialStewardshipFormService;
 
 class AntimicrobialStewardshipFormController extends Controller
 {
@@ -18,11 +19,9 @@ class AntimicrobialStewardshipFormController extends Controller
         return AntimicrobialStewardshipFormResource::collection($query->orderBy('id', 'desc')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreAntimicrobialStewardshipFormRequest $request)
+    public function store(StoreAntimicrobialStewardshipFormRequest $request, AntimicrobialStewardshipFormService $service)
     {
-        $data = $request->validated();
-        $data['status'] = $data['status'] ?? 'draft';
-        $amr_form = AntimicrobialStewardshipForm::create($data);
+        $amr_form = $service->create($request->validated(), $request->user());
 
         return (new AntimicrobialStewardshipFormResource($amr_form))->response()->setStatusCode(201);
     }
@@ -32,10 +31,17 @@ class AntimicrobialStewardshipFormController extends Controller
         return new AntimicrobialStewardshipFormResource($amr_form);
     }
 
-    public function update(UpdateAntimicrobialStewardshipFormRequest $request, AntimicrobialStewardshipForm $amr_form): AntimicrobialStewardshipFormResource
+    /**
+     * Hanya status yang bisa diubah lewat endpoint ini (transisi workflow) -
+     * keputusan approve/reject aktual dicatat oleh modul
+     * LayananAntimicrobialStewardshipApproval terpisah.
+     */
+    public function update(UpdateAntimicrobialStewardshipFormRequest $request, AntimicrobialStewardshipForm $amr_form, AntimicrobialStewardshipFormService $service): AntimicrobialStewardshipFormResource
     {
-        $amr_form->update($request->validated());
-
-        return new AntimicrobialStewardshipFormResource($amr_form);
+        return new AntimicrobialStewardshipFormResource($service->transition(
+            $amr_form,
+            $request->validated('status'),
+            $request->user(),
+        ));
     }
 }

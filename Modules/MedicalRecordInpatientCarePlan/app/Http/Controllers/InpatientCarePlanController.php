@@ -5,11 +5,17 @@ namespace Modules\MedicalRecordInpatientCarePlan\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordInpatientCarePlan\Http\Requests\StoreInpatientCarePlanRequest;
+use Modules\MedicalRecordInpatientCarePlan\Http\Requests\UpdateInpatientCarePlanRequest;
 use Modules\MedicalRecordInpatientCarePlan\Http\Resources\InpatientCarePlanResource;
 use Modules\MedicalRecordInpatientCarePlan\Models\InpatientCarePlan;
+use Modules\MedicalRecordInpatientCarePlan\Services\InpatientCarePlanService;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class InpatientCarePlanController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = InpatientCarePlan::query();
@@ -21,14 +27,9 @@ class InpatientCarePlanController extends Controller
         return InpatientCarePlanResource::collection($query->latest('planned_at')->paginate($request->integer('per_page', 15)));
     }
 
-    public function store(StoreInpatientCarePlanRequest $request)
+    public function store(StoreInpatientCarePlanRequest $request, InpatientCarePlanService $service)
     {
-        $data = $request->validated();
-        $data['status'] ??= 'active';
-        $data['planned_at'] ??= now();
-        $data['created_by'] = $request->user()->id;
-
-        $record = InpatientCarePlan::create($data);
+        $record = $service->create($request->validated(), $request->user());
 
         return (new InpatientCarePlanResource($record))->response()->setStatusCode(201);
     }
@@ -36,5 +37,14 @@ class InpatientCarePlanController extends Controller
     public function show(InpatientCarePlan $record): InpatientCarePlanResource
     {
         return new InpatientCarePlanResource($record);
+    }
+
+    public function update(UpdateInpatientCarePlanRequest $request, InpatientCarePlan $record, InpatientCarePlanService $service): InpatientCarePlanResource
+    {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
+        return new InpatientCarePlanResource(
+            $service->transition($record, $request->validated()['status'], $request->user())
+        );
     }
 }

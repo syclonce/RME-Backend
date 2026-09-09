@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordIntradialyticHdMonitoring\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordIntradialyticHdMonitoring\Models\IntradialyticHdMonitoring;
 
 class IntradialyticHdMonitoringFactory extends Factory
@@ -12,7 +13,7 @@ class IntradialyticHdMonitoringFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'dialysis_hour' => 1,
             'blood_pressure_systolic' => 120,

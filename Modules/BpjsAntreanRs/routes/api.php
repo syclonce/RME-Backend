@@ -8,6 +8,7 @@ use Modules\BpjsAntreanRs\Http\Controllers\AntreanJadwalDokterController;
 use Modules\BpjsAntreanRs\Http\Controllers\AntreanLaporanController;
 use Modules\BpjsAntreanRs\Http\Controllers\AntreanReferensiController;
 use Modules\BpjsAntreanRs\Http\Controllers\AntreanWaktuController;
+use Modules\BpjsAntreanRs\Http\Controllers\BpjsCodeMappingController;
 use Modules\BpjsAntreanRs\Http\Controllers\MobileJknAntreanController;
 use Modules\BpjsAntreanRs\Http\Controllers\MobileJknAntreanFarmasiController;
 use Modules\BpjsAntreanRs\Http\Controllers\MobileJknJadwalOperasiController;
@@ -25,6 +26,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1/antrean-rs')->group(function () 
         ->only(['index', 'store', 'show'])
         ->parameters(['antrean' => 'antrean'])
         ->names('bpjsantreanrs.antrean');
+    Route::post('antrean/from-destination', [AntreanController::class, 'storeFromDestination']);
     Route::post('antrean/{antrean}/batal', [AntreanController::class, 'batal']);
 
     Route::get('antrean/{antrean}/waktu', [AntreanWaktuController::class, 'index']);
@@ -41,6 +43,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1/antrean-rs')->group(function () 
     });
 
     Route::post('jadwal-dokter', [AntreanJadwalDokterController::class, 'update']);
+
+    // CRUD pemetaan kodepoli/kodedokter BPJS (ward/employee -> kode BPJS).
+    Route::apiResource('bpjs-code-mappings', BpjsCodeMappingController::class)
+        ->parameters(['bpjs-code-mappings' => 'bpjs_code_mapping']);
 
     Route::get('dashboard/tanggal/{tanggal}/{kodepoli}', [AntreanDashboardController::class, 'perTanggal']);
     Route::get('dashboard/bulan/{bulan}/{tahun}/{kodepoli}', [AntreanDashboardController::class, 'perBulan']);

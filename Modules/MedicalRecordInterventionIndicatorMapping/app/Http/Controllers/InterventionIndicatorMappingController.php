@@ -8,9 +8,13 @@ use Modules\MedicalRecordInterventionIndicatorMapping\Http\Requests\StoreInterve
 use Modules\MedicalRecordInterventionIndicatorMapping\Http\Requests\UpdateInterventionIndicatorMappingRequest;
 use Modules\MedicalRecordInterventionIndicatorMapping\Http\Resources\InterventionIndicatorMappingResource;
 use Modules\MedicalRecordInterventionIndicatorMapping\Models\InterventionIndicatorMapping;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class InterventionIndicatorMappingController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = InterventionIndicatorMapping::query();
@@ -41,13 +45,17 @@ class InterventionIndicatorMappingController extends Controller
 
     public function update(UpdateInterventionIndicatorMappingRequest $request, InterventionIndicatorMapping $record): InterventionIndicatorMappingResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new InterventionIndicatorMappingResource($record);
     }
 
-    public function destroy(InterventionIndicatorMapping $record)
+    public function destroy(Request $request, InterventionIndicatorMapping $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->noContent();

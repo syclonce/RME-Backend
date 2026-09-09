@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralReportTypeItem\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralReportTypeItem\Http\Requests\StoreReportTypeItemRequest;
@@ -11,6 +13,8 @@ use Modules\GeneralReportTypeItem\Models\ReportTypeItem;
 
 class ReportTypeItemController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = ReportTypeItem::query();
@@ -18,6 +22,10 @@ class ReportTypeItemController extends Controller
         if ($request->filled('report_type_id')) {
             $query->where('report_type_id', $request->integer('report_type_id'));
         }
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return ReportTypeItemResource::collection($query->orderBy('sequence')->paginate($request->integer('per_page', 15)));
     }

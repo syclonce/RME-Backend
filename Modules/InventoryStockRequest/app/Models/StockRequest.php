@@ -2,6 +2,10 @@
 
 namespace Modules\InventoryStockRequest\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
+use App\Support\NumberSequence;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +16,7 @@ use Modules\InventoryStockRequest\Database\Factories\StockRequestFactory;
 
 class StockRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'request_number',
@@ -50,15 +54,13 @@ class StockRequest extends Model
     }
 
     /**
-     * Format: REQ-{year}-{6-digit sequential per year}. Same known limitation as
-     * Patient::generateMedicalRecordNumber() - not concurrency-safe.
+     * Nomor diambil dari deret NumberSequence (padanan skema `generator`
+     * simgos2): database yang menetapkan urutannya, bukan hitungan baris.
+     * Aman terhadap permintaan bersamaan, dan nomor tidak didaur ulang.
      */
     public static function generateRequestNumber(): string
     {
-        $year = now()->format('Y');
-        $count = static::query()->where('request_number', 'like', "REQ-{$year}-%")->count();
-
-        return sprintf('REQ-%s-%06d', $year, $count + 1);
+        return NumberSequence::format('REQ', 'stock_request', now()->format('Y'));
     }
 
     protected static function newFactory(): StockRequestFactory

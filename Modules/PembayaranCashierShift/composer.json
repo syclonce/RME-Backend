@@ -1,0 +1,10 @@
+{
+    "name": "asvuro/pembayarancashiershift",
+    "autoload": {
+        "psr-4": {
+            "Modules\\PembayaranCashierShift\\": "app/",
+            "Modules\\PembayaranCashierShift\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {"psr-4": {"Modules\\PembayaranCashierShift\\Tests\\": "tests/"}}
+}

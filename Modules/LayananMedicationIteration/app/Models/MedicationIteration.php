@@ -2,6 +2,8 @@
 
 namespace Modules\LayananMedicationIteration\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Modules\LayananMedicationIteration\Database\Factories\MedicationIterationFac
 
 class MedicationIteration extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $table = 'medication_iterations';
 

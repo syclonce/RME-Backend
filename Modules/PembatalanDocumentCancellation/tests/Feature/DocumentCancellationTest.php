@@ -38,9 +38,11 @@ class DocumentCancellationTest extends TestCase {
         $this->assertEquals('New', $dc->fresh()->reason);
     }
     public function test_can_delete() {
+        // Pembatalan adalah catatan beralasan, bukan hard delete (peta induk
+        // Temuan 16): destroy() membalik status jadi 'reversed', baris tetap ada.
         $dc = DocumentCancellation::factory()->create();
         $response = $this->deleteJson("/api/v1/document-cancellations/{$dc->id}");
-        $response->assertStatus(204);
-        $this->assertDatabaseMissing('document_cancellations', ['id' => $dc->id]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('document_cancellations', ['id' => $dc->id, 'status' => 'reversed']);
     }
 }

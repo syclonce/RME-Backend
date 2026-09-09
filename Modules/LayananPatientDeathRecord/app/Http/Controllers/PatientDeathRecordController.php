@@ -8,6 +8,7 @@ use Modules\LayananPatientDeathRecord\Http\Requests\StorePatientDeathRecordReque
 use Modules\LayananPatientDeathRecord\Http\Requests\UpdatePatientDeathRecordRequest;
 use Modules\LayananPatientDeathRecord\Http\Resources\PatientDeathRecordResource;
 use Modules\LayananPatientDeathRecord\Models\PatientDeathRecord;
+use Modules\PendaftaranVisit\Models\Visit;
 
 class PatientDeathRecordController extends Controller
 {
@@ -21,6 +22,17 @@ class PatientDeathRecordController extends Controller
     public function store(StorePatientDeathRecordRequest $request)
     {
         $data = $request->validated();
+
+        // Pencatatan kematian menutup episode — tidak boleh dobel per kunjungan,
+        // dan tidak boleh dicatat di kunjungan yang sudah batal (kunjungan batal
+        // berarti tidak pernah benar-benar dilayani).
+        $visit = Visit::query()->findOrFail($data['visit_id']);
+        abort_if($visit->status === 'cancelled', 422, 'Kunjungan sudah batal; tidak dapat mencatat kematian.');
+        abort_if(
+            PatientDeathRecord::query()->where('visit_id', $data['visit_id'])->exists(),
+            422,
+            'Kunjungan ini sudah memiliki catatan kematian.'
+        );
 
         $death_record = PatientDeathRecord::create($data);
 

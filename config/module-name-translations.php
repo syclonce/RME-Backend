@@ -567,7 +567,7 @@ return array (
     'Reservasi' => 'Reservation',
     'RujukanKeluar' => 'Referral',
     'SuratRujukanPasien' => 'ReferralLetter',
-    'TujuanPasien' => 'PatientPurpose',
+    'TujuanPasien' => 'VisitDestination',
   ),
   'PenjaminRS' => 
   array (

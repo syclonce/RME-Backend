@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordPatientTransferSheet\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordPatientTransferSheet\Http\Requests\StorePatientTransferSheetRequest;
 use Modules\MedicalRecordPatientTransferSheet\Http\Requests\UpdatePatientTransferSheetRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordPatientTransferSheet\Models\PatientTransferSheet;
 
 class PatientTransferSheetController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = PatientTransferSheet::query();
@@ -31,6 +34,8 @@ class PatientTransferSheetController extends Controller
     public function store(StorePatientTransferSheetRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['transferred_at'] ??= now();
 
         $record = PatientTransferSheet::create($data);

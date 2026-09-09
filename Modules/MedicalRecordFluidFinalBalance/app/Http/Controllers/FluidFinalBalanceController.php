@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordFluidFinalBalance\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordFluidFinalBalance\Http\Requests\StoreFluidFinalBalanceRequest;
 use Modules\MedicalRecordFluidFinalBalance\Http\Requests\UpdateFluidFinalBalanceRequest;
@@ -11,6 +14,10 @@ use Modules\MedicalRecordFluidFinalBalance\Models\FluidFinalBalance;
 
 class FluidFinalBalanceController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = FluidFinalBalance::query();
@@ -21,6 +28,10 @@ class FluidFinalBalanceController extends Controller
     public function store(StoreFluidFinalBalanceRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = FluidFinalBalance::create($data);
 

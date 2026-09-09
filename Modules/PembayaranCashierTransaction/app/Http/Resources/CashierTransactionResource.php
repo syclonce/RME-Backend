@@ -12,6 +12,7 @@ class CashierTransactionResource extends JsonResource
         return [
             'id' => $this->id,
             'cashier_id' => $this->cashier_id,
+            'cashier_shift_id' => $this->cashier_shift_id,
             'invoice_id' => $this->invoice_id,
             'amount' => $this->amount,
             'transaction_type' => $this->transaction_type,

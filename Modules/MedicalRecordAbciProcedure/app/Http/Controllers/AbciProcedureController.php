@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordAbciProcedure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAbciProcedure\Http\Requests\AbciProcedureRequest;
 use Modules\MedicalRecordAbciProcedure\Http\Resources\AbciProcedureResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordAbciProcedure\Models\AbciProcedure;
 
 class AbciProcedureController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = AbciProcedure::query();
@@ -34,6 +37,8 @@ class AbciProcedureController extends Controller
     public function store(AbciProcedureRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()?->id;
 
         $procedure = AbciProcedure::create($data);

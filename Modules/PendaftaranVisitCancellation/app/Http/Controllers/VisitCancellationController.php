@@ -2,6 +2,7 @@
 
 namespace Modules\PendaftaranVisitCancellation\Http\Controllers;
 
+use App\Http\Concerns\GuardsMedicalRecord;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\PendaftaranVisitCancellation\Http\Requests\StoreVisitCancellationRequest;
@@ -10,6 +11,8 @@ use Modules\PendaftaranVisitCancellation\Models\VisitCancellation;
 
 class VisitCancellationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = VisitCancellation::query();
@@ -26,6 +29,7 @@ class VisitCancellationController extends Controller
         $data = $request->validated();
         $data['cancelled_at'] ??= now();
         $data['cancelled_by'] = $request->user()->id;
+        $this->guardMedicalRecord($request, $data);
 
         $cancellation = VisitCancellation::create($data);
 

@@ -2,6 +2,8 @@
 
 namespace Modules\InventoryBloodBag\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Modules\InventoryBloodBag\Database\Factories\CrossmatchTestFactory;
 
 class CrossmatchTest extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     public const RESULT_POSITIVE = 'pos';
 

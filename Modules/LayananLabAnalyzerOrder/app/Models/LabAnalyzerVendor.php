@@ -2,6 +2,8 @@
 
 namespace Modules\LayananLabAnalyzerOrder\Models;
 
+use App\Models\Concerns\HydratesDatabaseDefaults;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +16,7 @@ use Modules\LayananLabAnalyzerOrder\Database\Factories\LabAnalyzerVendorFactory;
  */
 class LabAnalyzerVendor extends Model
 {
-    use HasFactory;
+    use HasFactory, HydratesDatabaseDefaults;
 
     protected $fillable = [
         'vendor_name',

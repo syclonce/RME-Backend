@@ -2,6 +2,8 @@
 
 namespace Modules\GeneralPharmacyDepot\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\GeneralPharmacyDepot\Http\Requests\StorePharmacyDepotRequest;
@@ -11,9 +13,15 @@ use Modules\GeneralPharmacyDepot\Models\PharmacyDepot;
 
 class PharmacyDepotController extends Controller
 {
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = PharmacyDepot::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return PharmacyDepotResource::collection($query->orderBy('id')->paginate($request->integer('per_page', 15)));
     }

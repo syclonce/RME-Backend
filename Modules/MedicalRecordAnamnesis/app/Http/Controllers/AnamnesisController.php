@@ -2,7 +2,10 @@
 
 namespace Modules\MedicalRecordAnamnesis\Http\Controllers;
 
+use App\Http\Concerns\ResolvesActingEmployee;
+
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordAnamnesis\Http\Requests\StoreAnamnesisRequest;
 use Modules\MedicalRecordAnamnesis\Http\Requests\UpdateAnamnesisRequest;
@@ -11,6 +14,10 @@ use Modules\MedicalRecordAnamnesis\Models\Anamnesis;
 
 class AnamnesisController extends Controller
 {
+    use ResolvesActingEmployee;
+
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $request->validate([
@@ -19,12 +26,23 @@ class AnamnesisController extends Controller
 
         $query = Anamnesis::query();
 
+        // Tanpa filter ini, membuka Anamnesis dari workspace Pelayanan Pasien
+        // menampilkan catatan SELURUH pasien — petugas harus mencari sendiri
+        // milik pasien yang sedang dilayani, dan mudah salah baca.
+        if ($request->filled('visit_id')) {
+            $query->where('visit_id', $request->integer('visit_id'));
+        }
+
         return AnamnesisResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
 
     public function store(StoreAnamnesisRequest $request)
     {
         $data = $request->validated();
+        $data['recorded_at'] ??= now();
+        $data = $this->fillActingEmployee($request, $data, 'recorded_by');
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
 
         $record = Anamnesis::create($data);
 
@@ -38,13 +56,21 @@ class AnamnesisController extends Controller
 
     public function update(UpdateAnamnesisRequest $request, Anamnesis $record): AnamnesisResource
     {
+        // Episode yang dimutasi adalah milik record, bukan payload: memindahkan
+        // catatan antar-kunjungan via PUT tidak diizinkan menyelinap lewat sini.
+        // Bila payload membawa visit_id berbeda, kedua episode wajib writable.
+        $this->guardMedicalRecord($request, ['visit_id' => $record->visit_id]);
+        $this->guardMedicalRecord($request, $request->validated());
         $record->update($request->validated());
 
         return new AnamnesisResource($record);
     }
 
-    public function destroy(Anamnesis $record)
+    public function destroy(Request $request, Anamnesis $record)
     {
+        // Hapus catatan final = mutasi histori legal (legacy mengizinkan PUT
+        // 159/177 + tanpa gerbang). Koreksi pasca-final hanya via amendment.
+        $this->guardMedicalRecord($request, ['visit_id' => $record->visit_id]);
         $record->delete();
 
         return response()->json(null, 204);

@@ -15,7 +15,7 @@ class StoreMorseFallScaleAssessmentRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'assessed_by' => ['required', 'integer', 'exists:employees,id'],
+            'assessed_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'history_of_falling' => ['required','in:0,25'],
             'secondary_diagnosis' => ['required','in:0,15'],
@@ -23,8 +23,12 @@ class StoreMorseFallScaleAssessmentRequest extends FormRequest
             'iv_therapy' => ['required','in:0,20'],
             'gait' => ['required','in:0,10,20'],
             'mental_status' => ['required','in:0,15'],
-            'total_score' => ['required','integer','min:0','max:125'],
-            'risk_level' => ['required','in:LOW,MODERATE,HIGH'],
+            // Keduanya OPSIONAL dan akan ditimpa: server menghitung ulang dari
+            // keenam sub-item (lihat MorseFallScaleAssessment::calculateTotalScore).
+            // Tetap divalidasi bentuknya agar klien lama yang masih mengirimnya
+            // tidak menerima galat yang membingungkan.
+            'total_score' => ['sometimes','integer','min:0','max:125'],
+            'risk_level' => ['sometimes','in:LOW,MODERATE,HIGH'],
             'assessed_at' => ['nullable','date'],
         ];
     }

@@ -1,0 +1,20 @@
+<?php
+
+namespace Modules\Auth\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class UserSessionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'last_used_at' => $this->last_used_at?->toIso8601String(),
+            'created_at' => $this->created_at?->toIso8601String(),
+            'is_current_device' => $this->id === $request->user()?->currentAccessToken()?->id,
+        ];
+    }
+}

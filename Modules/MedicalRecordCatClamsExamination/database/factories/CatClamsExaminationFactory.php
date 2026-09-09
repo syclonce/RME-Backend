@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordCatClamsExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordCatClamsExamination\Models\CatClamsExamination;
 
 class CatClamsExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class CatClamsExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'patient_id' => 1,
             'cat_score' => 85.0,
             'clams_score' => 90.0,

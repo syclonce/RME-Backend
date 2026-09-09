@@ -66,4 +66,43 @@ class HumptyDumptyFallScaleAssessmentControllerTest extends TestCase
     {
         $this->getJson('/api/v1/humpty-dumpty-fall-scale-assessments')->assertStatus(401);
     }
+
+    /**
+     * Skor dihitung ulang server: klien mengirim total yang SALAH (7) padahal
+     * sub-itemnya berjumlah 20 (>=12 -> risiko tinggi). Yang tersimpan harus
+     * 20 / HIGH, bukan 7 / LOW.
+     */
+    public function test_total_score_is_recomputed_server_side(): void
+    {
+        $this->actingUser();
+        $visit = \Modules\PendaftaranVisit\Models\Visit::factory()->create();
+        $employee = \Modules\GeneralEmployee\Models\Employee::factory()->create();
+
+        $this->postJson('/api/v1/humpty-dumpty-fall-scale-assessments', [
+            'visit_id' => $visit->id,
+            'assessed_by' => $employee->id,
+            'age_score' => 4,
+            'gender_score' => 3,
+            'diagnosis_score' => 4,
+            'cognitive_impairment_score' => 3,
+            'environmental_score' => 4,
+            'surgery_sedation_score' => 1,
+            'medication_score' => 1,
+            'total_score' => 7,        // salah, sengaja
+            'risk_level' => 'LOW',     // salah, sengaja
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('humpty_dumpty_fall_scale_assessments', [
+            'visit_id' => $visit->id,
+            'total_score' => 20,
+            'risk_level' => 'HIGH',
+        ]);
+    }
+
+    /** Ambang baku Humpty Dumpty: <12 rendah, >=12 tinggi. */
+    public function test_risk_level_thresholds(): void
+    {
+        $this->assertSame('LOW', HumptyDumptyFallScaleAssessment::riskLevelFor(11));
+        $this->assertSame('HIGH', HumptyDumptyFallScaleAssessment::riskLevelFor(12));
+    }
 }

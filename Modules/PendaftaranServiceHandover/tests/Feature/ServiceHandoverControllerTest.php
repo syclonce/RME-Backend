@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Models\User;
 use Modules\GeneralEmployee\Models\Employee;
 use Modules\GeneralWard\Models\Ward;
+use Modules\MedicalRecordEpisode\Models\MedicalRecordEpisode;
 use Modules\PendaftaranServiceHandover\Models\ServiceHandover;
 use Modules\PendaftaranVisit\Models\Visit;
 use Tests\TestCase;
@@ -82,5 +83,32 @@ class ServiceHandoverControllerTest extends TestCase
     public function test_guest_cannot_access_service_handovers(): void
     {
         $this->getJson('/api/v1/service-handovers')->assertStatus(401);
+    }
+
+    public function test_it_rejects_a_second_transition_after_rejected(): void
+    {
+        $this->actingUser();
+        $handover = ServiceHandover::factory()->create(['status' => 'rejected']);
+
+        $this->putJson("/api/v1/service-handovers/{$handover->id}", ['status' => 'received', 'received_by' => Employee::factory()->create()->id])
+            ->assertStatus(422);
+    }
+
+    public function test_it_rejects_create_when_medical_record_is_finalized(): void
+    {
+        $this->actingUser();
+        $visit = Visit::factory()->create();
+        $ward = Ward::factory()->create();
+        MedicalRecordEpisode::create([
+            'visit_id' => $visit->id,
+            'status' => MedicalRecordEpisode::STATUS_FINALIZED,
+        ]);
+
+        $this->postJson('/api/v1/service-handovers', [
+            'visit_id' => $visit->id,
+            'ward_id' => $ward->id,
+        ])->assertStatus(422);
+
+        $this->assertDatabaseCount('service_handovers', 0);
     }
 }

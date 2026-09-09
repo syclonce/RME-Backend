@@ -18,6 +18,7 @@ class CashierTransaction extends Model
 
     protected $fillable = [
         'cashier_id',
+        'cashier_shift_id',
         'invoice_id',
         'amount',
         'transaction_type',

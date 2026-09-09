@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordDentalExamination\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordDentalExamination\Http\Requests\StoreDentalExaminationRequest;
 use Modules\MedicalRecordDentalExamination\Http\Requests\UpdateDentalExaminationRequest;
@@ -11,6 +12,8 @@ use Modules\MedicalRecordDentalExamination\Models\DentalExamination;
 
 class DentalExaminationController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = DentalExamination::query();
@@ -27,6 +30,8 @@ class DentalExaminationController extends Controller
     public function store(StoreDentalExaminationRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['decayed_teeth_count'] ??= 0;
         $data['missing_teeth_count'] ??= 0;
         $data['filled_teeth_count'] ??= 0;

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordEarExamination\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\PendaftaranVisit\Models\Visit;
 use Modules\MedicalRecordEarExamination\Models\EarExamination;
 
 class EarExaminationFactory extends Factory
@@ -12,7 +13,7 @@ class EarExaminationFactory extends Factory
     public function definition(): array
     {
         return [
-            'visit_id' => 1,
+            'visit_id' => Visit::factory(),
             'side' => 'bilateral',
             'otoscopy' => 'Canal clear, no discharge',
             'tympanic_membrane' => 'Intact, pearly grey',

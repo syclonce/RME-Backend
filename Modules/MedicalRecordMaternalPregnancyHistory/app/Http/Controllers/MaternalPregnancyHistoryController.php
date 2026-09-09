@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordMaternalPregnancyHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordMaternalPregnancyHistory\Http\Requests\StoreMaternalPregnancyHistoryRequest;
 use Modules\MedicalRecordMaternalPregnancyHistory\Http\Resources\MaternalPregnancyHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordMaternalPregnancyHistory\Models\MaternalPregnancyHistor
 
 class MaternalPregnancyHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = MaternalPregnancyHistory::query();
@@ -24,6 +27,8 @@ class MaternalPregnancyHistoryController extends Controller
     public function store(StoreMaternalPregnancyHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = MaternalPregnancyHistory::create($data);

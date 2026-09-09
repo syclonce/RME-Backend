@@ -15,12 +15,11 @@ class StorePatientNutritionProblemRequest extends FormRequest
     {
         return [
             'visit_id' => ['required', 'integer', 'exists:visits,id'],
-            'identified_by' => ['required', 'integer', 'exists:employees,id'],
+            'identified_by' => ['nullable', 'integer', 'exists:employees,id'],
             'created_by' => ['nullable', 'integer', 'exists:users,id'],
             'problem_category' => ['required','string','max:40'],
             'problem_description' => ['required','string'],
             'intervention_plan' => ['nullable','string'],
-            'status' => ['nullable','in:open,in_progress,resolved'],
             'identified_at' => ['nullable','date'],
         ];
     }

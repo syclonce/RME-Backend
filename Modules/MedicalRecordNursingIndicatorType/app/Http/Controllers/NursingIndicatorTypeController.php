@@ -2,18 +2,30 @@
 
 namespace Modules\MedicalRecordNursingIndicatorType\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordNursingIndicatorType\Http\Requests\StoreNursingIndicatorTypeRequest;
 use Modules\MedicalRecordNursingIndicatorType\Http\Requests\UpdateNursingIndicatorTypeRequest;
 use Modules\MedicalRecordNursingIndicatorType\Http\Resources\NursingIndicatorTypeResource;
 use Modules\MedicalRecordNursingIndicatorType\Models\NursingIndicatorType;
+use App\Http\Concerns\GuardsMedicalRecord;
+use App\Observers\MedicalRecordMutationGuard;
 
 class NursingIndicatorTypeController extends Controller
 {
+    use GuardsMedicalRecord;
+
+    use SearchesListing;
+
     public function index(Request $request)
     {
         $query = NursingIndicatorType::query();
+
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini filternya
+        // diabaikan diam-diam dan daftar tidak berubah saat petugas mengetik.
+        $query = $this->applySearch($query, $request);
 
         return NursingIndicatorTypeResource::collection($query->latest()->paginate($request->integer('per_page', 15)));
     }
@@ -35,13 +47,17 @@ class NursingIndicatorTypeController extends Controller
 
     public function update(UpdateNursingIndicatorTypeRequest $request, NursingIndicatorType $record): NursingIndicatorTypeResource
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->update($request->validated());
 
         return new NursingIndicatorTypeResource($record);
     }
 
-    public function destroy(NursingIndicatorType $record)
+    public function destroy(Request $request, NursingIndicatorType $record)
     {
+        $this->guardMedicalRecord($request, ['visit_id' => MedicalRecordMutationGuard::resolveVisitId($record)]);
+
         $record->delete();
 
         return response()->json(null, 204);

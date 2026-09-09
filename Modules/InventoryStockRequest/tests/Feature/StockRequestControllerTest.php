@@ -81,6 +81,32 @@ class StockRequestControllerTest extends TestCase
         $this->assertEquals(20, $item->fresh()->stock_quantity);
     }
 
+    public function test_it_rejects_reprocessing_an_already_fulfilled_request(): void
+    {
+        $this->actingUser();
+        $item = Item::factory()->create(['stock_quantity' => 20]);
+        $stockRequest = StockRequest::factory()->create(['item_id' => $item->id, 'quantity' => 5, 'status' => 'fulfilled']);
+
+        $this->putJson("/api/v1/stock-requests/{$stockRequest->id}", ['status' => 'rejected'])
+            ->assertStatus(422);
+    }
+
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $user = $this->actingUser();
+        $ward = Ward::factory()->create();
+        $item = Item::factory()->create();
+
+        $response = $this->postJson('/api/v1/stock-requests', [
+            'ward_id' => $ward->id,
+            'item_id' => $item->id,
+            'quantity' => 5,
+            'status' => 'fulfilled',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
     public function test_guest_cannot_access_stock_requests(): void
     {
         $this->getJson('/api/v1/stock-requests')->assertStatus(401);

@@ -2,6 +2,8 @@
 
 namespace Modules\LayananPatientComplaint\Http\Controllers;
 
+use App\Http\Concerns\SearchesListing;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,12 +21,18 @@ use Modules\LayananPatientComplaint\Services\PatientComplaintService;
  */
 class PatientComplaintController extends Controller
 {
+    use SearchesListing;
+
     public function __construct(protected PatientComplaintService $service) {}
 
     public function index(Request $request): JsonResponse
     {
+        // Kotak pencarian di 563 halaman mengirim `?name=`; tanpa ini
+        // filternya diabaikan diam-diam saat petugas mengetik.
+        $query = $this->applySearch(PatientComplaint::query(), $request);
+
         return response()->json(
-            PatientComplaint::query()->orderByDesc('id')->paginate($request->integer('per_page', 15)),
+            $query->orderByDesc('id')->paginate($request->integer('per_page', 15)),
         );
     }
 

@@ -3,6 +3,7 @@
 namespace Modules\MedicalRecordGynecologyHistory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\GuardsMedicalRecord;
 use Illuminate\Http\Request;
 use Modules\MedicalRecordGynecologyHistory\Http\Requests\StoreGynecologyHistoryRequest;
 use Modules\MedicalRecordGynecologyHistory\Http\Resources\GynecologyHistoryResource;
@@ -10,6 +11,8 @@ use Modules\MedicalRecordGynecologyHistory\Models\GynecologyHistory;
 
 class GynecologyHistoryController extends Controller
 {
+    use GuardsMedicalRecord;
+
     public function index(Request $request)
     {
         $query = GynecologyHistory::query();
@@ -24,6 +27,8 @@ class GynecologyHistoryController extends Controller
     public function store(StoreGynecologyHistoryRequest $request)
     {
         $data = $request->validated();
+        // Cegah penulisan ke rekam medis yang sudah difinalkan.
+        $this->guardMedicalRecord($request, $data);
         $data['created_by'] = $request->user()->id;
 
         $record = GynecologyHistory::create($data);

@@ -96,4 +96,57 @@ class PatientControllerTest extends TestCase
     {
         $this->getJson('/api/v1/patients')->assertStatus(401);
     }
+
+    public function test_it_rejects_demographic_duplicate(): void
+    {
+        $this->actingUser();
+        Patient::factory()->create([
+            'name' => 'Agus Wijaya', 'birth_date' => '1985-03-10',
+            'birth_place' => 'Garut', 'gender_id' => null, 'address' => 'Jl. Cihanjuang 5',
+        ]);
+
+        $this->postJson('/api/v1/patients', [
+            'name' => 'Agus Wijaya', 'birth_date' => '1985-03-10',
+            'birth_place' => 'Garut', 'address' => 'Jl. Cihanjuang 5',
+        ])->assertUnprocessable()->assertJsonValidationErrors('birth_date');
+    }
+
+    public function test_unidentified_patient_needs_no_name_and_skips_dedup(): void
+    {
+        $this->actingUser();
+
+        $this->postJson('/api/v1/patients', [
+            'is_unidentified' => true, 'birth_date' => '2026-09-06', 'address' => 'Depan IGD',
+        ])->assertCreated()->assertJsonPath('data.name', 'Tanpa Identitas');
+
+        // Korban kedua dengan data sama tetap boleh (identitas belum ada).
+        $this->postJson('/api/v1/patients', [
+            'is_unidentified' => true, 'birth_date' => '2026-09-06', 'address' => 'Depan IGD',
+        ])->assertCreated();
+    }
+
+    public function test_infant_requires_mother_data(): void
+    {
+        $this->actingUser();
+
+        $this->postJson('/api/v1/patients', [
+            'name' => 'Bayi Ny. Ani', 'is_infant' => true,
+        ])->assertUnprocessable()->assertJsonValidationErrors('mother.name');
+    }
+
+    public function test_infant_creates_mother_family_row(): void
+    {
+        $this->actingUser();
+
+        $response = $this->postJson('/api/v1/patients', [
+            'name' => 'Bayi Ny. Ani', 'is_infant' => true,
+            'mother' => ['name' => 'Ani', 'identity_number' => '3201010101900001'],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('patient_families', [
+            'patient_id' => $response->json('data.id'),
+            'name' => 'Ani', 'relationship' => 'ibu',
+            'identity_number' => '3201010101900001',
+        ]);
+    }
 }

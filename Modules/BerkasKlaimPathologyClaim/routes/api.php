@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\BerkasKlaimPathologyClaim\Http\Controllers\PathologyClaimController;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('pathology-claims', PathologyClaimController::class)->only(['index', 'show']);
+    Route::apiResource('pathology-claims', PathologyClaimController::class)->only(['index', 'show', 'store']);
 
-    Route::apiResource('pathology-claims', PathologyClaimController::class)->only(['store', 'update']);
+    Route::patch('pathology-claims/{pathology_claim}/transition', [PathologyClaimController::class, 'transition']);
 });

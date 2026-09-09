@@ -79,6 +79,23 @@ class EdcControllerTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_status_cannot_be_injected_at_create(): void
+    {
+        $this->actingUser();
+        $payment = Payment::factory()->create();
+
+        $response = $this->postJson('/api/v1/edc-transactions', [
+            'payment_id' => $payment->id,
+            'edc_reference_number' => 'EDC-0000000003',
+            'bank_name' => 'BCA',
+            'card_type' => 'debit',
+            'amount' => 100000,
+            'status' => 'approved',
+        ]);
+
+        $response->assertCreated()->assertJsonPath('data.status', 'pending');
+    }
+
     public function test_guest_cannot_access_edc_transactions(): void
     {
         $this->getJson('/api/v1/edc-transactions')->assertStatus(401);
