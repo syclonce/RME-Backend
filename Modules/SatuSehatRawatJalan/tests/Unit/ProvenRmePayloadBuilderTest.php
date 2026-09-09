@@ -94,4 +94,37 @@ class ProvenRmePayloadBuilderTest extends TestCase
         $this->assertSame('http://snomed.info/sct', $carePlan['category'][0]['coding'][0]['system']);
         $this->assertSame('http://snomed.info/sct', $serviceRequest['code']['coding'][0]['system']);
     }
+
+    public function test_immunization_imaging_episode_memakai_bentuk_terbukti(): void
+    {
+        $im = $this->builder->immunization([
+            'local_id' => 'IM-1', 'vaccine_code' => '1', 'patient_id' => 'P1',
+            'encounter_id' => 'E1', 'occurred_at' => '2026-09-07T08:00:00+07:00',
+            'location_id' => 'L1', 'lot_number' => 'LOT-1', 'expiration_date' => '2027-09-07',
+            'site_code' => 'LD', 'route_code' => 'IDINJ', 'dose_value' => 0.05,
+            'dose_unit' => 'mL', 'dose_code' => 'mL', 'practitioner_id' => 'D1',
+        ]);
+        $this->assertSame('Patient/P1', $im['patient']['reference']);
+        $this->assertSame('Encounter/E1', $im['encounter']['reference']);
+
+        $is = $this->builder->imagingStudy([
+            'local_id' => 'IS-1', 'modality_code' => 'CR', 'patient_id' => 'P1',
+            'encounter_id' => 'E1', 'started_at' => '2026-09-07T08:00:00+07:00',
+            'service_request_id' => 'SR1', 'practitioner_id' => 'D1',
+            'series_uid' => '1.2.3', 'instance_uid' => '1.2.3.1',
+            'bodysite_code' => '42973002',
+        ]);
+        $this->assertArrayNotHasKey('endpoint', $is);
+        $this->assertSame('ServiceRequest/SR1', $is['basedOn'][0]['reference']);
+
+        $eoc = $this->builder->episodeOfCareTb([
+            'local_id' => 'EOC-1', 'condition_id' => 'C1', 'patient_id' => 'P1',
+            'start_at' => '2026-05-20T08:00:00+07:00',
+        ]);
+        $this->assertSame('active', $eoc['status']);
+        $this->assertSame(
+            'http://terminology.kemkes.go.id/CodeSystem/episodeofcare-type',
+            $eoc['type'][0]['coding'][0]['system']
+        );
+    }
 }

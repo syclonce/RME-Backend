@@ -255,4 +255,140 @@ class ProvenRmePayloadBuilder
             'basedOn' => [['reference' => "ServiceRequest/{$d['service_request_id']}"]],
         ];
     }
+
+    /** @param array<string, mixed> $d @return array<string, mixed> */
+    public function immunization(array $d): array
+    {
+        return [
+            'resourceType' => 'Immunization',
+            'identifier' => [[
+                'system' => "http://sys-ids.kemkes.go.id/immunization/{$this->orgId}",
+                'use' => 'official',
+                'value' => $d['local_id'],
+            ]],
+            'status' => 'completed',
+            'vaccineCode' => ['coding' => [[
+                'system' => 'http://terminology.kemkes.go.id/CodeSystem/immunization-vaccine',
+                'code' => $d['vaccine_code'],
+                'display' => $d['vaccine_display'] ?? null,
+            ]]],
+            'patient' => ['reference' => "Patient/{$d['patient_id']}"],
+            'encounter' => ['reference' => "Encounter/{$d['encounter_id']}"],
+            'occurrenceDateTime' => $d['occurred_at'],
+            'recorded' => $d['occurred_at'],
+            'primarySource' => true,
+            'location' => ['reference' => "Location/{$d['location_id']}"],
+            'manufacturer' => ['reference' => 'Organization/' . $this->orgId],
+            'lotNumber' => $d['lot_number'],
+            'expirationDate' => $d['expiration_date'],
+            'site' => ['coding' => [[
+                'system' => 'http://terminology.hl7.org/CodeSystem/v3-ActSite',
+                'code' => $d['site_code'],
+                'display' => $d['site_display'] ?? null,
+            ]]],
+            'route' => ['coding' => [[
+                'system' => 'http://terminology.hl7.org/CodeSystem/v3-RouteOfAdministration',
+                'code' => $d['route_code'],
+                'display' => $d['route_display'] ?? null,
+            ]]],
+            'doseQuantity' => [
+                'value' => $d['dose_value'],
+                'unit' => $d['dose_unit'],
+                'system' => 'http://unitsofmeasure.org',
+                'code' => $d['dose_code'],
+            ],
+            'performer' => [['actor' => ['reference' => "Practitioner/{$d['practitioner_id']}"]]],
+            'protocolApplied' => [['doseNumberPositiveInt' => $d['dose_number'] ?? 1]],
+        ];
+    }
+
+    /** @param array<string, mixed> $d @return array<string, mixed> */
+    public function imagingStudy(array $d): array
+    {
+        return [
+            'resourceType' => 'ImagingStudy',
+            'identifier' => [[
+                'system' => "http://sys-ids.kemkes.go.id/imagingstudy/{$this->orgId}",
+                'use' => 'official',
+                'value' => $d['local_id'],
+            ]],
+            'status' => 'available',
+            'modality' => [[
+                'system' => 'http://dicom.nema.org/resources/ontology/DCM',
+                'code' => $d['modality_code'],
+                'display' => $d['modality_display'] ?? null,
+            ]],
+            'subject' => ['reference' => "Patient/{$d['patient_id']}"],
+            'encounter' => ['reference' => "Encounter/{$d['encounter_id']}"],
+            'started' => $d['started_at'],
+            'basedOn' => [['reference' => "ServiceRequest/{$d['service_request_id']}"]],
+            'referrer' => ['reference' => "Practitioner/{$d['practitioner_id']}"],
+            'interpreter' => [['reference' => "Practitioner/{$d['practitioner_id']}"]],
+            // TANPA endpoint NIDR fiktif — validator menolak referensi palsu.
+            // Citra DICOM asli lewat DICOM router di produksi.
+            'series' => [[
+                'uid' => $d['series_uid'],
+                'number' => 1,
+                'modality' => [
+                    'system' => 'http://dicom.nema.org/resources/ontology/DCM',
+                    'code' => $d['modality_code'],
+                    'display' => $d['modality_display'] ?? null,
+                ],
+                'description' => $d['description'] ?? null,
+                'numberOfInstances' => 1,
+                'bodySite' => [
+                    'system' => 'http://snomed.info/sct',
+                    'code' => $d['bodysite_code'],
+                    'display' => $d['bodysite_display'] ?? null,
+                ],
+                'instance' => [[
+                    'uid' => $d['instance_uid'],
+                    'sopClass' => [
+                        'system' => 'urn:ietf:rfc:3986',
+                        'code' => 'urn:oid:1.2.840.10008.5.1.4.1.1.1',
+                    ],
+                    'number' => 1,
+                ]],
+            ]],
+        ];
+    }
+
+    /** @param array<string, mixed> $d @return array<string, mixed> */
+    public function episodeOfCareTb(array $d): array
+    {
+        return [
+            'resourceType' => 'EpisodeOfCare',
+            'identifier' => [[
+                'system' => "http://sys-ids.kemkes.go.id/episode-of-care/{$this->orgId}",
+                'use' => 'official',
+                'value' => $d['local_id'],
+            ]],
+            // Hanya 'active' yang bisa dibuat; satu pasien = satu episode
+            // aktif per tipe (10109/10110).
+            'status' => 'active',
+            'statusHistory' => [[
+                'status' => 'active',
+                // WAJIB dateTime; tanggal vs jam server: lampau, ≥ 2014-06-03.
+                'period' => ['start' => $d['start_at']],
+            ]],
+            // http, BUKAN https (contoh docs salah di sini).
+            'type' => [['coding' => [[
+                'system' => 'http://terminology.kemkes.go.id/CodeSystem/episodeofcare-type',
+                'code' => 'TB-SO',
+                'display' => 'Tuberkulosis Sensitif Obat',
+            ]]]],
+            'diagnosis' => [[
+                'condition' => ['reference' => "Condition/{$d['condition_id']}"],
+                'role' => ['coding' => [[
+                    'system' => 'http://terminology.hl7.org/CodeSystem/diagnosis-role',
+                    'code' => 'AD',
+                    'display' => 'Admission diagnosis',
+                ]]],
+                'rank' => 1,
+            ]],
+            'patient' => ['reference' => "Patient/{$d['patient_id']}"],
+            'managingOrganization' => ['reference' => 'Organization/' . $this->orgId],
+            'period' => ['start' => $d['start_at']],
+        ];
+    }
 }
